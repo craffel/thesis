@@ -1,0 +1,471 @@
+% -*- TeX-master: "thesis.tex" TeX-PDF-mode: t -*-
+
+% Switches for conditional compilation
+\newif\ifdraft\draftfalse           % Set to either \draftfalse or \drafttrue
+\newif\iftwoside\twosidetrue       % makes it pretty (true) or conforms with
+                                   % GSAS (false - see below)
+\newif\ifbandw\bandwfalse           % Color or black-and-white (screen or print)
+\newif\ifcclicense\cclicensetrue  % Use Creative Commons license (you
+                                  % might want to modify exact license
+                                  % terms you use.  See below.
+
+% Include extra labels so that something is present when linking
+% across chapters.  Defined in wrapper files.
+%\newif\ifwholething\wholethingtrue
+
+%%% Layout and packages
+\iftwoside
+    % Makes the thesis human-readable
+    \documentclass[10pt,twoside,openright,letterpaper,onecolumn]{report}
+    \usepackage[top = 1.00in, bottom = 1.00in, left = 1.50in, right = 1.50in,
+    % Kill asymmetric odd/even side margins since we're never going to
+    % bind this into a book.
+    % marginparwidth = 0.75in, marginparsep = 0.00in,
+                marginparwidth = 0.00in, marginparsep = 0.00in,
+                headheight     =   15pt, footskip     = 0.50in,
+                includeall, heightrounded]{geometry}
+    \usepackage[singlespacing]{setspace}
+    \usepackage[osf,sc]{mathpazo}  % load nicer fonts
+    \setlength{\parindent}   {0pt} % can affect TOC, move it after if necessary
+    \setlength{\parskip}     {1.75ex plus 0.25ex minus 0.25ex}
+    \newcommand{\myclearpage}{\cleartooddpage[\centerline{(This page intentionally left blank)} \vfill \null]}
+    % \newcommand{\myclearpage}{\cleartooddpage}
+\else
+    % GSAS: 11pt or 12pt, double-spaced, one-sided text but it's ugly!
+    \documentclass[11pt,oneside,openright,letterpaper,onecolumn]{report}
+    \usepackage[top = 1.00in, bottom = 1.00in, left = 1.50in, right = 1.50in,
+                marginparwidth = 0.00in, marginparsep = 0.00in,
+                headheight     =   15pt, footskip     = 0.50in,
+                includeall]{geometry}
+    \usepackage[doublespacing]{setspace}
+    \newcommand{\myclearpage}{\clearpage}
+\fi
+\usepackage{microtype}% The BEST package ever! :)
+\usepackage{ifpdf}    % Provides the /ifpdf switch
+\usepackage{calc}     % For simple math
+\usepackage{fancyhdr} % Nicer headers and footers (see customization below)
+%\usepackage{fncychap} % Prevent resetting page numbers in the middle (?)
+\usepackage{tocloft}
+\usepackage{caption}
+\usepackage{booktabs}
+\usepackage{supertabular} % for multi-page tables, list of abbrevs
+\usepackage{lscape}
+\usepackage{alltt}    % For MATLAB code environment
+\usepackage{nextpage}
+\usepackage[section,above,below]{placeins}
+\usepackage{graphicx}
+\usepackage{amssymb}
+\usepackage[cmex10]{amsmath}      % Use only type 1 fonts for all sizes
+%\usepackage{latexsym}
+\usepackage[english]{babel} % Last language selects hyphenation rules
+\usepackage[iso-8859-7]{inputenc}
+\usepackage{subfig}
+\usepackage{multirow}
+\usepackage{rotating} % Needed to rotate text by 90 degrees
+\usepackage{array}    % Needed to use m{width} in the tabular table spec
+%\usepackage{showkeys} % MIM: show cross-ref keys during development
+\usepackage{verbatim}
+\captionsetup[subfloat]{%
+  captionskip=2ex}
+\usepackage{bm}       % For better boldsymbols (use \bm instead of \boldsymbol)
+\usepackage{mdwlist}  % To get condensed lists.
+%\usepackage[numbers]{natbib}
+\usepackage[round]{natbib}
+\ifpdf % Load \hyperref last cause it needs to overwrite stuff
+    \usepackage[usenames,dvipsnames]{color}
+    \usepackage{pdfcolmk}
+    \usepackage[pdftex,pdfpagelabels,plainpages=false]{hyperref}  % for PDF LaTeX   (.pdf figures)
+\else
+    \usepackage[usenames,dvips]{color}
+    \usepackage[dvipdfm,pdfpagelabels,plainpages=false]{hyperref} % for plain LaTeX (.eps figures)
+\fi
+% \ifdraft
+%     \usepackage[left]{showlabels}  % show all \labels in margin
+% \fi
+% Load these two after hyperref
+\usepackage[all]{hypcap}
+\usepackage[hyperpageref]{backref}
+%
+
+%%% Default values.
+\newcommand{\thesisyear}      {2010}
+\newcommand{\copyrightyear}   {2009}
+\newcommand{\thesisauthor}    {Michael I.\ Mandel}
+\newcommand{\thesisadvisor}   {Advisor: Daniel P.W.\ Ellis}
+%\newcommand{\thesisdedication}{Στους γονείς μου Αργυρώ και Σταμάτη}
+\iftwoside
+    \newcommand{\thesistitle} {Binaural Model-Based Source Separation and Localization}
+\else
+    \newcommand{\thesistitle} {Binaural Model-Based Source Separation and Localization}
+\fi
+
+%%% Words that LaTeX doesn't know how to hyphenate (use Webster)
+\hyphenation{MAT-LAB fre-quen-cy sym-me-trized ei-gen-voice}
+
+%%% A few hand-coded things
+% Size for figures \figwidth times \textwidth (2/3 of text)
+\newcommand{\figwidth}    {0.666}
+\clubpenalty             = 9999
+\widowpenalty            = 9999
+\pdfcompresslevel        = 9
+\pdfadjustspacing        = 1
+\renewcommand{\topfraction}         {0.85}
+\renewcommand{\bottomfraction}      {0.70}
+\renewcommand{\textfraction}        {0.15}
+\renewcommand{\floatpagefraction}   {0.66}
+\renewcommand{\dbltopfraction}      {0.66}
+\renewcommand{\dblfloatpagefraction}{0.66}
+\raggedbottom % MIM: added
+
+%%% Package setup
+\hypersetup{
+    pdftitle       = {\thesistitle},
+    pdfauthor      = {\thesisauthor},
+    pdfsubject     = {PhD Thesis, Dept.\ of Electrical Engineering, Columbia University},
+    pdfkeywords    = {model-based source separation, expectation maximization, localization},
+    pdfpagemode    = {UseNone},
+    pdfstartview   = {Fit},
+    pdfstartpage   = {1},
+    setpagesize,
+    letterpaper,
+    bookmarksnumbered,
+    linktocpage,
+    colorlinks
+}
+\ifbandw
+    % Switch to all {Black} for GSAS
+    \hypersetup{
+        linkcolor      = {Black},
+        citecolor      = {Black},
+        urlcolor       = {Black}}
+    \definecolor{string} {rgb}{0.0,0.0,0.0}
+    \definecolor{comment}{rgb}{0.0,0.0,0.0}
+    \definecolor{keyword}{rgb}{0.0,0.0,0.0}
+\else
+    % Add color for online reading
+    \hypersetup{
+        linkcolor      = {RoyalBlue},
+        citecolor      = {Maroon},
+        urlcolor       = {ForestGreen}}
+    % Default MATLAB colors
+    \definecolor{string}{rgb}{0.7,0.0,0.0}
+    \definecolor{comment}{rgb}{0.13,0.54,0.13}
+    \definecolor{keyword}{rgb}{0.0,0.0,1.0}
+\fi
+
+% GSAS: captions are single-spaced
+\captionsetup{
+    width     = {0.833\textwidth},
+%    font      = {singlespacing,small},
+    labelfont = {bf}
+}
+% setup the style of the backref from the bibliography
+\newcommand{\backrefnotcitedstring}{\relax}%(Not cited.)
+\newcommand{\backrefcitedsinglestring}[1]{(Cited on page~#1.)}
+\newcommand{\backrefcitedmultistring}[1]{(Cited on pages~#1.)}
+\renewcommand{\backreftwosep}{ and~} % seperate 2 pages
+\renewcommand{\backreflastsep}{, and~} % seperate last of longer list
+\renewcommand*{\backref}[1]{}  % Disable standard
+\renewcommand*{\backrefalt}[4]{% Detailed backref
+    \ifcase #1 %
+        \backrefnotcitedstring%
+    \or
+        \backrefcitedsinglestring{#2}%
+    \else
+        \backrefcitedmultistring{#2}%
+\fi}
+
+%%% Set counter depth
+\setcounter{secnumdepth} {3}
+\setcounter{tocdepth}    {3}
+
+%%% Setup custom pagestyles
+% Dummy call to fancy style to overwrite defaults
+\pagestyle{fancy}
+% Make nicer chapter marks (section mark is not used in single page)
+\renewcommand{\chaptermark}[1]{\markboth{\thechapter.\ #1}{}} % with chapter #
+\renewcommand{\sectionmark}[1]{\markright{\thesection\ #1}}
+% Overwrite empty just to be sure
+\fancypagestyle{empty}{%
+    \fancyhf{}
+    \renewcommand{\headrulewidth}{0.0pt}
+    \renewcommand{\footrulewidth}{0.0pt}
+}
+% Overwrite plain as it called automatically by \chapter{}
+\fancypagestyle{plain}{%
+    \fancyhf{}
+    \fancyhead[RO]{\bfseries \thepage}
+    \renewcommand{\headrulewidth}{0.0pt}
+    \iftwoside
+        \fancyhead[LE]{\bfseries \thepage}
+    \fi
+}
+% Define new style bottom for the "roman" section of the thesis
+\fancypagestyle{bottom}{%
+    \fancyfoot[C]{\bfseries \thepage}
+}
+% Define new style top for the "arabic" section of the thesis
+\fancypagestyle{top}{%
+    \fancyhf{}
+    \fancyhead[RO]{\bfseries{\thepage}}
+    \fancyhead[LO]{\bfseries{\nouppercase{\leftmark}}}
+    \renewcommand{\headrulewidth}{0.5pt}
+    \fancyheadoffset[RO]{\marginparwidth}
+    \iftwoside
+        \fancyhead[LE]{\bfseries{\thepage}}
+        \fancyhead[RE]{\bfseries{\nouppercase{\rightmark}}}
+        \fancyheadoffset[LE]{\marginparwidth}
+    \fi
+}
+% Setup \thispagestyle{} for TOC
+\tocloftpagestyle{bottom}
+
+%%% Table of contents etc.
+\newcommand{\thesistableofcontents}{\tableofcontents \myclearpage}
+\newcommand{\thesislistoffigures}  {\listoffigures   \myclearpage}
+\newcommand{\thesislistoftables}   {\listoftables    \myclearpage}
+
+%%% Title page
+\newcommand{\thesistitlepage}{
+    \null \vfill
+    \begin{center}
+        \textbf{\LARGE \thesistitle}                  \\[0.4in]
+        {\Large \thesisauthor}                        \\[4.0in]
+        {\singlespacing
+        Submitted in partial fulfillment of the requirements for  \\
+        the degree of Doctor of Philosophy            \\
+        in the Graduate School of Arts and Sciences   \\[0.4in]
+        }
+        COLUMBIA UNIVERSITY                           \\
+        \thesisyear
+    \end{center}
+    \myclearpage
+}
+
+%%% Title with advisor page
+\newcommand{\thesistitleadvisorpage}{
+    \null \vfill
+    \begin{center}
+        \textbf{\LARGE \thesistitle}                  \\[0.4in]
+        {\Large \thesisauthor}                        \\
+        {\Large \thesisadvisor}                       \\[3.7in]
+        {\singlespacing
+        Submitted in partial fulfillment of the requirements for  \\
+        the degree of Doctor of Philosophy            \\
+        in the Graduate School of Arts and Sciences   \\[0.4in]
+        }
+        COLUMBIA UNIVERSITY                           \\
+        \thesisyear
+    \end{center}
+    \myclearpage
+}
+
+%%% Copyright page
+\newcommand{\thesiscopyrightpage}{
+    \null \vfill
+    \begin{center}
+        {\singlespacing
+        \copyright\ \copyrightyear \\
+        \thesisauthor          \\
+        \ifcclicense
+        Some Rights Reserved
+
+        % You might want to use a different Creative Commons license
+        % here.  See http://www.creativecommons.org/license/ for other
+        % options.
+        \vspace{0.5cm}
+        \includegraphics{by-nc-nd}
+
+        This work is licensed under the Creative Commons
+        Attribution-Noncommercial-No Derivative Works 3.0 United
+        States License. To view a copy of this license, visit
+        \url{http://creativecommons.org/licenses/by-nc-nd/3.0/us/} or send a
+        letter to Creative Commons, 171 Second Street, Suite 300, San
+        Francisco, California, 94105, USA.
+        \else
+        All Rights Reserved
+        \fi
+        }
+    \end{center}
+    \myclearpage
+}
+
+%%% Abstract page
+\newcommand{\thesisabstractpage}{
+    \begin{center}
+        \textbf{\LARGE Abstract}     \\[0.2in]
+        \textbf{\large \thesistitle} \\[0.2in]
+        {\large \thesisauthor}       \\[0.2in]
+    \end{center}
+    \input{0_abstract.tex}
+    \myclearpage
+}
+
+%%% List of abbreviations page
+\newcommand{\thesislistofabbrevs}{
+    \chapter*{List of Abbreviations}
+    \thispagestyle{bottom} % force this page otherwise it uses plain
+    \input{0_abbrevs.tex}
+    \myclearpage
+}
+
+%%% Acknowledgments page
+\newcommand{\thesisacknowledgmentspage}{
+    \chapter*{Acknowledgments}
+    \thispagestyle{bottom} % force this page otherwise it uses plain
+    \input{0_acknowledgements.tex}
+    \myclearpage
+}
+
+%%% Dedication page
+\newcommand{\thesisdedicationpage}{
+    \null \vfill
+    \centerline{\Large
+%      \thesisdedication
+    }
+    \vfill \null
+    \myclearpage
+}
+
+%%% Draft designation
+\newcommand{\thesisdraftpage}{
+    \ifdraft
+        \null \vfill
+        \begin{center}
+            \textbf{\Large Draft version: \today}
+        \end{center}
+        \vfill \null
+        \myclearpage
+    \fi
+}
+
+%%% Setup the bibliography
+\renewcommand{\cite}{\citep}
+\newcommand{\thesisbibliography}{
+    {\singlespacing           % GSAS: single spacing for bibliography
+    \myclearpage              % Flush pages to fix the page counter on ToC
+    \phantomsection           % Fixes the hyperref link to previous page
+    %\bibliographystyle{plain} % Other choice "abbrv"
+    % The plain style only supports numeric citations.  Since we are
+    % using natbib we can use a numeric style, but also support
+    % inserting author names when necessary (with \citet).
+    %
+    % Note that plainnat uses authoryear mode by default.  The
+    % \usepackage[numbers]{natbib} line above configures it to work
+    % like plain when using \citep, but include author names when
+    % using \citet.
+    % 
+    % Also note that plainnat includes many more fields (e.g. URL,
+    % doi, ISSN) in the bibliography that are ignored by plain.
+    %\bibliographystyle{plainnat}
+    %
+    % The thesisplainnat style is a modification of plainnat that does
+    % not include URL, DOI, ISSN, or ISBN.
+    \bibliographystyle{thesisplainnat}
+    \addcontentsline{toc}{chapter}{\bibname}
+    \bibliography{thesis}
+    }
+}
+
+
+%%% Better references:
+%
+% Use \autoref instead of \ref to include text describing the target's
+% type before the reference itself.  It claims to automatically take
+% care of capitalization depending on context, but this does not work.
+% It also ruins the parens around equation references.  Both of these
+% are fixed with the cleverref package below for this.
+%
+% Use \ref* or \autoref* to reference a label without creating a
+% hyperlink.
+
+% Redefine \autoref names (e.g. use section or Section as necessary
+% instead of subsection or subsubsection)
+\renewcommand{\equationautorefname}{equation}
+\renewcommand{\figureautorefname}{figure}
+\renewcommand{\tableautorefname}{table}
+\renewcommand{\subsectionautorefname}{\sectionautorefname}
+\renewcommand{\subsubsectionautorefname}{\sectionautorefname}
+
+% The cleverref handles this a bit more nicely.  It can handle
+% capitalization through \cref and \Cref and it automatically handles
+% multiple references (e.g. \cref{eq:1, table:2, table:3}) or even
+% ranges (e.g. \cref{eq:1,eq:2,eq:3,eq:4} or \crefrange{eq:1}{eq:4}).
+% I've configured default names below.
+\usepackage{cleveref}
+%From http://typethinker.blogspot.com/2008_06_01_archive.html
+\crefname{appendix}{appendix}{appendices}
+\crefname{chapter}{chapter}{chapters}
+\crefname{section}{section}{sections}
+\crefname{subsection}{section}{sections}
+\crefname{subsubsection}{section}{sections}
+\crefname{equation}{equation}{equations}
+\crefname{figure}{figure}{figures}
+\crefname{subfigure}{figure}{figures}
+\crefname{table}{table}{tables}
+\crefname{enumi}{}{}
+% Put parens around equations:
+\creflabelformat{equation}{(#2#1#3)} 
+% Only thing thats missing is making the entire phrase (e.g. "section
+% 4.2") a hyperlink which \autoref does by default.
+
+% Define my own ref commands so I don't have to do a massive
+% search-replace every time I switch packages.  Also make draft
+% version show keys so they're still meaningful if they're missing.
+\ifwholething
+  % Cleveref defs
+  \newcommand{\mimref}{\cref}
+  \newcommand{\Mimref}{\Cref}
+  \newcommand{\mimrefrange}{\crefrange}
+  \newcommand{\Mimrefrange}{\Crefrange}
+
+  % "Clever" Labels
+  \newcommand{\mimlabel}[1]{\label{#1}}
+
+  % "Clever" citations
+  \newcommand{\mimcite}{\cite}
+  \newcommand{\mimcitet}{\citet}
+
+  % Turn off TODOs
+  \newcommand{\todo}[1]{}
+\else
+  % Cleveref defs
+  \newcommand{\mimref}[1]{\cref{#1}~[\url{#1}]}
+  \newcommand{\Mimref}[1]{\Cref{#1}~[\url{#1}]}
+  \newcommand{\mimrefrange}[2]{\crefrange{#1}{#2}~[\url{#1}--\url{#2}]}
+  \newcommand{\Mimrefrange}[2]{\Crefrange{#1}{#2}~[\url{#1}--\url{#2}]}
+
+  % "Clever" labels
+  \newcommand{\mimlabel}[1]{\label{#1}}
+
+  % "Clever" citations
+  %\newcommand{\mimcite}[1]{\cite{#1}~[\url{#1}]}
+  %\newcommand{\mimcitet}[1]{\citet{#1}~[\url{#1}]}
+  \newcommand{\mimcite}{\cite}
+  \newcommand{\mimcitet}{\citet}
+
+  % Turn on TODOs
+  \newcommand{\todo}[1]{\textbf{\large\textcolor{blue}{[#1]}}}
+\fi
+
+% Define figure sizes
+\iftwoside
+  % Falls a little bit into the margins
+  \newcommand{\oneheight}{2in}
+  \newcommand{\twoheight}{1.7in}
+  \newcommand{\threeheight}{1.4in}
+  \newcommand{\fourheight}{1in}
+  \newcommand{\fiveheight}{.9in}
+\else
+  % Stays strictly within the margins
+  \newcommand{\oneheight}{2in}
+  \newcommand{\twoheight}{1.65in}
+  \newcommand{\threeheight}{1.25in}
+  \newcommand{\fourheight}{1in}
+  \newcommand{\fiveheight}{.9in}
+\fi
+
+% Math stuff
+\usepackage{amssymb}
+\usepackage[cmex10]{amsmath}      % Use only type 1 fonts for all sizes
+% \input{0_notation}

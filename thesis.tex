@@ -1,0 +1,50 @@
+\newif\ifwholething\wholethingtrue
+\input{preamble}
+
+\begin{document}
+
+% The first pages don't have numbering
+\pagenumbering{}  % Also fixes logical numbering in Acrobat
+\pagestyle{empty}
+
+\thesistitlepage
+\thesiscopyrightpage
+\thesisabstractpage
+
+% GSAS: "roman" numbers at the bottom center for ToC,LoF,LoT
+\pagenumbering{roman}
+\pagestyle{bottom}
+
+\thesistableofcontents
+\thesislistoffigures
+\thesislistoftables
+\thesislistofabbrevs
+\thesisacknowledgmentspage
+%\thesisdedicationpage
+\thesisdraftpage
+
+% GSAS: "arabic" numbers on the top right for main body
+\pagenumbering{arabic}
+\pagestyle{top}
+
+% Bring home the tempeh
+\input{1_intro.tex}
+% \input{2_background.tex}
+% \input{3_interaural.tex}
+% \input{4_localization.tex}
+% \input{5_separation.tex}
+% \input{6_evaluation.tex}
+% \input{7_conclusion.tex}
+
+
+\iftwoside % Normal ordering
+    \appendix
+%    \input{8_appendix.tex}
+    \thesisbibliography
+\else      % GSAS: Appendix after bibliography
+    \thesisbibliography
+    \appendix
+%    \input{8_appendix.tex}
+\fi
+
+\end{document}
