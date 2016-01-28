@@ -88,16 +88,12 @@
 %
 
 %%% Default values.
-\newcommand{\thesisyear}      {2010}
-\newcommand{\copyrightyear}   {2009}
-\newcommand{\thesisauthor}    {Michael I.\ Mandel}
+\newcommand{\thesisyear}      {2016}
+\newcommand{\copyrightyear}   {2016}
+\newcommand{\thesisauthor}    {Colin Raffel}
 \newcommand{\thesisadvisor}   {Advisor: Daniel P.W.\ Ellis}
 %\newcommand{\thesisdedication}{Στους γονείς μου Αργυρώ και Σταμάτη}
-\iftwoside
-    \newcommand{\thesistitle} {Binaural Model-Based Source Separation and Localization}
-\else
-    \newcommand{\thesistitle} {Binaural Model-Based Source Separation and Localization}
-\fi
+\newcommand{\thesistitle} {Learning-Based Methods for Comparing Sequences, with Applications to Audio-to-MIDI Alignment and Matching}
 
 %%% Words that LaTeX doesn't know how to hyphenate (use Webster)
 \hyphenation{MAT-LAB fre-quen-cy sym-me-trized ei-gen-voice}
@@ -122,7 +118,7 @@
     pdftitle       = {\thesistitle},
     pdfauthor      = {\thesisauthor},
     pdfsubject     = {PhD Thesis, Dept.\ of Electrical Engineering, Columbia University},
-    pdfkeywords    = {model-based source separation, expectation maximization, localization},
+    pdfkeywords    = {dynamic time warping,representation learning,convolutional networks},
     pdfpagemode    = {UseNone},
     pdfstartview   = {Fit},
     pdfstartpage   = {1},
@@ -274,12 +270,11 @@
         % here.  See http://www.creativecommons.org/license/ for other
         % options.
         \vspace{0.5cm}
-        \includegraphics{by-nc-nd}
+        \includegraphics{cc-by}
 
         This work is licensed under the Creative Commons
-        Attribution-Noncommercial-No Derivative Works 3.0 United
-        States License. To view a copy of this license, visit
-        \url{http://creativecommons.org/licenses/by-nc-nd/3.0/us/} or send a
+        Attribution 4.0 License. To view a copy of this license, visit
+        \url{https://creativecommons.org/licenses/by/4.0/} or send a
         letter to Creative Commons, 171 Second Street, Suite 300, San
         Francisco, California, 94105, USA.
         \else
