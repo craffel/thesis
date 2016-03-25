@@ -1,16 +1,161 @@
 \chapter{Introduction}
 
+Sequences of feature vectors or symbols are a natural way of representing information in a wide variety of fields, including multimedia, medicine, and natural language processing.
+For examples of a few common types of data represented as sequences, see Figure \ref{fig:example_sequences}.
+As the cost of storing data continues to decrease and more and more aspects of our lives are recorded, databases of sequential data are becoming larger and more prevalent.
+This motivates the need for methods to efficiently organize and extract useful information from this data.
+
+\begin{figure}
+  \includegraphics[width=\textwidth]{figures/1-example_sequences.pdf}
+  \caption{Examples of sequential data.  From top to bottom: A sentence, which can be considered a sequence of words; a signal, which generally refers to a unidimensional real-valued sequence; a magnitude spectrogram (sequence of spectra) of an audio recording of the word ``say''; a DNA sequence, which represents the order of nucleotides (G, C, A, or T) in a DNA molecule; and a video, which is a sequence of images.}
+  \label{fig:example_sequences}
+\end{figure}
+
+An exemplary domain is musical data.
+Digital audio is commonly represented either as a sequence of sampled amplitude values corresponding to the sonic waveform, or as a sequence of time-frequency spectra computed over short snippets of the audio signal.
+Musical scores can also be conveniently represented digitally as a sequence of notes played on a collection of instruments.
+This has allowed for extremely large collections of musical audio recordings and scores to be assembled.
+The availability of this data has facilitated the nascent field of Music Information Retrieval (MIR), which focuses on inferring high-level information from music through computational means.
+
 \cite{}
 
 \section{Large-Scale Sequence Retrieval}
 
-icassp2016pruning1, nips2015accelerating1
+Perhaps the most fundamental task one can perform with a database is indexing or nearest-neighbor retrieval, i.e.\ finding the entry in the database which is the most similar to a query.
+Given a way of measuring similarity, the simplest way to index a database is to compute the similarity between the query and every entry in the database and simply choose the entry which has the highest similarity score.
+One pervasive way of framing this problem is to represent database entries and queries as vectors in a space where their similarity is encoded by a distance metric.
+This makes item-to-item comparison simple and enables efficient nearest-neighbor retrieval.
 
-Warping-based metrics are effective, but slow.
-Can we use representation learning methods to mitigate these issues?
+In order to extend this method to sequential data, a natural approach would be to compute the sum of the distances of co-occurring elements in two sequences.
+Figure \ref{fig:example_distance_unwarped} visualizes this method on two one-dimensional sequences.
+While straightforward, this method is made impractical for most problems of interest due to a few factors.
+First, it cannot be used to compare sequences which differ in length, which is a natural problem in many domains.
+Second, even when sequences have the same length, in many cases it is not necessarily true that two sequences are similar only when co-occurring elements in the sequences are similar.
+For example, the sentences ``My favorite color is red'' and ``Red is my favorite color'' have the same meaning (i.e.\ are extremely similar) but have no co-occurring words.
 
-\section{Matching MIDI files to the Million Song Dataset}
+\begin{figure}
+  \includegraphics[width=\textwidth]{figures/1-example_distance_unwarped.pdf}
+  \caption{Comparing two equal-length sequences by summing the distances between co-occurring elements in each sequence.}
+  \label{fig:example_distance_unwarped}
+\end{figure}
 
-ismir2015large1,3
+These issues have prompted the use of warping or edit distance measures, which allow for non-co-occurring elements of sequences to be compared when computing a similarity score.
+Such measures find a correspondence or alignment between elements of the two sequences being compared, and then compute the sum of the distances between aligned sequence elements.
+The alignment is typically defined to find a correspondence between sequence elements such that the total distance between aligned elements is minimized, and is required to follow some set of constraints to ensure useful solutions.
+Because they enable comparison of non-co-occurring elements, these methods can often be applied straightforwardly to sequences which differ in length.
+In many cases, the number of possible alignments is exponential in the length of the sequences being compared.
+However, in most cases of interest (and used in practice), the optimal alignment can be found in time quadratic in the sequence lengths using dynamic programming.
+An example of this kind of comparison can be seen in Figure \ref{fig:example_distance_warped}.
+
+\begin{figure}
+  \includegraphics[width=\textwidth]{figures/1-example_distance_warped.pdf}
+  \caption{Comparing two sequences which differ in length by warping them to find an optimal alignment (under some constraints) and summing the distances between aligned elements.}
+  \label{fig:example_distance_warped}
+\end{figure}
+
+While the application of dynamic programming makes many warping-based measures tractible, they can be made inpractical in practice by a variety of factors.
+First, quadratic complexity can still be prohibitive when comparing very long sequences.
+This can be particularly problematic if sequences are oversampled, i.e.\ there is an unnecessarily high correlation between consecutive sequence elements.
+Second, in some cases comparing individual sequence elements is itself prohibitively expensive, which is a necessary operation for any warping-based measure.
+Furthermore, in some domains (e.g.\ multimodal data), there is no natural way to compare individual sequence elements, which also precludes sequence comparison.
+Finally, if the database being indexed is very large, comparing a query against every entry in it can be prohibitively expensive.
+
+A pervasive method for mitigating some of these issues is ``pruning''.
+Pruning describes the general technique of using a very cheap surrogate method to discard most entries in a database and then applying a more expensive, but more accurate, method to the remaining entries.
+The effectiveness of a pruning method is quantified by how much of the database it is able to discard without falsely rejecting the correct match according to the more expensive operation.
+
+One straightforward way to achieve pruning for indexing databases of sequential data is to use an alternate represention for the sequences which accelerates the warping similarity measure.
+This may include making the sequence shorter to mitigate overrsampling issues or transforming the individual feature vectors which make up the sequence in such a way that comparing them is less expensive.
+Utilizing a different representation can also facilitate the case when the query sequence, in its raw form, is not comparable to entries to the database.
+To fit into the framework of pruning, the transformed sequence representation can discard some information and sacrifice some accuracy so long as it is substantially faster than the ``native'' warping measure and rarely discards the correct match.
+
+Many of these issues are caused by the fact that the data is sequential and a warping measure must be used; they are not present when data is represented as fixed-length vectors whose distance measures similarity.
+This motivates another pruning method: Transform sequences of feature vectors to fixed-length vectors embedded in a space where their distance approximates the warping measure.
+Provided that the distance in the embedded space suitably approximates sequence similarity, these methods can also serve as effective pruning techniques.
+
+\section{Matching and Aligning Scores and Audio Recordings}
+
+Many of these issues are exhibited in the task of finding the entry in a large database of audio recordings which corresponds to a given musical score.
+Such a matching is of great utility in the field of content-based Music Information Retrieval due to the large amount of high-level information present in the score.
+This information can be used as ground-truth for content-based MIR algorithms, whose success is often dependent on the quantity and quality of this data.
+Creating such ground-truth by hand for a given song typically requires person-hours on the order of the duration of the song, and so training data availability is a frequent bottleneck in content-based MIR tasks.
+Leveraging existing collections of of scores could greatly facilitate the curation of this data; through a large-scale web scrape, we obtained 140,910 unique MIDI files (a common digital score format) -- orders of magnitude larger than any available ground-truth dataset for MIR.
+
+The mere existence of a large collection of scores is not enough:  In order to use information from a score as ground truth, it needs to be matched (paired with a corresponding audio recording), aligned (adjusted so that the timing of the events in the file match the audio), and relevant information must be inferred or extracted.
+Given large corpora of audio recordings of music and scores, the task of matching entries of each type may seem to be a simple matter of fuzzy text matching of the files' metadata.
+However, MIDI files almost never contain structured metadata, and as a result the best-case scenario is that the artist and song title are included in the file or directory name.
+While we found some examples of this in our collection of scraped MIDI files, the vast majority of the files had effectively no metadata information.
+Figure \ref{fig:midi-names} shows a random sampling of directory and filenames from our collection.
+
+\begin{figure}
+  \begin{framed}
+    \tt
+    J/Jerseygi.mid
+
+    V/VARIA18O.MID
+
+    Carpenters/WeveOnly.mid
+
+    2009 MIDI/handy\char`_man1-D105.mid
+
+    G/Garotos Modernos - Bailanta De Fronteira.mid
+
+    Various Artists/REWINDNAS.MID
+
+    GoldenEarring/Twilight\char`_Zone.mid
+
+    Sure.Polyphone.Midi/Poly 2268.mid
+
+    d/danza3.mid
+
+    100\%sure.polyphone.midi/Fresh.mid
+
+    rogers\char`_kenny/medley.mid
+
+    2009 MIDI/looking\char`_out\char`_my\char`_backdoor3-Bb192.mid
+  \end{framed}
+
+  \caption{Random sampling of 12 MIDI filenames and their parent directories from our corpus of 140,910 unique MIDI files scraped from the Internet.}
+  \label{fig:midi-names}
+\end{figure}
+
+Since the goal of matching MIDI and audio files is to find pairs that have \textit{content} in common, we can in principle identify matches regardless of metadata availability or accuracy.
+However, the task of matching a single MIDI file to a large corpus of audio recordings exhibits all of the issues described in the previous section, for the following reasons:
+First, scores and audio recordings are not directly comparable in their raw forms.
+Second, in order to capture relevant fine-grained temporal information, time-frequency sequence representations of a typical length song may consist of thousands of feature vectors.
+Furthermore, individual spectra in a time-frequency representation are high-dimensional real-valued feature vectors, which makes comparing them expensive.
+Given the size of our MIDI file collection, we require a highly-efficient scheme to match the content of MIDI and audio files.
+
+A given score which has been matched to an audio recording of the song it is a transcription of often does not share the exact timing of the recording.
+In order to fully leverage the information in a given score, a mapping between the timing in the score and the audio recording must therefore be constructed.
+Fortunately, score-to-audio alignment is a thoroughly studied research topic.
+However, most systems are hand-designed to desired performance on a single task or small corpus of music.
+Comparison of the different alignment systems which have been proposed is greatly inhibited by the lack of a large corpus of known-correct alignments to evaluate performance on.
+The creation of a task or dataset for evaluating score-to-audio alignment systems would help determine which system design performs best in general.
+
+Finally, once matched and aligned, the relevant information for content-based MIR must be extracted from the score.
+This can include transcription, meter, lyrics, and high-level musicological features.
+Extracting score-derived ground-truth requires parsing the score's format (e.g.\ the MIDI protocol) and then performing any post-processing needed to derive higher-level information.
+The reliability of the resulting annotations will depend both on the quality of the transcription and the accuracy of the score-to-audio alignment.
+It would therefore be useful to establish a baseline of reliability for score-derived information for different content-based MIR tasks.
 
 \section{Overview}
+
+The remainder of this thesis focuses on methods for efficient large-scale sequence comparison and tests them on the specific problem of matching scores to corresponding audio recordings.
+Because this task exhibits all of the problematic characteristics of large-scale sequence comparison problems, we consider it an appropriate benchmark to evaluate the usefulness of the proposed methods.
+In addition, by developing an effective system for matching a MIDI file to its corresponding entry in a database of audio recordings, we will be able to leverage our large collection of MIDI files to create valuable ground-truth information for content-based MIR.
+Throughout, we will focus on {\em learning-based methods}, i.e.\ algorithms which are optimized to achieve high performance over a collection of exemplary data.
+
+The rest of this thesis is organized as follows.
+First, in Chapter \ref{ch:tools}, we present a collection of ``tools'' which will be used throughout this thesis, including machine learning and signal processing methods.
+In Chapter \ref{ch:dtw} we propose a synthetic task to measure the performance of audio-to-score alignment systems and uses Bayesian Optimization to choose a system design which has the best general performance.
+We also address the problem of reporting a reliable alignment confidence score and validate the resulting system on real-world data.
+Chapter \ref{ch:dhs} describes our first technique for pruning large-scale sequence similarity search.
+This method learns a mapping from sequences of continuously-valued feature vectors to downsampled sequences of binary vectors, which can be compared efficiently using an exclusive-or operation.
+The resulting sequences are orders of magnitude faster to compare, resulting in an effective pruning method.
+We propose a second pruning method in Chapter \ref{ch:embedding} which maps sequences to fixed-length vectors in a Euclidean space where their distance approximates sequence similarity.
+This provides an estimate of the similarity of two sequences by an inexpensive Euclidean distance calculation.
+In Chapter \ref{ch:extracting}, we address the practical question of whether we can expect to extract high-quality ground-truth information from MIDI files which have been matched and aligned to corresponding audio recordings.
+We gain qualitative insight for timing-agnostic and timing-sensitive tasks by comparing annotations extracted from MIDI files to human-annotated ground truth.
+Finally, Chapter \ref{ch:assembling} utilizes all of these methods to construct a large collection of MIDI files which have been matched and aligned to corresponding audio recordings.
+We describe some of the characteristics of the resulting dataset and wrap up by outlining some interesting applications for it.
