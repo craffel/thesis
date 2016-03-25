@@ -7,7 +7,7 @@ This motivates the need for methods to efficiently organize and extract useful i
 
 \begin{figure}
   \includegraphics[width=\textwidth]{figures/1-example_sequences.pdf}
-  \caption{Examples of sequential data.  From top to bottom: A sentence, which can be considered a sequence of words; a signal, which generally refers to a unidimensional real-valued sequence; a magnitude spectrogram (sequence of spectra) of an audio recording of the word ``say''; a DNA sequence, which represents the order of nucleotides (G, C, A, or T) in a DNA molecule; and a video, which is a sequence of images.}
+  \caption[Examples of sequential data]{Examples of sequential data.  From top to bottom: A sentence, which can be considered a sequence of words; a signal, which generally refers to a unidimensional real-valued sequence; a magnitude spectrogram (sequence of spectra) of an audio recording of the word ``say''; a DNA sequence, which represents the order of nucleotides (G, C, A, or T) in a DNA molecule; and a video, which is a sequence of images.}
   \label{fig:example_sequences}
 \end{figure}
 
@@ -35,7 +35,7 @@ For example, the sentences ``My favorite color is red'' and ``Red is my favorite
 
 \begin{figure}
   \includegraphics[width=\textwidth]{figures/1-example_distance_unwarped.pdf}
-  \caption{Comparing two equal-length sequences by summing the distances between co-occurring elements in each sequence.}
+  \caption[Comparing two sequences without warping]{Comparing two equal-length sequences by summing the distances between co-occurring elements in each sequence.  Dashed lines indicate which elements are being compared.}
   \label{fig:example_distance_unwarped}
 \end{figure}
 
@@ -49,7 +49,7 @@ An example of this kind of comparison can be seen in Figure \ref{fig:example_dis
 
 \begin{figure}
   \includegraphics[width=\textwidth]{figures/1-example_distance_warped.pdf}
-  \caption{Comparing two sequences which differ in length by warping them to find an optimal alignment (under some constraints) and summing the distances between aligned elements.}
+  \caption[Comparing sequences under a warping measure]{Comparing two sequences which differ in length by warping them to find an optimal alignment (under some constraints) and summing the distances between aligned elements.  Dashed lines indicate which elements are being compared.}
   \label{fig:example_distance_warped}
 \end{figure}
 
@@ -115,7 +115,7 @@ Figure \ref{fig:midi-names} shows a random sampling of directory and filenames f
     2009 MIDI/looking\char`_out\char`_my\char`_backdoor3-Bb192.mid
   \end{framed}
 
-  \caption{Random sampling of 12 MIDI filenames and their parent directories from our corpus of 140,910 unique MIDI files scraped from the Internet.}
+  \caption[Random sampling of MIDI filenames from our collection]{Random sampling of 12 MIDI filenames and their parent directories from our corpus of 140,910 unique MIDI files scraped from the Internet.}
   \label{fig:midi-names}
 \end{figure}
 
