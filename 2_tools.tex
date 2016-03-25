@@ -1,6 +1,22 @@
 \chapter{Tools} \label{ch:tools}
 
+Throughout this thesis, we will use a common collection of tools to help solve problems of interest.
+Broadly speaking, we will make use of techniques from the fields of machine learning and signal processing.
+In this chapter, we give a high-level overview of these fields and a more specific definition of the various techniques we will utilize.
+
 \section{Machine Learning}
+
+Machine learning is broadly defined as a suite of methods for enabling computers to carry out particular tasks without being explicitly programmed to do so.
+Such methods make use of a collection of data, from which patterns or the desired behaviors are automatically determined.
+In this sense, machine learning techniques allow computers to ``learn'' the correct procedure based on the data provided.
+In addition to requiring data, machine learning algorithms also require an objective which quantifies the extent to which they are successfully carrying out a task.
+This objective function allows them to be optimized in order to maximize their performance.
+
+Traditionally, machine learning techniques are divided into three types: Supervised, unsupervised, and reinforcement learning.
+Supervised learning requires a collection of training data that specifies both the input to the algorithm and the desired output.
+Unsupervised learning, on the other hand, does not utilize target output data, and thus is limited to finding structure in the input data.
+Finally, reinforcement learning refers to the broader problem of determining a policy to respond to input data in a dynamic ``environment'' based on a potentially rare signal which tells the algorithm whether it is successful or not.
+All of the problems in this thesis fall into the category of supervised learing, so we will not discuss unsupervised or reinforcement learning further.
 
 \subsection{Supervised Learning}
 
