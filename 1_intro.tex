@@ -1,7 +1,7 @@
 \chapter{Introduction}
 
 Sequences of feature vectors or symbols are a natural way of representing information in a wide variety of fields, including multimedia, medicine, and natural language processing.
-For examples of a few common types of data represented as sequences, see Figure \ref{fig:example_sequences}.
+For examples of a few common types of data represented as sequences, see \cref{fig:example_sequences}.
 As the cost of storing data continues to decrease and more and more aspects of our lives are recorded, databases of sequential data are becoming larger and more prevalent.
 This motivates the need for methods to efficiently organize and extract useful information from this data.
 
@@ -27,7 +27,7 @@ One pervasive way of framing this problem is to represent database entries and q
 This makes item-to-item comparison simple and enables efficient nearest-neighbor retrieval.
 
 In order to extend this method to sequential data, a natural approach would be to compute the sum of the distances of co-occurring elements in two sequences.
-Figure \ref{fig:example_distance_unwarped} visualizes this method on two one-dimensional sequences.
+\Cref{fig:example_distance_unwarped} visualizes this method on two one-dimensional sequences.
 While straightforward, this method is made impractical for most problems of interest due to a few factors.
 First, it cannot be used to compare sequences which differ in length, which is a natural problem in many domains.
 Second, even when sequences have the same length, in many cases it is not necessarily true that two sequences are similar only when co-occurring elements in the sequences are similar.
@@ -45,7 +45,7 @@ The alignment is typically defined to find a correspondence between sequence ele
 Because they enable comparison of non-co-occurring elements, these methods can often be applied straightforwardly to sequences which differ in length.
 In many cases, the number of possible alignments is exponential in the length of the sequences being compared.
 However, in most cases of interest (and used in practice), the optimal alignment can be found in time quadratic in the sequence lengths using dynamic programming.
-An example of this kind of comparison can be seen in Figure \ref{fig:example_distance_warped}.
+An example of this kind of comparison can be seen in \cref{fig:example_distance_warped}.
 
 \begin{figure}
   \includegraphics[width=\textwidth]{figures/1-example_distance_warped.pdf}
@@ -85,7 +85,7 @@ The mere existence of a large collection of scores is not enough:  In order to u
 Given large corpora of audio recordings of music and scores, the task of matching entries of each type may seem to be a simple matter of fuzzy text matching of the files' metadata.
 However, MIDI files almost never contain structured metadata, and as a result the best-case scenario is that the artist and song title are included in the file or directory name.
 While we found some examples of this in our collection of scraped MIDI files, the vast majority of the files had effectively no metadata information.
-Figure \ref{fig:midi-names} shows a random sampling of directory and filenames from our collection.
+\Cref{fig:midi-names} shows a random sampling of directory and filenames from our collection.
 
 \begin{figure}
   \begin{framed}
@@ -147,15 +147,15 @@ In addition, by developing an effective system for matching a MIDI file to its c
 Throughout, we will focus on {\em learning-based methods}, i.e.\ algorithms which are optimized to achieve high performance over a collection of exemplary data.
 
 The rest of this thesis is organized as follows.
-First, in Chapter \ref{ch:tools}, we present a collection of ``tools'' which will be used throughout this thesis, including machine learning and signal processing methods.
-In Chapter \ref{ch:dtw} we propose a synthetic task to measure the performance of audio-to-score alignment systems and uses Bayesian Optimization to choose a system design which has the best general performance.
+First, in \cref{ch:tools}, we present a collection of ``tools'' which will be used throughout this thesis, including machine learning and signal processing methods.
+In \cref{ch:dtw} we propose a synthetic task to measure the performance of audio-to-score alignment systems and uses Bayesian Optimization to choose a system design which has the best general performance.
 We also address the problem of reporting a reliable alignment confidence score and validate the resulting system on real-world data.
-Chapter \ref{ch:dhs} describes our first technique for pruning large-scale sequence similarity search.
+\Cref{ch:dhs} describes our first technique for pruning large-scale sequence similarity search.
 This method learns a mapping from sequences of continuously-valued feature vectors to downsampled sequences of binary vectors, which can be compared efficiently using an exclusive-or operation.
 The resulting sequences are orders of magnitude faster to compare, resulting in an effective pruning method.
-We propose a second pruning method in Chapter \ref{ch:embedding} which maps sequences to fixed-length vectors in a Euclidean space where their distance approximates sequence similarity.
+We propose a second pruning method in \cref{ch:embedding} which maps sequences to fixed-length vectors in a Euclidean space where their distance approximates sequence similarity.
 This provides an estimate of the similarity of two sequences by an inexpensive Euclidean distance calculation.
-In Chapter \ref{ch:extracting}, we address the practical question of whether we can expect to extract high-quality ground-truth information from MIDI files which have been matched and aligned to corresponding audio recordings.
+In \cref{ch:extracting}, we address the practical question of whether we can expect to extract high-quality ground-truth information from MIDI files which have been matched and aligned to corresponding audio recordings.
 We gain qualitative insight for timing-agnostic and timing-sensitive tasks by comparing annotations extracted from MIDI files to human-annotated ground truth.
-Finally, Chapter \ref{ch:assembling} utilizes all of these methods to construct a large collection of MIDI files which have been matched and aligned to corresponding audio recordings.
+Finally, \cref{ch:assembling} utilizes all of these methods to construct a large collection of MIDI files which have been matched and aligned to corresponding audio recordings.
 We describe some of the characteristics of the resulting dataset and wrap up by outlining some interesting applications for it.
