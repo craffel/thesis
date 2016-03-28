@@ -9,7 +9,7 @@ In this chapter, we give a high-level overview of these fields and a more specif
 Machine learning is broadly defined as a suite of methods for enabling computers to carry out particular tasks without being explicitly programmed to do so.
 Such methods make use of a collection of data, from which patterns or the desired behaviors are automatically determined.
 In this sense, machine learning techniques allow computers to ``learn'' the correct procedure based on the data provided.
-In addition to requiring data, machine learning algorithms also require an objective which quantifies the extent to which they are successfully carrying out a task.
+In addition to data, machine learning algorithms also often require an objective which quantifies the extent to which they are successfully carrying out a task.
 This objective function allows them to be optimized in order to maximize their performance.
 
 Traditionally, machine learning techniques are divided into three types: Supervised, unsupervised, and reinforcement learning.
@@ -19,6 +19,58 @@ Finally, reinforcement learning refers to the broader problem of determining a p
 All of the problems in this thesis fall into the category of supervised learing, so we will not discuss unsupervised or reinforcement learning further.
 
 \subsection{Supervised Learning}
+
+In the supervised setting, our machine learning algorithm produces a function $f$ (called a {\em model}) which, given input $x$ and the function's parameters $\theta$, produces an output $\hat{y}$:
+
+\begin{equation}
+\hat{y} = f(x, \theta)
+\end{equation}
+
+Supervised learning requires a training set $\mathcal{S}$ of input-target pairs $(x_1, y_1), (x_2, y_2), \ldots (x_{|S|}, y_{|s|}$, where $x_n \in \mathcal{X}$ and $y_n \in \mathcal{Y}$.
+We assume that these pairs are drawn from an unknown joint probability distribution $p(x, y)$, of which the only information we explicitly know is the training set $\mathcal{S}$.
+The goal of a supervised learning algorithm is to capture the probability distribution $p(x, y)$ with $f$ by adjusting the parameters $\theta$ based solely on $\mathcal{S}$.
+
+One way to formulate this goal is to state that for a sample from $p(x, y)$ which is not in $\mathcal{S}$, the function $f$ should produce the correct output.
+Of course, because we are only given the samples in $\mathcal{S}$, the parameters $\theta$ must be optimized solely according the training pairs in $\mathcal{S}$.
+This approach, where $f$ is used directly to produce the predicted value for $y$, is referred to as discriminant training.
+An alternative approach, called probabilistic training, is to use $f$ to model $p(x, y)$ by estimating $p(y | x)$ and then choosing the most probable $y$.
+In either case, choosing $f$ typically involves using a task-specific ``loss function'' $L$ which computes a nonnegative scalar value which measures the extent to which $\hat{y}$ agress with $y$.
+Ideally, minimizing this loss over the training set by adjusting $\theta$ will yield an $f$ which closely approximates $p(x, y)$.
+
+The choice of a loss function will depend on the characteristics of the problem, in particular the target space $\mathcal{Y}$.
+For example, in {\em classification} problems, the targets $y$ may take one of $K$ discrete values.
+A natural loss function in this case is the zero-one loss
+
+\begin{equation}
+L(y, \hat{y}) = \begin{cases}
+1,& \hat{y} = y\\
+0,& \hat{y} \ne y
+\end{cases}
+\end{equation}
+
+In {\em regression} problems, the targets are continuously valued, and a common loss function is the squared error
+
+\begin{equation}
+L(y, \hat{y}) = (y - \hat{y})^2
+\end{equation}
+
+Note that in both cases when $y = \hat{y}$, $L = 0$; this is a common property of loss functions.
+
+In general, a suitable goal for training an unsupervised learning algorithm is to adjust $\theta$ to minimize the average loss over the training set:
+
+\begin{equation}
+\frac{1}{|\mathcal{S}|} \sum_{(x, y) \in \mathcal{S}} L(y, f(x, \theta))
+\end{equation}
+
+Minimizing this average loss is equivalent to minimizing the empirical risk of $f$.
+A common paradigm is to compute the derivative of the loss function $L$ with respect to the model parameters $\theta$ and use this derivative information to incrementally change $\theta$ to make $L$ smaller.
+In this case, it is beneficial to have a loss function which is continuous and smooth, which precludes the use of loss functions like the zero-one loss.
+A common solution to this problem is to use a surrogate loss function which has the desired properties (e.g.\ smoothness) and whose minimization will also minimize $L$.
+
+There are supervised learning methods which do not follow the above framework.
+For example, the k-nearest neighbors algorithm is a classification algorithm which labels its input by assigning it the most common $y$ among the $k$ points in $\mathcal{S}$ which are closest to the input.
+This classifier has no loss function or indeed any parameters other than $k$ and $\mathcal{S}$ itself (i.e.\ it is nonparametric).
+However, all of the methods we will utilize in this thesis follow the recipe of defining a model with parameters $\theta$ which are adjusted by miniimzing the average loss over $\mathcal{S}$.
 
 \subsubsection{Sequential Data}
 
