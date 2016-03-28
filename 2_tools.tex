@@ -72,9 +72,29 @@ For example, the k-nearest neighbors algorithm is a classification algorithm whi
 This classifier has no loss function or indeed any parameters other than $k$ and $\mathcal{S}$ itself (i.e.\ it is nonparametric).
 However, all of the methods we will utilize in this thesis follow the recipe of defining a model with parameters $\theta$ which are adjusted by miniimzing the average loss over $\mathcal{S}$.
 
-\subsubsection{Sequential Data}
+\subsection{Sequential Data}
+
+A common scenario is that the data space $\mathcal{X}$ is fixed-dimensional, e.g.\ $\mathcal{X} \in \mathbb{R}^{D_1 \times D_2 \times \cdots D_N}$.
+However, in some cases, one (or more) dimensions may vary in size.
+An important example of this is sequential data, where a ``temporal'' dimension can differ between examples.
+In addition, for real-world data the temporal dimension often contains strong dependencies and correlations.
+For some examples of common types of data typically represented as sequences, see \cref{fig:example_sequences}.
+
+An illustrative example is text data where each datapoint is a sentence.
+Clearly, the length of each sequence will vary (e.g.\ ``I am happy.'' and ``This sentence is a few words longer.'' differ in length).
+In addition, there may be a strong dependency between a given word in a sentence and the words that precede it.
+For example, ``I am hungry, please give me'' is much more likely to be followed by the word ``food'' than, say, ``dirt''.
+
+Different possible tasks involving sequential data can be broadly divided into three categories: Sequence classification, embedding, and transduction.
+Sequence classification involves applying a single label to entire sequences; for example, classifying which of a finite number of people was speaking in an audio recording of an utterance.
+Sequence embedding involves representing sequences as a single point in a fixed-dimensional space with some desired properties.
+For example, instead of classifying which person was speaking, we might instead embed audio recordings as vectors in a Euclidean space such that recordings of the same speaker have a small embedded distance and recordings of different speakers have a large distance.
+Finally, sequence transduction involves converting an input sequence to a new sequence, potentially of different length and whose elements may lie in a different space.
+Speech recognition is an exemplary case, where a sequence of discrete words must be generated based on an audio recording.
 
 \subsection{Neural Networks}
+
+\subsubsection{Backpropagation}
 
 \subsubsection{Recurrent Networks}
 
