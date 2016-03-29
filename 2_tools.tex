@@ -26,7 +26,7 @@ In the supervised setting, our machine learning algorithm produces a function $f
 \hat{y} = f(x, \theta)
 \end{equation}
 
-Supervised learning requires a training set $\mathcal{S}$ of input-target pairs $(x_1, y_1), (x_2, y_2), \ldots (x_{|S|}, y_{|s|}$, where $x_n \in \mathcal{X}$ and $y_n \in \mathcal{Y}$.
+Supervised learning requires a training set $\mathcal{S}$ of input-target pairs $(x_1, y_1), (x_2, y_2), \ldots (x_{|\mathcal{S}|}, y_{|\mathcal{S}|})$, where $x_n \in \mathcal{X}$ and $y_n \in \mathcal{Y}$.
 We assume that these pairs are drawn from an unknown joint probability distribution $p(x, y)$, of which the only information we explicitly know is the training set $\mathcal{S}$.
 The goal of a supervised learning algorithm is to capture the probability distribution $p(x, y)$ with $f$ by adjusting the parameters $\theta$ based solely on $\mathcal{S}$.
 
@@ -94,7 +94,56 @@ Speech recognition is an exemplary case, where a sequence of discrete words must
 
 \subsection{Neural Networks}
 
+Most of the machine learning algorithms used in this thesis will come from a class of models known as ``neural netorks''.
+Neural networks can be considered learnable functions which consist of a sequence of nonlinear processing stages.
+First proposed in the XXXXs, these models were designed as an artificial model of the way the brain was understood to work at that time.
+The modern understanding of the brain has diverged substantially from this model; nevertheless, the name ``neural network'' has endured.
+
+A predecessor to modern neural network models was the perceptron algorithm.
+The perceptron is a simple linear model which can perform binary classification of its input.
+Given an input feature vector $x \in \mathbb{R}^D$, the perceptron computes
+
+\begin{equation}
+f(x) = \begin{cases}
+1,& w^\top x + b > 0\\
+0,& \mathrm{otherwise}
+\end{cases}
+\end{equation}
+
+where $w \in \mathbb{R}^D$ and $b \in \mathbb{R}$ are the parameters of the model.
+These parameters are adjusted so that the desired label ($1$ or $0$) is produced given different inputs.
+
+The perceptron algorithm can only correctly classify its input when the data which falls into the two classes is linearly separable by class.
+To remedy this, the ``multilayer perceptron'' was proposed, which can be viewed as a sequence of perceptrons organized in ``layers'', each taking its input from the previous perceptron.
+In the multilayer perceptron, each perceptron can output a vector of values rather a single value.
+Furthermore, rather than producing a binary 1 or 0 depending on the sign of $w^\top x + b$, the layers in a multilayer perceptron may use any of a variety of nonlinear functions.
+In summary, a given layer's output is computed as
+\begin{equation}
+f(x) = \sigma(W x + b)
+\end{equation}
+where $\sigma$ is a nonlinear ``activation'' function, $W \in \mathbb{R}^{M \times D}$ is the weight matrix, $b \in \mathbb{R}^M$ is the bias vector, and $M$ is the output dimensionality of the layer.
+The original perceptron is recovered when $\sigma$ is the Heaviside step function and $M = 1$.
+Under this generic definition, multilayer perceptrons are, in fact, equivalent to what are now called feedforward networks; we will use this terminology for the remainder of this thesis.
+
+In a seminal paper, it was shown that feedforward networks with at least two layers are {\em universal function approximators} when the activation function of each layer is a ``squashing'' function (i.e.\ is monotonically increasing, $\lim_{x \rightarrow \infty} \sigma(x) = 1$ and $\lim_{x \rightarrow -\infty} \sigma(x) = 0$).
+This implies that such models can approximate any function to arbitrary precision.
+Similar results were later demonstrated for other classes of activation functions.
+
+Of course, the ability of a model to approximate any function is only valuable when there is a reliable method to adjust its parameters so that the desired function is suitably approximated.
+Currently, the most pervasive method to achieve this is ``backpropagation'', which computes the gradient of an error function which measures the deviation between the network's output and the target output with respect to the model parameters.
+We give a derivation of backpropagation for feedforward networks in the following section.
+In the supervised learning context, the error function computes the deviation between the network's output and the target for input-target pairs in the training set $\mathcal{S}$.
+As a result, for supervised learning, universal approximation only implies that the multilayer feedforward network can ``memorize'' the target output for each input in $\mathcal{S}$, not that it will accurately approximate the data's underlying joint probability distribution $p(x, y)$.
+This is referred to as ``overfitting'', and is an undesirable property of machine learning models.
+
+Despite this issue, feedforward networks have proven to be extremely effective models in a variety of machine learning tasks.
+This success is thanks to a suite of methods and model designs which allow these models to be trained effectively, over potentially very large datasets, while avoiding overfitting.
+It has also led to the development of variants which are more appropriate for sequential data (recurrent networks) and data with local regularities (convolutional networks).
+In the following sections, we give an overview of these different developments and approaches.
+
 \subsubsection{Backpropagation}
+
+\subsection{Tricks}
 
 \subsubsection{Recurrent Networks}
 
