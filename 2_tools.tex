@@ -183,7 +183,7 @@ With this in mind, we can use the chain rule as follows:
 \frac{\partial C}{\partial W_m[i, j]} = \sum_{k = 1}^{N_m} \frac{\partial C}{\partial z_m[k]} \frac{\partial z_m[k]}{\partial W_m[i, j]}
 \label{eq:C_wrt_W_m}
 \end{equation}
-Note that by definition 
+Note that by definition
 \begin{equation}
 z_m[k] = \sum_{l = 1}^{N_m} W_m[k, l] a_{m - 1}[l] + b_m[k]
 \end{equation}
@@ -351,13 +351,79 @@ Collectively, these techniques have been dubbed ``deep learning'' thanks to thei
 In this section, we motivate and describe those techniques which are used in this thesis.
 Practical and broader overviews can be found in \cite{bengio} \cite{lecun} \cite{nature}.
 
-Size and number of layers
-Nonlinearities
-Regularization (weight decay and dropout)
-Data augmentation
-Weight initialization (unsupervised pretraining)
-Input normalization
-Model type
+\paragraph{Number and Size of Layers}
+
+When designing a neural network model, one of the first choices which must be made is the number of layers and their sizes (output dimensionality).
+Because early theory proved that networks with a single layer could approximate any function arbitrarily well given that the layer was sufficiently ``wide'' (high-dimensional) \cite{}, and because networks with many layers can be more difficult to train due to the vanishing and exploding gradients problem \cite{}, early applications of neural networks typically only used a single hidden layer.
+However, recent results have shown that using many layers can help networks learn a hierarchical transformation to more and more abstract representations which, for real-world problems, can be highly beneficial \cite{}.
+Coupled with recent advances in training very deep networks \cite{}, the paradigm of ``deep'' networks (having many layers) has come to dominate.
+
+Regardless of depth, the dimensionality of each intermediate representation (the ``layer sizes'') must be chosen.
+While increasing the dimensionality may increase modeling power, it also exacerbates overfitting and incurs a greater computational cost.
+However, Graphics Processing Units (GPUs) have recently been used to accelerate neural network models thanks to their ability to quickly perform large matrix multiplications.
+As a result, in modern practice high-dimensional layers are used in combination with regularization techniques \cite{}.
+
+\paragraph{Nonlinearities}
+
+A fundamental ingredient of neural networks is the elementwise nonlinearity applied at each layer; without them, the network would only be able to learn linear relationships between its input and output \cite{}.
+Early work typically used sigmoidal nonlinearities such as the logistic or hyperbolic tangent functions (see \cref{tab:nonlinearities}).
+However, these nonlinearities have a very small gradient for much of their domain which can cause vanishing gradient problems particularly for networks with many layers.
+Recently, the rectifier nonlinearity has become the standard for deep networks due to its computational efficiency and tendency to produce sparse representations \cite{}.
+The rectifier nonlinearity has zero gradient for half of its domain, which can hinder training in some cases; as a result a number of variants have recently been proposed which have been shown empirically to produce better results in some cases \cite{}.
+
+\paragraph{Regularization}
+
+Due to their tendency to overfit, some form of regularization is typically necessary to ensure that the optimized neural network's variance is not too high.
+A common regularizer which is used in many machine learning models is to include in the cost function a penalty on the norm of the model's parameters.
+In neural networks, adding the $L^2$ penalty $\lambda \sum_i \theta_i^2$ where $\lambda$ is a hyperparameter and $\theta_i$ are the model's parameters (e.g. individual entries of the weight matrices and bias vectors) is referred to as ``weight decay''.
+This can encourge the weight matrix of a given layer from focusing too heavily (via a very large weight value) on a single dimension of its input.
+A related term is $\lambda \sum_i |\theta_i|$ which effectively encourages parameter values to be zero.
+
+A completely different regularization method which has recently proven popular in neural networks is ``dropout'' \cite{}.
+In dropout, at each training iteration each dimension of each layer is randomly set to zero with probability $p$.
+After training, the weights in each layer are scaled by $1/p$.
+Dropout intends to prevent the dimensions of the output of a given layer from being too heavily dependent (correlated) with one of the inputs by randomly artificially removing connections.
+More simply, it provides a source of noise which prevents memorization of correspondences in the training set and has repeatedly been shown empirically to be an effective regularizer.
+
+In practice, the technique of ``early stopping'' is almost always used to avoid overfitting in neural network models.
+To utilize early stopping, during training the performance on a held-out ``validation set'' (over which the parameters of the network are not optimized) is computed.
+Overfitting is indicated by performance degrading on the validation set, which simulates real-world performance.
+As a result, early stopping effectively prevents overfitting by simply stopping training once the performance begins to degrade.
+The measure of performance and criteria for stopping my vary widely from task to task (and practitioner to practitioner) but the straightforwardness and effectiveness of this approach has led it to be nearly universally applied.
+
+Of course, regularization can be rendered unnecessary when a huge amount of training data is available.
+This is commonly simulated by applying hand-designed realistic deformations to the training data, which is referred to as ``data augmentation''.
+For example, applying elastic distortions to images can allow simple, unregularized neural network models to match the performance of more complex architectures \cite{}.
+Data augmentation has also been explored in the domain of audio and music signals \cite{}.
+
+\paragraph{Parameter Initialization}
+
+Because the objective functions used for training neural networks tend to be highly nonconvex, the way parameters are initialized prior to training can have a substantial effect on the solutions found after optimization.
+In fact, the recent sucess of neural network models was prompted by a new method for setting parameter values prior to supervised training called ``unsupervised pretraining''.
+Unsupervised pretraining starts by training an unsupervised model (e.g.\ a Restricted Boltzmann Machine \cite{} or an autoencoder \cite{}) and then using the parameters from that model to initialize a supervised model.
+Ideally, the unsupervised model will take care of disentangling factors of variation and producing a more efficient representation of the input space.
+After initialization with values from the unsupervised model, training of the model proceeds in the normal supervised fashion.
+This can greatly accelerate learning, and is of particular use when there is a great deal more unlabeled data available than labeled data.
+
+It has more recently been shown that unsupervised pretraining can be skipped (provided that there is a sufficient amount of labeled data) by carefully initializing the network's parameters.
+This typically involves sampling the values of the weight matrices from zero-mean Gaussian distributions whose variances are set so that the representation at each layer's output has unit variance.
+The actual variances used for the random variables depends on the input and output dimensionality as well as the nonlinearity; \cite{} provides a derivation for linear networks, \cite{} for rectifier networks and \cite{} gives a generic empirical procedure for any network architecture.
+An alternative is to use orthogonal matrices \cite{} or to use a sparse initialization so that a fixed number of output dimensions are non-zero \cite{}.
+
+
+\paragraph{Input Normalization}
+
+Most of the analysis performed on neural networks in order to determine how to facilitate training rely on the assumption that the feature dimensions of the input to the network have zero mean and unit variance.
+A necessary step in order to take advantage of many of these tricks is then to standardize the feature dimensions of the input, typically using statistics computed on the training set.
+An alternative which can also facilitate convergence is to whiten data using Pricipal Component Analysis before presenting it to the network.
+
+\paragraph{Model Architecture}
+
+Beyond the simple feedforward network model we have focused on thus far, a variety of more specialized models have been proposed which intend to exploit different types of structure present in real-world data.
+For example, presenting sequential data one step at a time to a feedforward network assumes temporal independence, which is invalid for most real-world temporal data.
+Other types of data, such as images, exhibit local dependencies in their dimensions which are invariant to translation.
+Modeling this type of structure can be greatly facilitated by the important choice of model architecture.
+We give an overview of the two most relevant architectures for sequential data, recurrent and convolutional networks, in the next two sections.
 
 \subsubsection{Recurrent Networks}
 
