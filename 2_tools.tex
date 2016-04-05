@@ -264,6 +264,7 @@ For other layers, we again invoke the chain rule:
 where the last simplification was made because by convention $\partial C/\partial z_{m + 1}$ is a column vector, allowing us to write the following vector form:
 \begin{align}
 \frac{\partial C}{\partial z_m} = \left(W_{m + 1}^\top \frac{\partial C}{\partial z_{m + 1}}\right) \circ \frac{\partial a_m}{\partial z_m}
+\label{eq:C_wrt_z_m}
 \end{align}
 where $\circ$ is the element-wise (Hadamard) product.
 
@@ -315,7 +316,7 @@ whose terms are all known a priori, then recursively compute
 \end{equation}
 and use the resulting values to compute
 \begin{equation}
-\frac{\partial C}{\partial W_m} = \frac{\partial C}{\partial z_{m_i}} a_{m - 1}^\top
+\frac{\partial C}{\partial W_m} = \frac{\partial C}{\partial z_m} a_{m - 1}^\top
 \end{equation}
 and
 \begin{equation}
@@ -328,11 +329,35 @@ A simple alternative would be to measure the change in $C$ by adjusting each of 
 However, this would require a separate forward pass for each parameter.
 Modern neural networks contain millions of parameters, so clearly backpropagation is an efficient choice.
 
-
 \subsubsection{Tricks}
 
-Non-convex - depends on init and optimization
-Overfitting
+Combined with a gradient descent technique, backpropagation provides an effective method for optimizing the parameters of a neural network (``training'') to minimize a given loss function.
+However, training neural networks is made difficult in practice by a variety of factors.
+First, the composition of the many nonlinear processing layers in a neural network make the resulting loss function highly non-convex.
+Nonconvexity means that, when minimizing the network's loss function with gradient descent methods, there is no guarantee that a given stationary point is a global minimum.
+It also implies that both the way the parameters are initialized prior to optimization and the gradient descent technique used may have a very strong effect on the best solution found during optimization.
+
+As mentioned above, the universal approximation property of neural networks can also have negative implications for their utility.
+The fact that a possible outcome of training a neural network is the simple memorization of correspondences in the training set means that the resulting model may be of little use in practice.
+As a result, in many cases it is necessary to regularize the network to prevent it from overfitting to the training set.
+
+Finally, feedforward networks with many layers are also prone to the problem of ``vanishing and exploding gradients''.
+This issue is caused by the fact that as gradients are backpropagated through layers, they are multiplied by each successive weight matrix and the derivative of each nonlinearity (as shown in \cref{eq:C_wrt_z_m}).
+When the spectral norm of the weight matrices and/or the gradients of the nonlinearities are substantially greater than or less than one, the resulting backpropagated gradients can become exponentially smaller or larger as they approach ``early'' layers in the network.
+This can effectively prevent the parameters of the first few layers from being adjusted, which can greatly inhibit learning.
+
+Fortunately, there has been a great deal of development into methods for mitigating these issues.
+Collectively, these techniques have been dubbed ``deep learning'' thanks to their applicability to networks with many layers.
+In this section, we motivate and describe those techniques which are used in this thesis.
+Practical and broader overviews can be found in \cite{bengio} \cite{lecun} \cite{nature}.
+
+Size and number of layers
+Nonlinearities
+Regularization (weight decay and dropout)
+Data augmentation
+Weight initialization (unsupervised pretraining)
+Input normalization
+Model type
 
 \subsubsection{Recurrent Networks}
 
