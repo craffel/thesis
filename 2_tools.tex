@@ -427,7 +427,7 @@ We give an overview of the two most relevant architectures for sequential data, 
 
 \subsubsection{Recurrent Networks}
 
-A natural extension to the feedforward network are {\em recurrent} connections, which feed the output of the model back into its input.
+A natural extension to feedforward networks are {\em recurrent} connections, which feed the output of the model back into its input.
 The resulting model can be considered a learnable function which at each time step produces an output based on its current input and previous output.
 This class of models, called a recurrent networks, are well-suited for sequential data due to their ability to model temporal dependencies.
 
@@ -439,6 +439,56 @@ However, these approaches don't {\em solve} the problem of vanishing and explodi
 Because the representations used for audio data are typically at least thousands of time steps in length, we will not use recurrent networks in this thesis, although we will use them as a point of comparison and motivation in some places.
 
 \subsubsection{Convolutional Networks}
+
+For many types of data (represented as multi-dimensional arrays), one or more of the axes may have an explicit ordering.
+Most relevant to this thesis is sequential data, which always has a temporal axis.
+Traversing this axis corresponds to the passing of time; if one event occurred before another, it will appear first.
+Similarly, images have ``width'' and ``height'' axes, which correspond to left-right and top-bottom traversal.
+In many cases, the correlations on these axes are highly localized.
+For example, in a text document the probability that a given word appears in a certain place depends much more strongly on the words appearing around it than it does on words which appeared hundreds of words ago.
+
+The ``fully-connected'' feedforward networks we have discussed so far cause the output of each layer to depend on each dimension of the layer's input due to the fact that the weight matrix has an entry which connects each input dimension to each output dimension.
+This ignores the structure of data with an ordered axis and may be inefficient when most of the dependencies are local.
+The {\em convolutional network} architecture is formulated specifically to take advantage of this common structure.
+As their name suggests, rather than utilizing an affine transformation using a fully-connected matrix, layers in these models convolve small filter ``kernels'' across their input.
+Networks with this structure were first proposed by Fukushima \cite{} and training them with backpropagation was popularized by LeCun et.\ al \cite{}.
+Recently, convolutional networks have provided breakthroughs in a variety of domains, including image classification \cite{}, speech recognition \cite{}, music information retrieval \cite{}, and natural language processing \cite{}.
+
+In the two-dimensional case (as used in this thesis), a convolutional layer takes as input $x \in \mathbb{R}^{M \times I_x \times I_y}$ and outputs $y \in \mathbb{R}^{N \times J_x \times J_y}$ by computing
+\begin{equation}
+        y[n, j_x, j_y] = \sigma\left(\sum_{m = 1}^M \sum_{k_x = 1}^{K_x} \sum_{k_y = 1}^{K_y} w[n, m, k_x, k_y] x[m, j_x + k_x, j_y + k_y] + b[n]\right)
+\label{eq:convolution}
+\end{equation}
+where $w \in \mathbb{R}^{N \times M \times K_x \times K_y}$ are the layer's filters (also referred to as kernels), $\sigma$ is a nonlinearity, and $b \in \mathbb{R}^N$ are the layer's biases.
+The first dimension of $x$ and $y$ is referred to as the ``channels'' and can be considered different views or representations of the data (e.g.\ R, G, and B channels in images or left and right channels in a stereo audio recording).
+The remaining dimensions are feature dimensions each of which has an inherent ordering, which is exploited by the translation inherent in the convolution operation.
+The exact form of \cref{eq:convolution} depends on a variety of design choices, such as the convolution's stride, whether the convolution is zero-centered, whether biases are shared across input channels, whether a correlation or convolution is computed, and whether the input will be zero-padded.
+We forgo a complete enumeration of these differences here and instead refer to \cite{}, which provides a thorough discussion of the arithmetic involved in convolutional networks.
+
+From this definition, we can observe a number of beneficial properties of using convolutional networks.
+First, the number of parameters per layer is potentially dramatically decreased: Following the common practice of ``flattening'' dimensions, a fully-connected layer with the same input and output dimensionality would have a weight matrix of shape $NJ_xJ_y \times I_xI_y$, compared with $N \times M \times K_x \times K_y$ with $K_x < J_x \le I_x$ and $K_y < J_y \le I_x$.
+This is commonly referred to as ``parameter sharing'', because the same set of weights are applied at different locations in the input rather than using a unique weight for each position.
+This property also gives the convolutional layer translational invariance, i.e.\ the ability to detect a certain pattern regardless of where it appears in the image.
+A final advantage to using a convolution operation is that the layer can naturally handle inputs whose feature dimensions vary in size - the kernels simply slide over the input regardless of its shape.
+This makes convolutional networks well-suited for sequential data whose length varies.
+
+An additional ingredient commonly found in convolutional networks are {\em pooling} layers, which provide additional translational invariance by aggregating their input over small regions.
+The most common pooling layer, and the only one used in this thesis, is the max-pooling layer, which outputs the maximum value within each input region.
+Given input $x \in \mathbb{R}^{M \times I_x \times I_y}$, a max-pooling layer with stride $p$ produces $y \in \mathbb{R}^{M \times \frac{I_x}{p} \times \frac{I_y}{p}}$ by
+\begin{equation}
+y[m, j_x, j_y] = \max(x[m, j_x:j_x + p, j_y:j_y + p])
+\end{equation}
+for $j_x \in 1, \ldots, \frac{I_x}{p}$ and $j_y \in 1, \ldots, \frac{I_y}{p}$.
+The value of $p = 2$ is almost uniformly used.
+The max-pooling layer can thus be seen as indicating whether a given feature is present or absent over a region of the input.
+Because pooling layers effectively downsample their input, they can be used to increase the ``receptive field'' (region of the input effecting a single dimension of the output) of layers in networks consisting of many convolutional and pooling layers.
+
+Finally, in convolutional networks it is common for the last few layers to be standard fully-connected layers.
+This gives the output of the network access to the entire input region.
+In this framework, the series of convolutional and pooling layers transform and downsample the input, providing appropriate invariances and often learning a hierarchy of higher and higher-level representations \cite{}.
+In domains where none of the dimensions of the input vary from sample to sample, all of the channels and dimensions at the output of the convolutional portion of the network are flattened prior to being passed to the fully-connected layers.
+When one or more dimensions are variable in size, only the fixed-size dimensions are processed by the fully-connected layers.
+For example, in sequences where the sequence length varies, the output of the convolutional layersfor each time step are passed to the fully-connected layers independently.
 
 \subsubsection{Attention}
 
