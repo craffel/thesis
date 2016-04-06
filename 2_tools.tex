@@ -427,6 +427,17 @@ We give an overview of the two most relevant architectures for sequential data, 
 
 \subsubsection{Recurrent Networks}
 
+A natural extension to the feedforward network are {\em recurrent} connections, which feed the output of the model back into its input.
+The resulting model can be considered a learnable function which at each time step produces an output based on its current input and previous output.
+This class of models, called a recurrent networks, are well-suited for sequential data due to their ability to model temporal dependencies.
+
+Training of recurrent networks is typically accomplished using ``backpropagation through time'' (BPTT) \cite{}.
+BPTT is a simple extension of backpropagation where, given a sequence of length $T$, the recurrent network is ``unrolled'' over time and is treated as a feedforward network with $T$ layers, each of which corresponds to a single time step.
+While BPTT provides a straightforward way to train recurrent networks, this approach can suffer dramatically from vanishing and exploding gradients for large values of $T$ for the same reasons that networks with many layers do \cite{}.
+The use of gating architectures \cite{hochreiter1997long,cho2014learning}, sophisticated optimization techniques \cite{martens2011learning,sutskever2013importance}, gradient clipping \cite{pascanu2012difficulty,graves2013generating}, and/or careful initialization \cite{sutskever2013importance,jaegar2012long,mikolov2014learning,le2015simple} can help mitigate this issue and has facilitated the success of RNNs in a variety of fields (see e.g.\ \cite{graves2012supervised} for an overview).
+However, these approaches don't {\em solve} the problem of vanishing and exploding gradients for recurrent networks, and as a result these models are in practice typically only applied in tasks where sequential dependencies span at most hundreds of time steps \cite{martens2011learning,sutskever2013importance,le2015simple,hochreiter1997long,krueger2015regularizing,arjovsky2015unitary}.
+Because the representations used for audio data are typically at least thousands of time steps in length, we will not use recurrent networks in this thesis, although we will use them as a point of comparison and motivation in some places.
+
 \subsubsection{Convolutional Networks}
 
 \subsubsection{Attention}
