@@ -34,7 +34,7 @@ One way to formulate this goal is to state that for a sample from $p(x, y)$ whic
 Of course, because we are only given the samples in $\mathcal{S}$, the parameters $\theta$ must be optimized solely according the training pairs in $\mathcal{S}$.
 This approach, where $f$ is used directly to produce the predicted value for $y$, is referred to as discriminant training.
 An alternative approach, called probabilistic training, is to use $f$ to model $p(x, y)$ by estimating $p(y | x)$ and then choosing the most probable $y$.
-In either case, choosing $f$ typically involves using a task-specific ``loss function'' $L$ which computes a nonnegative scalar value which measures the extent to which $\hat{y}$ agress with $y$.
+In either case, choosing $f$ typically involves using a task-specific ``loss function'' $\mathcal{L}$ which computes a nonnegative scalar value which measures the extent to which $\hat{y}$ agress with $y$.
 Ideally, minimizing this loss over the training set by adjusting $\theta$ will yield an $f$ which closely approximates $p(x, y)$.
 
 The choice of a loss function will depend on the characteristics of the problem, in particular the target space $\mathcal{Y}$.
@@ -42,7 +42,7 @@ For example, in {\em classification} problems, the targets $y$ may take one of $
 A natural loss function in this case is the zero-one loss
 
 \begin{equation}
-L(y, \hat{y}) = \begin{cases}
+\mathcal{L}(y, \hat{y}) = \begin{cases}
 1,& \hat{y} = y\\
 0,& \hat{y} \ne y
 \end{cases}
@@ -51,21 +51,21 @@ L(y, \hat{y}) = \begin{cases}
 In {\em regression} problems, the targets are continuously valued, and a common loss function is the squared error
 
 \begin{equation}
-L(y, \hat{y}) = (y - \hat{y})^2
+\mathcal{L}(y, \hat{y}) = (y - \hat{y})^2
 \end{equation}
 
-Note that in both cases when $y = \hat{y}$, $L = 0$; this is a common property of loss functions.
+Note that in both cases when $y = \hat{y}$, $\mathcal{L} = 0$; this is a common property of loss functions.
 
 In general, a suitable goal for training an unsupervised learning algorithm is to adjust $\theta$ to minimize the average loss over the training set:
 
 \begin{equation}
-\frac{1}{|\mathcal{S}|} \sum_{(x, y) \in \mathcal{S}} L(y, f(x, \theta))
+\frac{1}{|\mathcal{S}|} \sum_{(x, y) \in \mathcal{S}} \mathcal{L}(y, f(x, \theta))
 \end{equation}
 
 Minimizing this average loss is equivalent to minimizing the empirical risk of $f$.
-A common paradigm is to compute the derivative of the loss function $L$ with respect to the model parameters $\theta$ and use this derivative information to incrementally change $\theta$ to make $L$ smaller.
+A common paradigm is to compute the derivative of the loss function $\mathcal{L}$ with respect to the model parameters $\theta$ and use this derivative information to incrementally change $\theta$ to make $\mathcal{L}$ smaller.
 In this case, it is beneficial to have a loss function which is continuous and smooth, which precludes the use of loss functions like the zero-one loss.
-A common solution to this problem is to use a surrogate loss function which has the desired properties (e.g.\ smoothness) and whose minimization will also minimize $L$.
+A common solution to this problem is to use a surrogate loss function which has the desired properties (e.g.\ smoothness) and whose minimization will also minimize $\mathcal{L}$.
 
 There are supervised learning methods which do not follow the above framework.
 For example, the k-nearest neighbors algorithm is a classification algorithm which labels its input by assigning it the most common $y$ among the $k$ points in $\mathcal{S}$ which are closest to the input.
@@ -154,14 +154,14 @@ Because it is fundamental in many of the approaches proposed in this thesis, we 
 A similar, higher-level and more verbose derivation can be found at \cite{}.
 
 By way of review, the chain rule is a way to compute the derivative of a function whose variables are themselves functions of other variables.
-If $L$ is a scalar-valued function of a scalar $z$ and $z$ is itself a scalar-valued function of another scalar variable $w$, then the chain rule states that
+If $\mathcal{L}$ is a scalar-valued function of a scalar $z$ and $z$ is itself a scalar-valued function of another scalar variable $w$, then the chain rule states that
 \begin{equation}
-\frac{\partial C}{\partial w} = \frac{\partial C}{\partial z}\frac{\partial z}{\partial w}
+\frac{\partial \mathcal{L}}{\partial w} = \frac{\partial \mathcal{L}}{\partial z}\frac{\partial z}{\partial w}
 \end{equation}
 For scalar-valued functions of more than one variable (e.g.\ a scalar-valued function of a vector), the chain rule essentially becomes additive.
 In other words, if $L$ is a scalar-valued function of a vector $z \in \mathbb{R}^N$, whose dimensions are each a function of some variable $w$, the chain rule states that
 \begin{equation}
-\frac{\partial C}{\partial w} = \sum_{i = 1}^N \frac{\partial C}{\partial z[i]}\frac{\partial z[i]}{\partial w}
+\frac{\partial \mathcal{L}}{\partial w} = \sum_{i = 1}^N \frac{\partial \mathcal{L}}{\partial z[i]}\frac{\partial z[i]}{\partial w}
 \end{equation}
 
 In the following, we'll discuss backpropagation through an $L$-layer feedforward network, where $N_n$ is dimensionality of layer $n \in \{0, \ldots, L\}$.
@@ -172,16 +172,16 @@ Each layer computes $z_m \in \mathbb{R}^{N_m}$, a linear mix of its inputs, by $
 $a_L$ is the output of the network.
 We define the special case $a_0$ as the input of the network.
 We denote $y \in \mathbb{R}^{N_L}$ as the target output, treated as a constant.
-The loss or ``cost'' function $C(a_L, y)$ is used to measure the error of the network's output compared to the target.
+The loss function $\mathcal{L}(a_L, y)$ is used to measure the error of the network's output compared to the target.
 
-In order to train the network using a gradient descent algorithm, we need to know the gradient of each of the parameters with respect to the cost/error function $C$; that is, we need to know $\partial C/\partial W_m$ and $\partial C/\partial b_m$.
-It will be sufficient to derive an expression for these gradients in terms of the following terms, which we can compute based on the neural network's architecture: $\partial C/\partial a_L$, the derivative of the cost function with respect to the output of the network, and $\partial a_m/\partial z_m$, the derivative of the nonlinearity used in layer $m$ with respect to its argument $z_m$.
+In order to train the network using a gradient descent algorithm, we need to know the gradient of each of the parameters with respect to the loss function $\mathcal{L}$; that is, we need to know $\partial \mathcal{L}/\partial W_m$ and $\partial \mathcal{L}/\partial b_m$.
+It will be sufficient to derive an expression for these gradients in terms of the following terms, which we can compute based on the neural network's architecture: $\partial \mathcal{L}/\partial a_L$, the derivative of the loss function with respect to the output of the network, and $\partial a_m/\partial z_m$, the derivative of the nonlinearity used in layer $m$ with respect to its argument $z_m$.
 
-To compute the gradient of our cost function $C$ with respect to $W_m[i, j]$ (a single entry in the weight matrix of the layer $m$), we can first note that $C$ is a function of $a_L$, which is itself a function of the linear mix output entries $z_m[k]$, which are themselves functions of the weight matrices $W_m$ and biases $b_m$.
+To compute the gradient of our loss function $\mathcal{L}$ with respect to $W_m[i, j]$ (a single entry in the weight matrix of the layer $m$), we can first note that $\mathcal{L}$ is a function of $a_L$, which is itself a function of the linear mix output entries $z_m[k]$, which are themselves functions of the weight matrices $W_m$ and biases $b_m$.
 With this in mind, we can use the chain rule as follows:
 \begin{equation}
-\frac{\partial C}{\partial W_m[i, j]} = \sum_{k = 1}^{N_m} \frac{\partial C}{\partial z_m[k]} \frac{\partial z_m[k]}{\partial W_m[i, j]}
-\label{eq:C_wrt_W_m}
+\frac{\partial \mathcal{L}}{\partial W_m[i, j]} = \sum_{k = 1}^{N_m} \frac{\partial \mathcal{L}}{\partial z_m[k]} \frac{\partial z_m[k]}{\partial W_m[i, j]}
+\label{eq:L_wrt_W_m}
 \end{equation}
 Note that by definition
 \begin{equation}
@@ -199,19 +199,19 @@ a_{m - 1}[j] & k = i
 \label{eq:z_m_wrt_W_m}
 \end{align}
 
-Combining \cref{eq:z_m_wrt_W_m} with \cref{eq:C_wrt_W_m} causes the summation to collapse, giving
+Combining \cref{eq:z_m_wrt_W_m} with \cref{eq:L_wrt_W_m} causes the summation to collapse, giving
 \begin{equation}
-        \frac{\partial C}{\partial W_m[i, j]} = \frac{\partial C}{\partial z_m[i]} a_{m - 1}[j]
+\frac{\partial \mathcal{L}}{\partial W_m[i, j]} = \frac{\partial \mathcal{L}}{\partial z_m[i]} a_{m - 1}[j]
 \end{equation}
 or in vector form
 \begin{equation}
-        \frac{\partial C}{\partial W_m} = \frac{\partial C}{\partial z_m} a_{m - 1}^\top
+\frac{\partial \mathcal{L}}{\partial W_m} = \frac{\partial \mathcal{L}}{\partial z_m} a_{m - 1}^\top
 \end{equation}
 
 Similarly for the bias variables $b_m$, we have
 \begin{equation}
-\frac{\partial C}{\partial b_m[i]} = \sum_{k = 1}^{N_m} \frac{\partial C}{\partial z_m[k]} \frac{\partial z_m[k]}{\partial b_m[i]}
-\label{eq:C_wrt_b_m}
+\frac{\partial \mathcal{L}}{\partial b_m[i]} = \sum_{k = 1}^{N_m} \frac{\partial \mathcal{L}}{\partial z_m[k]} \frac{\partial z_m[k]}{\partial b_m[i]}
+\label{eq:L_wrt_b_m}
 \end{equation}
 
 As above, it follows that $\partial z_m[k]/\partial b_m[i]$ will evaluate to zero when $k \ne i$ because $z_m[k]$ does not interact with any element in $b_m$ except $b_m[k]$.  When $k = i$, we have
@@ -226,53 +226,53 @@ As above, it follows that $\partial z_m[k]/\partial b_m[i]$ will evaluate to zer
 \label{eq:z_m_wrt_b_m}
 \end{align}
 
-Combining \cref{eq:z_m_wrt_b_m} and \cref{eq:C_wrt_b_m} again causes the summation to collapse to give
+Combining \cref{eq:z_m_wrt_b_m} and \cref{eq:L_wrt_b_m} again causes the summation to collapse to give
 \begin{equation}
-\frac{\partial C}{\partial b_m[i]} = \frac{\partial C}{\partial z_m[i]}
+\frac{\partial \mathcal{L}}{\partial b_m[i]} = \frac{\partial \mathcal{L}}{\partial z_m[i]}
 \end{equation}
 
 or in vector form
 \begin{equation}
-\frac{\partial C}{\partial b_m} = \frac{\partial C}{\partial z_m}
+\frac{\partial \mathcal{L}}{\partial b_m} = \frac{\partial \mathcal{L}}{\partial z_m}
 \end{equation}
 
-Now, we must compute $\partial C/\partial z_m[k]$.
+Now, we must compute $\partial \mathcal{L}/\partial z_m[k]$.
 For the final layer ($m = L$), this term is straightforward to compute using the chain rule:
 
-$$
-\frac{\partial C}{\partial z_L[k]} = \frac{\partial C}{\partial a_L[k]} \frac{\partial a_L[k]}{\partial z_L[k]}
-$$
+\begin{equation}
+        \frac{\partial \mathcal{L}}{\partial z_L[k]} = \frac{\partial \mathcal{L}}{\partial a_L[k]} \frac{\partial a_L[k]}{\partial z_L[k]}
+\end{equation}
 
 or, in vector form
 
-$$
-\frac{\partial C}{\partial z_L} = \frac{\partial C}{\partial a_L} \frac{\partial a_L}{\partial z_L}
-$$
+\begin{equation}
+        \frac{\partial \mathcal{L}}{\partial z_L} = \frac{\partial \mathcal{L}}{\partial a_L} \frac{\partial a_L}{\partial z_L}
+\end{equation}
 
-The first term $\partial C/\partial a_L$ is just the derivative of the cost function with respect to its argument, whose form depends on the cost function chosen.
+The first term $\partial \mathcal{L}/\partial a_L$ is just the derivative of the loss function with respect to its argument, whose form depends on the loss function chosen.
 Similarly, $\partial a_m/\partial z_m$ (for any layer $m$ includling $L$) is the derivative of layer $m$'s nonlinearity with respect to its argument and will depend on the choice of nonlinearity.
 For other layers, we again invoke the chain rule:
 
 \begin{align}
-        \frac{\partial C}{\partial z_m[k]} &= \frac{\partial C}{\partial a_m[k]} \frac{\partial a_m[k]}{\partial z_m[k]}\\
-                                           &= \left(\sum_{l = 1}^{N_{m + 1}}\frac{\partial C}{\partial z_{m + 1}[l]}\frac{\partial z_{m + 1}[l]}{\partial a_m[k]}\right)\frac{\partial a_m[k]}{\partial z_m[k]}\\
-                                           &= \left(\sum_{l = 1}^{N_{m + 1}}\frac{\partial C}{\partial z_{m + 1}[l]}\frac{\partial}{\partial a_m[k]} \left(\sum_{h = 1}^{N_m} W_{m + 1}[l, h] a_m[h] + b_{m + 1}[l]\right)\right) \frac{\partial a_m[k]}{\partial z_m[k]}\\
-                                           &= \left(\sum_{l = 1}^{N_{m + 1}}\frac{\partial C}{\partial z_{m + 1}[l]} W_{m + 1}[l, k]\right) \frac{\partial a_m[k]}{\partial z_m[k]}\\
-                                           &= \left(\sum_{l = 1}^{N_{m + 1}}W_{m + 1}^\top[k, l] \frac{\partial C}{\partial z_{m + 1}[l]}\right) \frac{\partial a_m[k]}{\partial z_m[k]}\\
+        \frac{\partial \mathcal{L}}{\partial z_m[k]} &= \frac{\partial \mathcal{L}}{\partial a_m[k]} \frac{\partial a_m[k]}{\partial z_m[k]}\\
+                                                     &= \left(\sum_{l = 1}^{N_{m + 1}}\frac{\partial \mathcal{L}}{\partial z_{m + 1}[l]}\frac{\partial z_{m + 1}[l]}{\partial a_m[k]}\right)\frac{\partial a_m[k]}{\partial z_m[k]}\\
+                                                     &= \left(\sum_{l = 1}^{N_{m + 1}}\frac{\partial \mathcal{L}}{\partial z_{m + 1}[l]}\frac{\partial}{\partial a_m[k]} \left(\sum_{h = 1}^{N_m} W_{m + 1}[l, h] a_m[h] + b_{m + 1}[l]\right)\right) \frac{\partial a_m[k]}{\partial z_m[k]}\\
+                                                     &= \left(\sum_{l = 1}^{N_{m + 1}}\frac{\partial \mathcal{L}}{\partial z_{m + 1}[l]} W_{m + 1}[l, k]\right) \frac{\partial a_m[k]}{\partial z_m[k]}\\
+                                                     &= \left(\sum_{l = 1}^{N_{m + 1}}W_{m + 1}^\top[k, l] \frac{\partial \mathcal{L}}{\partial z_{m + 1}[l]}\right) \frac{\partial a_m[k]}{\partial z_m[k]}\\
 \end{align}
 
-where the last simplification was made because by convention $\partial C/\partial z_{m + 1}$ is a column vector, allowing us to write the following vector form:
+where the last simplification was made because by convention $\partial \mathcal{L}/\partial z_{m + 1}$ is a column vector, allowing us to write the following vector form:
 \begin{align}
-\frac{\partial C}{\partial z_m} = \left(W_{m + 1}^\top \frac{\partial C}{\partial z_{m + 1}}\right) \circ \frac{\partial a_m}{\partial z_m}
-\label{eq:C_wrt_z_m}
+        \frac{\partial \mathcal{L}}{\partial z_m} = \left(W_{m + 1}^\top \frac{\partial \mathcal{L}}{\partial z_{m + 1}}\right) \circ \frac{\partial a_m}{\partial z_m}
+\label{eq:L_wrt_z_m}
 \end{align}
 where $\circ$ is the element-wise (Hadamard) product.
 
-We now have the ingredients to efficiently compute the gradient of the cost function with respect to the network's parameters: First, we compute $\partial C/\partial z_L$ based on the choice of cost function and $\partial a_m/\partial z_m$ based on each layer's nonlinearity.
-Then, we recursively can compute $\partial C/\partial z_m$ layer-by-layer based on the term $\partial C/\partial z_{m + 1}$ computed from the previous layer (this is called the ``backward pass'').
-Finally, the resulting $\partial C/\partial z_m$ terms are then used to compute $\partial C/\partial W_m$ and $\partial C/\partial b_m$ using \cref{eq:C_wrt_W_m} and \cref{eq:C_wrt_b_m} respectively.
-Using this recipe requires $\partial C/\partial z_L$ and $\partial a_m/\partial z_m$ to be known ahead of time.
-By way of example, \cref{tab:nonlinearities} and \cref{tab:cost_functions} list some common cost functions and nonlinearities and their appropriate derivatives.
+We now have the ingredients to efficiently compute the gradient of the loss function with respect to the network's parameters: First, we compute $\partial \mathcal{L}/\partial z_L$ based on the choice of loss function and $\partial a_m/\partial z_m$ based on each layer's nonlinearity.
+Then, we recursively can compute $\partial \mathcal{L}/\partial z_m$ layer-by-layer based on the term $\partial \mathcal{L}/\partial z_{m + 1}$ computed from the previous layer (this is called the ``backward pass'').
+Finally, the resulting $\partial \mathcal{L}/\partial z_m$ terms are then used to compute $\partial \mathcal{L}/\partial W_m$ and $\partial \mathcal{L}/\partial b_m$ using \cref{eq:L_wrt_W_m} and \cref{eq:L_wrt_b_m} respectively.
+Using this recipe requires $\partial \mathcal{L}/\partial z_L$ and $\partial a_m/\partial z_m$ to be known ahead of time.
+By way of example, \cref{tab:nonlinearities} and \cref{tab:loss_functions} list some common loss functions and nonlinearities and their appropriate derivatives.
 
 \begin{table}
 \begin{center}
@@ -294,38 +294,38 @@ By way of example, \cref{tab:nonlinearities} and \cref{tab:cost_functions} list 
 \begin{center}
 \begin{tabular}{lll}
   \toprule
-  Cost Function & $C(a_L, y)$                           & $\frac{\partial C}{\partial a^L}$ \\
+  Loss Function & $\mathcal{L}(a_L, y)$                           & $\frac{\partial \mathcal{L}}{\partial a^L}$ \\
   \midrule
   Squared Error & $\dfrac{1}{2}(y - a^L)^\top(y - a^L)$ & $y - a^L$                         \\
   Cross-Entropy & $(y - 1)\log(1 - a^L) - y\log(a^L)$   & $\dfrac{a^L - y}{a^L(1 - a^L)}$   \\
   \bottomrule
 \end{tabular}
 \end{center}
-\caption[Common cost functions used in neural networks]{Common cost (loss) functions $C(a_L, y)$ used in neural networks and their derivatives with respect to their input $a_L$.}
-  \label{tab:cost_functions}
+\caption[Common loss functions used in neural networks]{Common loss (loss) functions $\mathcal{L}(a_L, y)$ used in neural networks and their derivatives with respect to their input $a_L$.}
+  \label{tab:loss_functions}
 \end{table}
 
 In summary, backpropagation proceeds in the following manner for each training sample: For the ``forward pass'', given the network input $a_0$, compute $a_m$ for $m \in \{1, \ldots, L\}$ recursively by $a_m = \sigma_m(W_m a_{m - 1} + b_m)$.
 For the ''backward pass'', compute
 \begin{equation}
-\frac{\partial C}{\partial z_L} = \frac{\partial C}{\partial a_L} \frac{\partial a_L}{\partial z_L}
+\frac{\partial \mathcal{L}}{\partial z_L} = \frac{\partial \mathcal{L}}{\partial a_L} \frac{\partial a_L}{\partial z_L}
 \end{equation}
 whose terms are all known a priori, then recursively compute
 \begin{equation}
-\frac{\partial C}{\partial z_m} = \left(W_{m + 1}^\top \frac{\partial C}{\partial z_{m + 1}}\right) \circ \frac{\partial a_m}{\partial z_m}
+        \frac{\partial \mathcal{L}}{\partial z_m} = \left(W_{m + 1}^\top \frac{\partial \mathcal{L}}{\partial z_{m + 1}}\right) \circ \frac{\partial a_m}{\partial z_m}
 \end{equation}
 and use the resulting values to compute
 \begin{equation}
-\frac{\partial C}{\partial W_m} = \frac{\partial C}{\partial z_m} a_{m - 1}^\top
+        \frac{\partial \mathcal{L}}{\partial W_m} = \frac{\partial \mathcal{L}}{\partial z_m} a_{m - 1}^\top
 \end{equation}
 and
 \begin{equation}
-\frac{\partial C}{\partial b_m} = \frac{\partial C}{\partial z_m}
+        \frac{\partial \mathcal{L}}{\partial b_m} = \frac{\partial \mathcal{L}}{\partial z_m}
 \end{equation}
 
 From this procedure, we can see why backpropagation is an efficient way to compute these partial derivatives: By reusing terms, all of the partial derivatives can be computed by a single forward and backward pass.
-For a feedforward network, the computational cost of each of these passes is effectively $L$ matrix multiplications.
-A simple alternative would be to measure the change in $C$ by adjusting each of the parameters (i.e.\ individual elements of the weight matrices and bias vectors) by a small amount.
+For a feedforward network, the computational loss of each of these passes is effectively $L$ matrix multiplications.
+A simple alternative would be to measure the change in $\mathcal{L}$ by adjusting each of the parameters (i.e.\ individual elements of the weight matrices and bias vectors) by a small amount.
 However, this would require a separate forward pass for each parameter.
 Modern neural networks contain millions of parameters, so clearly backpropagation is an efficient choice.
 
@@ -342,7 +342,7 @@ The fact that a possible outcome of training a neural network is the simple memo
 As a result, in many cases it is necessary to regularize the network to prevent it from overfitting to the training set.
 
 Finally, feedforward networks with many layers are also prone to the problem of ``vanishing and exploding gradients''.
-This issue is caused by the fact that as gradients are backpropagated through layers, they are multiplied by each successive weight matrix and the derivative of each nonlinearity (as shown in \cref{eq:C_wrt_z_m}).
+This issue is caused by the fact that as gradients are backpropagated through layers, they are multiplied by each successive weight matrix and the derivative of each nonlinearity (as shown in \cref{eq:L_wrt_z_m}).
 When the spectral norm of the weight matrices and/or the gradients of the nonlinearities are substantially greater than or less than one, the resulting backpropagated gradients can become exponentially smaller or larger as they approach ``early'' layers in the network.
 This can effectively prevent the parameters of the first few layers from being adjusted, which can greatly inhibit learning.
 
@@ -359,7 +359,7 @@ However, recent results have shown that using many layers can help networks lear
 Coupled with recent advances in training very deep networks \cite{}, the paradigm of ``deep'' networks (having many layers) has come to dominate.
 
 Regardless of depth, the dimensionality of each intermediate representation (the ``layer sizes'') must be chosen.
-While increasing the dimensionality may increase modeling power, it also exacerbates overfitting and incurs a greater computational cost.
+While increasing the dimensionality may increase modeling power, it also exacerbates overfitting and incurs a greater computational loss.
 However, Graphics Processing Units (GPUs) have recently been used to accelerate neural network models thanks to their ability to quickly perform large matrix multiplications.
 As a result, in modern practice high-dimensional layers are used in combination with regularization techniques \cite{}.
 
@@ -374,7 +374,7 @@ The rectifier nonlinearity has zero gradient for half of its domain, which can h
 \paragraph{Regularization}
 
 Due to their tendency to overfit, some form of regularization is typically necessary to ensure that the optimized neural network's variance is not too high.
-A common regularizer which is used in many machine learning models is to include in the cost function a penalty on the norm of the model's parameters.
+A common regularizer which is used in many machine learning models is to include in the loss function a penalty on the norm of the model's parameters.
 In neural networks, adding the $L^2$ penalty $\lambda \sum_i \theta_i^2$ where $\lambda$ is a hyperparameter and $\theta_i$ are the model's parameters (e.g. individual entries of the weight matrices and bias vectors) is referred to as ``weight decay''.
 This can encourge the weight matrix of a given layer from focusing too heavily (via a very large weight value) on a single dimension of its input.
 A related term is $\lambda \sum_i |\theta_i|$ which effectively encourages parameter values to be zero.
