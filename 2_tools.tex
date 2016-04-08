@@ -626,6 +626,36 @@ These properties make it well-suited for neural network architectures, and as a 
 
 \subsection{Bayesian Optimization}
 
+From the discussion above, it is clear that beyond the parameters of neural network models which are optimized by gradient descent (weight matrices, bias vectors, etc.), there are additional ``hyperparameters'' which govern specifics of the model architecture, loss function, and training.
+These hyperparameters are so called because they are not optimized through gradient descent with the rest of the parameters.
+Nevertheless, the success or failure of training a given model will often heavily depend on these hyperparamters being set appropriately.
+This problem fits into the general framework of black-box optimization, where we have a function with tunable parameters which produces different objective values based on different settings.
+In this framework, we assume that we do not have a way to compute an analytical solution or access to gradient information about the function and thus can only make decisions about what parameter settings to try based on the history of function evaluation results for different settings.
+For example, the function may be a mapping between hyperparameters governing the structure of a neural network model (number and width of layers, weight initialization scheme, etc.), its loss function (which loss function to use, whether to include regularization), and training procedure (which stochastic optimization technique to use, each of which has its own hyperparamwters such as the learning rate) and the objective value could be the trained model's accuracy on a held-out validation set.
+Alternatively, one could consider the process of baking a cake in this framework, where the parameters are the amount and quantity of each ingredient as well as the baking temperature and time and the objective value is how good the cake tastes.
+
+In practice, this type of problem is often tackled by adjusting parameters by hand based on a series of trials of different settings.
+This approach can be extremely time consuming and expensive and may produce suboptimal results, so various approaches for automating this process have been proposed.
+A popular choice is ``grid search'', which first quantizes any continuously-valued parameters and then exhaustively tries all combinations of all settings.
+This approach is only feasible when there are few parameters and possible settings due to the exponential number of trials which must be run.
+In addition, it has been shown that grid search is often less efficient than simply randomly trying different parameter values, particularly when the setting of one or more parameters does not have a strong effect on the objective value \cite{}.  
+While grid search and random search can be effective, neither utilize the results of previous trials to inform subsequent parameter settings.
+
+A valuable alternative is Bayesian Optimization, which utilizes all of the information available in previous trials to produce a probabilistic model of the black-box function being optimized.
+This requires more computation than methods which only use local approximations of the function, but can produce good solutions to highly non-convex functions after making only a small number of function evaluations.
+This is particularly valuable when the function itself is expensive to evaluate, as is the case when training machine learning models which take hours, days, or weeks (or when baking cakes, due to the price of ingredients).
+The use of a probabilistic model of the black-box function being optimized both allows for candidate parameter settings to be chosen in a principaled way and for prior information to be integrated into the optimization process.  
+We utilize Bayesian Optimization techniques throughout this thesis for black-box optimization of different algorithms and systems.
+This section provides a brief overview of Bayesian Optimization; for more thorough treatments see \cite{}.
+
+\subsubsection{Gaussian Processes}
+
+\subsubsection{Utility Functions}
+
+\paragraph{Upper Confidence Bound}
+
+\paragraph{Expected Improvement}
+
 \section{Signal Processing}
 
 \subsection{Audio Signals and Psychoacoustics}
