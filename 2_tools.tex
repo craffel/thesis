@@ -638,19 +638,77 @@ In practice, this type of problem is often tackled by adjusting parameters by ha
 This approach can be extremely time consuming and expensive and may produce suboptimal results, so various approaches for automating this process have been proposed.
 A popular choice is ``grid search'', which first quantizes any continuously-valued parameters and then exhaustively tries all combinations of all settings.
 This approach is only feasible when there are few parameters and possible settings due to the exponential number of trials which must be run.
-In addition, it has been shown that grid search is often less efficient than simply randomly trying different parameter values, particularly when the setting of one or more parameters does not have a strong effect on the objective value \cite{}.  
+In addition, it has been shown that grid search is often less efficient than simply randomly trying different parameter values, particularly when the setting of one or more parameters does not have a strong effect on the objective value \cite{}.
 While grid search and random search can be effective, neither utilize the results of previous trials to inform subsequent parameter settings.
 
 A valuable alternative is Bayesian Optimization, which utilizes all of the information available in previous trials to produce a probabilistic model of the black-box function being optimized.
 This requires more computation than methods which only use local approximations of the function, but can produce good solutions to highly non-convex functions after making only a small number of function evaluations.
 This is particularly valuable when the function itself is expensive to evaluate, as is the case when training machine learning models which take hours, days, or weeks (or when baking cakes, due to the price of ingredients).
-The use of a probabilistic model of the black-box function being optimized both allows for candidate parameter settings to be chosen in a principaled way and for prior information to be integrated into the optimization process.  
+The use of a probabilistic model of the black-box function being optimized both allows for candidate parameter settings to be chosen in a principaled way and for prior information to be integrated into the optimization process.
 We utilize Bayesian Optimization techniques throughout this thesis for black-box optimization of different algorithms and systems.
 This section provides a brief overview of Bayesian Optimization; for more thorough treatments see \cite{}.
 
 \subsubsection{Gaussian Processes}
 
-\subsubsection{Utility Functions}
+Utilizing Bayesian Optimization requires first choosing a prior over functions which expresses beliefs about the behavior of the function being optimized.
+A common choice are Gaussian processes, which associate every point in the (continuous) parameter space with a normally distributed random variable.
+An alternative definition is that every finite collection of points in the parameter space induces a multivariate Gaussian distribution.
+In the setting of Bayesian Optimization, this corresponds to assuming that the objective values are characterized by Gaussian distributions.
+
+More formally, given parameter settings $\theta \in \Theta$ where $\Theta$ is the parameter space, a Gaussian process is characterized by a mean function $m : \Theta \rightarrow \mathbb{R}$ and covariance function $k : \Theta \times \Theta \rightarrow \mathbb{R}$.
+The mean function is (without loss of generality) typically assumed to be zero, while the choice of the covariance function allows strong assumptions to be made about the function being estimated.
+A common choice is the squared exponential kernel
+\begin{equation}
+        k(\theta_i, \theta_j) = \mathrm{exp}\left(-\frac{1}{2\omega^2}\|\theta_i - \theta_j\|^2\right)
+\end{equation}
+where $\omega$ is a hyperparameter controlling the width of the kernel.
+\cite{} argues that this kernel is too smooth for practical optimization problems and recommends the use of the Mat\'ern 5/2 kernel instead.
+In general, the covariance function should be defined so that it approaches $1$ as its arguments get closer together and $0$ as they get farther apart.
+The hyperparameters of the covariance function function can either be set according to prior beliefs about the function being modeled, or can be estimated by optimizing the marginal likelihood of the observed function evaluations under the Gaussian process.
+
+Once mean and covariance functions have been chosen, the Gaussian process can be fit to training data and a posterior can be obtained by the following process:
+Denoting the $t$ parameter settings and observed objective values as $\theta_T = \{\theta_1, \ldots, \theta_t\}$ and $y_T = \{y_1, \ldots, y_t\}$ respectively and an unseen evaluation of the objective function $y_n$, the joint marginal likelihood of $y_n$ and the observed objective values is given by
+\begin{equation}
+        p(y_T, y_n) = \mathcal{N}\left(0, 
+                \begin{bmatrix}
+                        K_{T \times T} & K_{n \times T}^\top\\
+                        K_{n \times T} & k(\theta_n, \theta_n)\\
+        \end{bmatrix}\right)
+\end{equation}
+where
+\begin{align}
+        K_{T \times T} &= \begin{bmatrix}
+                k(\theta_1, \theta_1) & \cdots & k(\theta_1, \theta_t) \\
+                \vdots & \ddots & \vdots \\
+                k(\theta_t, \theta_1) & \cdots & k(\theta_t, \theta_t) \\
+        \end{bmatrix} \in \mathbb{R}^{t \times t} \\
+        K_{n \times T} &= \begin{bmatrix}
+                k(\theta_n, \theta_1) & \cdots & k(\theta_n, \theta_t)
+        \end{bmatrix} \in \mathbb{R}^{1 \times t}
+\end{align}
+\begin{equation}
+\end{equation}
+This can be used to obtain the predictive distribution (see \cite{} for a derivation)
+\begin{equation}
+        p(y_{n} | y_T, \theta_T, \theta_n) = \mathcal{N}(\mu_T(\theta_n), \sigma_T^2(\theta_n))
+\end{equation}
+where
+\begin{align}
+        \mu_T(\theta_n) &= K_{n \times T} K_{T \times T}^{-1} \begin{bmatrix}
+                y_1 \\
+                \vdots \\
+                y_t
+        \end{bmatrix} \\
+        \sigma_T^2(\theta_n) &= k(\theta_n, \theta_n) - K_{n \times T} K_{T \times T}^{-1} K_{n \times T}^\top
+\end{align}
+
+Note that the predictive distribution's covariance matrix will have 1 all along its diagonal because any point is perfectly correlated with itself. 
+This is an invalid assumption in the presence of noise, so a common modification to include a term $\sigma_{noise}^2$ for the variance of the noise in the covariance, which yields the predictive distribution
+\begin{equation}
+p(y_{n} | y_T, \theta_T, \theta_n) = \mathcal{N}(\mu_T(\theta_n), \sigma_T^2(\theta_n) + \sigma_{noise}^2)
+\end{equation}
+
+\subsubsection{Acquisition Functions}
 
 \paragraph{Upper Confidence Bound}
 
