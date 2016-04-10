@@ -629,7 +629,7 @@ These properties make it well-suited for neural network architectures, and as a 
 From the discussion above, it is clear that beyond the parameters of neural network models which are optimized by gradient descent (weight matrices, bias vectors, etc.), there are additional ``hyperparameters'' which govern specifics of the model architecture, loss function, and training.
 These hyperparameters are so called because they are not optimized through gradient descent with the rest of the parameters.
 Nevertheless, the success or failure of training a given model will often heavily depend on these hyperparamters being set appropriately.
-This problem fits into the general framework of black-box optimization, where we have a function with tunable parameters which produces different objective values based on different settings.
+This problem fits into the general framework of black-box optimization, where we would like to maximize an objective function with tunable parameters which produces different values based on different parameter settings.
 In this framework, we assume that we do not have a way to compute an analytical solution or access to gradient information about the function and thus can only make decisions about what parameter settings to try based on the history of function evaluation results for different settings.
 For example, the function may be a mapping between hyperparameters governing the structure of a neural network model (number and width of layers, weight initialization scheme, etc.), its loss function (which loss function to use, whether to include regularization), and training procedure (which stochastic optimization technique to use, each of which has its own hyperparamwters such as the learning rate) and the objective value could be the trained model's accuracy on a held-out validation set.
 Alternatively, one could consider the process of baking a cake in this framework, where the parameters are the amount and quantity of each ingredient as well as the baking temperature and time and the objective value is how good the cake tastes.
@@ -710,9 +710,47 @@ p(y_{n} | y_T, \theta_T, \theta_n) = \mathcal{N}(\mu_T(\theta_n), \sigma_T^2(\th
 
 \subsubsection{Acquisition Functions}
 
-\paragraph{Upper Confidence Bound}
+We now have a recipe for predicting the mean and variance of the objective function's value at any point based on observed values.
+In order to perform optimization, we also need a principaled approach for selecting new parameter settings to evaluate the function at, both in hopes of achieving higher objective values and for obtaining a better estimate of the objective function.
+This is achieved through acquisition functions, which utilize the predictive distribution to construct a function whose maximum corresponds to the point at which the objective function should be evaluated at next.
+Acquisition functions can be considered a proxy function which can be optimized to estimate the objective function's maximum value under certain assumptions.
+Importantly, sampling values from acquisition functions is potentially much cheaper than evaluating the objective function at new parameter values, which is one of the core reasons that Bayesian optimization is beneficial.
+To facilitate optimization, acquisition functions should appropriately balance exploration and exploitation, i.e.\ the trade-off between reducing uncertainty and finding the absolute best value.
+
+\paragraph{Probability of Improvement}
+
+An intuitive choice is to maximize the probability that a given point is larger than the best observed value, which we denote $y_{best} = \max(y_T)$.
+This probability can be computed as
+\begin{equation}
+        \mathrm{PI}(\theta) = \Phi\left(\frac{\mu_T(\theta) - y_{best}}{\sigma_T(\theta)}\right)
+        \label{eq:probability_of_improvement}
+\end{equation}
+where $\Phi$ is the normal cumulative distribution function.
+In the case that $\sigma_T(\theta) = 0$, $\mathrm{PI}(\theta)$ is set to $0$.
+This strategy will always choose the $\theta$ which has the highest probability of yielding a larger objective value regardless of whether this value will provide more information about the function, i.e.\ it is completely explotation-based.
+A simple way to mitigate this is to add an exploration trade-off parameter $\xi$ to instead compute
+\begin{equation}
+        \mathrm{PI}(\theta) = \Phi\left(\frac{\mu_T(\theta) - y_{best} + \xi}{\sigma_T(\theta)}\right)
+\end{equation}
 
 \paragraph{Expected Improvement}
+
+Instead of simply choosing the point which is most likely to yield an improvement, we can also consider the expected magnitude of the improvement.
+This can be encapsulated using an ``improvement function'' which is positive when the objective value for the predicted value of $\theta$ is larger than $y_{best}$.
+Maximizing the expectation of this improvement function has a closed-form solution, yielding
+\begin{equation}
+        \mathrm{EI}(\theta) = (\mu_T(\theta) - y_{best})\Phi\left(\frac{\mu_T(\theta) - y_{best}}{\sigma_T(\theta)}\right) + \sigma(\theta)\phi\left(\frac{\mu_T(\theta) - y_{best}}{\sigma_T(\theta)}\right)
+\end{equation}
+where $\phi$ is the normal probability density function.
+\cite{} claims that Expected Improvement yielded the best performance among acquisition functions for hyperparameter optimization of machine learning systems.
+
+\paragraph{Upper Confidence Bound}
+
+An alternative approach, which is also conceptually simple, is to maximize the upper confidence bound
+\begin{equation}
+        \mathrm{UCB}(\theta) = \mu_T(\theta) + \kappa \sigma_T(\theta)
+\end{equation}
+$\kappa \ge 0$ is a hyperparameter which scales the confidence limits and therefore balances exploration and exploitation.
 
 \section{Signal Processing}
 
