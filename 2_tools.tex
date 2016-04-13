@@ -669,7 +669,7 @@ The hyperparameters of the covariance function function can either be set accord
 Once mean and covariance functions have been chosen, the Gaussian process can be fit to training data and a posterior can be obtained by the following process:
 Denoting the $t$ parameter settings and observed objective values as $\theta_T = \{\theta_1, \ldots, \theta_t\}$ and $y_T = \{y_1, \ldots, y_t\}$ respectively and an unseen evaluation of the objective function $y_n$, the joint marginal likelihood of $y_n$ and the observed objective values is given by
 \begin{equation}
-        p(y_T, y_n) = \mathcal{N}\left(0, 
+        p(y_T, y_n) = \mathcal{N}\left(0,
                 \begin{bmatrix}
                         K_{T \times T} & K_{n \times T}^\top\\
                         K_{n \times T} & k(\theta_n, \theta_n)\\
@@ -702,7 +702,7 @@ where
         \sigma_T^2(\theta_n) &= k(\theta_n, \theta_n) - K_{n \times T} K_{T \times T}^{-1} K_{n \times T}^\top
 \end{align}
 
-Note that the predictive distribution's covariance matrix will have 1 all along its diagonal because any point is perfectly correlated with itself. 
+Note that the predictive distribution's covariance matrix will have 1 all along its diagonal because any point is perfectly correlated with itself.
 This is an invalid assumption in the presence of noise, so a common modification to include a term $\sigma_{noise}^2$ for the variance of the noise in the covariance, which yields the predictive distribution
 \begin{equation}
 p(y_{n} | y_T, \theta_T, \theta_n) = \mathcal{N}(\mu_T(\theta_n), \sigma_T^2(\theta_n) + \sigma_{noise}^2)
@@ -761,8 +761,66 @@ proposal1
 \subsection{Time-Frequency Analysis}
 
 \subsection{Dynamic Time Warping}
+\label{sec:dtw}
 
-ismir2015large2, icassp2016optimizing2
+A common task in signal processing is measuring the similarity between sequences of feature vectors.
+For example, given a collection of recorded speech utterances with word labels, we could perform rudimentary speech recognition by computing the similarity between a query utterance and all database entries and choosing the word corresponding to the most similar entry.
+In many domains, time-varying differences in phase can complicate direct comparison of sequences.
+For word utterances, this is realized by different speakers speaking different parts of words more quickly or slowly.
+As a result, it is often effective to use a warping similarity measure which allows for non-co-occuring sequence elements to be compared.
+
+One such measure which will see extensive use in this thesis is Dynamic Time Warping (DTW).
+First proposed for in our exemplary domain of comparing speech utterances \cite{sakoe1978dynamic}, DTW uses dynamic programming to find a monotonic alignment such that the sum of a distance-like cost between aligned feature vectors is minimized.
+Because DTW produces an optimal alignment, it is also useful in tasks where the actual correspondense between sequence elements is required, as in the problem of audio-to-MIDI alignment explored in \cref{ch:dtw}.
+In this section, we give an overview of DTW; a more thorough treatment can be found in \cite{muller2007dynamic}.
+
+Suppose we are given two sequences of feature vectors $X \in \mathbb{R}^{M \times D}$ and $Y \in \mathbb{R}^{N \times D}$, where $D$ is the feature dimensionality and $M$ and $N$ are the number of feature vectors in $X$ and $Y$ respectively.
+DTW produces two nondecreasing sequences $p, q \in \mathbb{N}^L$ which define the optimal alignment between $X$ and $Y$, such that $p[i] = n, q[i] = m$ implies that the $m$th feature vector in $X$ should be aligned to the $n$th in $Y$.
+Finding $p$ and $q$ involves globally solving the following minimization problem:
+\begin{equation}
+p, q = \mathrm{arg}\min_{p, q} \sum_{i = 1}^{L} \|X[p[i]] - Y[q[i]]\|_2
+\label{eq:dtw_objective}
+\end{equation}
+The constraint of monotonicity is enforced by only allowing certain ``step patterns'', the simplest and most common being
+\begin{align}
+                      & p[i + 1] = p[i] + 1, q[i + 1] = q[i] + 1 \\
+        \label{eq:diagonal}
+        \mathrm{or\;} & p[i + 1] = p[i] + 1, q[i + 1] = q[i] \\
+        \mathrm{or\;} & p[i + 1] = p[i], q[i + 1] = q[i] + 1
+\end{align}
+although many others have been proposed \cite{muller2007dynamic, sakoe1978dynamic}.
+This minimization can be solved in $\mathcal{O}(MN)$ time using dynamic programming \cite{sakoe1978dynamic}.
+A common equivalent way to frame this problem which fits straightforwardly into the framework of dynamic programming is to construct a pairwise distance matrix $C \in \mathbb{R}^{M \times N}$ by computing $C[i, j] = \|X[i], Y[i]\|_2$ and then finding the lowest-cost path (subject to appropriate constraints) through the matrix.
+This perspective prompts path entries where $p[i + 1] = p[i] + 1, q[i + 1] = q[i] + 1$ to be reffered to as ``diagonal moves''.
+
+DTW is often constrained so that $p$ and $q$ span the entirety of $X$ and $Y$, i.e.\ $p[1] = q[1] = 1$ and $p[L] = N; q[L] = M$.
+However, this constraint is inapplicable when subsequence alignment is allowed in which case it is required that either $gN \le p[L] \le N$ or $gM \le q[L] \le M$ where $g \in (0, 1]$ (the ``gully'') is a parameter which determines the proportion of the subsequence which must be successfully matched.
+In addition, the path is occasionally further constrained so that
+$$
+q[i] - p[i] + R \le N, p[i] - q[i] + R \le M
+$$
+for $i \in \{1, \ldots, L\}$ where $R = g\min(M, N)$ is the ``radius'', sometimes called the Sakoe-Chiba band \cite{sakoe1978dynamic}.
+An alternative way to encourage the alignment to favor ``diagonal'' paths is to add a penalty to \cref{eq:dtw_objective}:
+\begin{equation}
+        p, q = \mathrm{arg}\min_{p, q} \sum_{i = 1}^{L} \|X[p[i]] - Y[q[i]]\|_2 + \begin{cases}
+                \phi, p[i] = p[i - 1] \mathrm{\;or\;} q[i] = q[i - 1]\\
+                0, \mathrm{otherwise}
+        \end{cases}
+\end{equation}
+where $\phi$ is a tunable parameter controlling how much to discourage non-diagonal path entries.
+
+Once an optimal alignment path is found, a rough similarity measure can be obtained as the sum of the pairwise distances between aligned sequence elements from $X$ and $Y$.
+In addition, to achieve alignment one sequence can be adjusted (via resampling or otherwise) so that so that $t_X[p[i]] = t_Y[q[i]], \forall i \in \{1, \ldots, L\}$, where $t_X \in \mathbb{R}^M, t_Y \in \mathbb{R}^N$ are the times corresponding to the feature vectors in $X$ and $Y$ respectively.
+An example visualization of DTW on two one-dimensional sequences can be seen in \cref{fig:example_dtw}.
+
+\begin{figure}
+  \centering
+  \includegraphics[width=.8\textwidth]{figures/2-example_dtw_sequences.pdf}
+
+  \includegraphics[width=.6\textwidth]{figures/2-example_dtw_matrix.pdf}
+  \caption[DTW alignment of two signals]{Example DTW alignment between two one-dimensional sequences.  The top figure shows the determined correspondences between elements of the two sequences as dashed lines.  The lower figure shows the pairwise distance matrix $C$ and the lowest-cost path through it, which defines the optimal alignment.  The x- and y-axes of the distance matrix correspond to sequence indices in the green and blue sequences respectively.}
+  \label{fig:example_dtw}
+\end{figure}
 
 \subsubsection{Pruning Methods}
 
