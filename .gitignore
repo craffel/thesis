@@ -71,3 +71,6 @@ Session.vim
 ### IPythonNotebook ###
 # Temporary data
 .ipynb_checkpoints/
+
+# Let's never commit figures/data
+figures/data

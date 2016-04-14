@@ -79,6 +79,7 @@ s[k]e^{-k + 1}, &k \in \{1, \ldots, N + 1\}\\
 R[2N - k + 1], &k \in \{N + 2, \ldots, 2N \}
 \end{cases}\\
 r[n] &= \sum_{k = 1}^{2N} R[k]e^{j\pi (k - 1)(n - 1)/N}, n \in \{1, \ldots, N\}
+\label{eq:offset_signal}
 \end{align}
 i.e.\ the inverse discrete Fourier transform of an exponentially decaying Gaussian-distributed random spectrum with standard deviation $\sigma_t$.
 Second, the first 10\% and last 10\% of the transcription were each cropped out with probability 50\%, which simulates the MIDI file being an incomplete transcription.
@@ -89,6 +90,27 @@ This simulated the fact that when comparing a synthesized MIDI file to an audio 
 Finally, for each note in each instrument, we multiplied the velocity by a random number sampled from $\mathcal{N}(1, \sigma_v)$ while keeping it in the MIDI velocity range $[1, 127]$.
 This was meant to further simulate differences in instrument characteristics in real-world vs.\ synthesized songs, and also simulated missing notes for large $\sigma_v$.
 All MIDI data manipulations were realized with \texttt{pretty\char`_midi} \cite{raffel2014pretty_midi}.
+Example constant-Q spectrograms of a synthesized MIDI file before and after undergoing this corruption process can be seen in \cref{fig:corruption}.
+In addition, the timing offset curve which produced this corruption is shown in \cref{fig:warping}.
+
+\begin{figure}
+  \centering
+  \includegraphics[width=\textwidth]{figures/3-original_cqt.pdf}
+  \includegraphics[width=\textwidth]{figures/3-corrupted_cqt.pdf}
+  \caption[Constant-Q spectrograms of a MIDI file before and after corruption]{Constant-Q spectrograms of a synthesized MIDI file before (top) and after (bottom) undergoing the corruption process described in \cref{sec:synthetic}.
+After synthesis, log-magnitude spectrograms with $L^2$-normalized spectra were computed every 46ms, with frequencies from MIDI note C2 (65.4 Hz) to B6 (987.8 Hz).
+This corruption was achieved using the parameters from the ``hard'' dataset, i.e. $\sigma_t = 20, p_r = .5, \sigma_v = 1$.}
+  \label{fig:corruption}
+\end{figure}
+
+\begin{figure}
+  \centering
+  \includegraphics[width=\textwidth]{figures/3-warping.pdf}
+  \caption[Example synthetic warping offset]{Warping offset curve which produced the time distortion in the corrupted MIDI file visualized in \cref{fig:corruption}.
+The low-frequency variation is due to the random signal $r$ (\cref{eq:offset_signal}) while the sudden jump around 125 seconds is caused by 10\% of the MIDI file being cropped out.
+In our synthetic alignment task, the goal is to reverse this timing distortion over a large dataset of corrupted MIDI files.}
+  \label{fig:warping}
+\end{figure}
 
 As described in Section \ref{sec:intro}, a DTW-based alignment system can serve two purposes: First, to align a MIDI transcription in time to an audio recording, and second, to produce a confidence score denoting the quality of the transcription or whether the MIDI file is a transcription of the recording at all.
 We therefore produced two sets of corrupted versions of the 1,000 MIDI files we collected, one to measure alignment performance, and one to evaluate confidence reporting.
@@ -105,6 +127,16 @@ $$
 \frac{1}{L}\sum_{i = 1}^{L} \min(|t_X[p[i]] - \hat{t}_X[q[i]]|, 0.5)
 $$
 where $\hat{t}_X$ is the ground-truth ``warped'' time scale.  We average this measure across the test set.
+The resulting error $|t_X[p[i]] - \hat{t}_X[q[i]]|$ from aligning the spectrograms shown in \cref{fig:corruption} using our ``gold standard'' system (described later in \cref{sec:goldstandard}) is shown in \cref{fig:correction_error}.
+
+\begin{figure}
+  \centering
+  \includegraphics[width=\textwidth]{figures/3-correction_error.pdf}
+  \caption[Absolute error from correcting synthetic warping]{Absolute error between the true warping (shown in \cref{fig:warping}) and the estimated warping found by aligning the spectrograms in \cref{fig:corruption} using the system described in \cref{sec:goldstandard}.
+The error is clipped at $.5$ seconds, above which point we consider all discrepencies equally bad.
+The spike of largest error around 125 seconds is caused by the estimated warping not perfectly correcting the missing 10\% of the corrupted MIDI which was randomly cropped out.}
+  \label{fig:correction_error}
+\end{figure}
 
 Rapid calculation of this precise metric (over the ``easy'' test set) allows us to perform large-scale comparisons of different parameter settings.
 To decide which settings to try, we use Bayesian optimization, which approximates the relationship between parameter settings and objective values as a Gaussian process.
@@ -115,7 +147,7 @@ We utilized the framework and software proposed in \cite{snoek2012practical} in 
 Based on the design choices outlined in Section \ref{sec:dtw_parameters}, we chose to optimize over the following parameter space:
 \begin{description}
 \item[Feature representation:] We used either chroma vectors or constant-Q spectra.
-The constant-Q spectra spanned 4 octaves, starting from MIDI note C3 (65.4 Hz) with 12 bins per octave.
+The constant-Q spectra spanned 4 octaves, starting from MIDI note C2 (65.4 Hz) with 12 bins per octave.
 In preliminary experiments, we found that all of the best-performing alignment systems used log-magnitude features regardless of whether chroma vectors or constant-Q spectra were used, so we computed log-magnitude features in all experiments.
 \item[Time scale:] We either computed feature vectors every 46 milliseconds or utilized beat-synchronous features.
 \item[Normalization:] We optionally z-scored the feature vectors, and normalized them by their $L^1$, $L^2$, $L^\infty$ (max) norm, or not at all.
@@ -139,7 +171,32 @@ Using a $p$-value of $0.05$ as the threshold returned 51 configurations of indis
 As a high-level overview of these systems, none used beat-synchronization or a path constraint and all of them used log-magnitude constant-Q spectra as a feature representation and set both the penalty median scale and ``gully'' close to 1.
 Almost all of these systems used $L^2$ normalization (resulting in a cosine distance for local feature comparisons); a few used $L^1$ normalization.
 There was no clear trend in the use of z-scoring.
+\Cref{tab:best_systems} displays the parameter settings and the mean absolute error achieved by the 10 best-performing alignment systems.
 %TODO: Interestingly, a wide range of median scale values for the additive penalty $\phi$ were effective, so we can use the mean.
+
+\begin{table}
+\centering
+        \begin{tabular}{rrrr}
+        \toprule
+        $\phi$ Median Scale  & Standardize?   &   Gully $g$ &   Mean Error \\
+        \midrule
+                  $1.035070$ & Yes            &    $0.967203$ &    $0.0180094$ \\
+                  $0.840218$ & No             &    $0.970180$ &    $0.0180690$ \\
+                  $0.944247$ & No             &    $0.967956$ &    $0.0181160$ \\
+                  $0.822652$ & No             &    $0.974826$ &    $0.0181264$ \\
+                  $0.929215$ & No             &    $0.971404$ &    $0.0181429$ \\
+                  $0.920111$ & Yes            &    $0.962121$ &    $0.0181909$ \\
+                  $0.947526$ & No             &    $0.973988$ &    $0.0181951$ \\
+                  $0.893840$ & Yes            &    $0.963922$ &    $0.0181988$ \\
+                  $0.906607$ & Yes            &    $0.965711$ &    $0.0182004$ \\
+                  $0.937798$ & Yes            &    $0.969747$ &    $0.0182236$ \\
+        \bottomrule
+        \end{tabular}
+  \caption[Parameters and mean absolute errors of the 10 best-performing systems]{Parameters and mean absolute errors of the 10 systems which achieved the best performance on aligning the ``easy'' synthetic dataset.
+All of these systems utilized constant-Q transforms, normalized feature vectors by their $L^2$ norm, did not beat-synchronize, and did not use a band mask constraint.}
+  \label{tab:best_systems}
+\end{table}
+
 
 \section{Optimizing Confidence Reporting}
 \label{sec:confidence}
@@ -155,19 +212,28 @@ $$
 i.e.\ the mean distance between all pairs of frames over the entire aligned portion of both feature sequences.
 % TODO: This is intended to help normalize out global differences between different distance matrices; for example, if a MIDI synthesis' timbre does not closely match an audio recording, entries in the resulting distance matrix will tend to be larger.
 
-To choose an optimal confidence measure, we first aligned all of the MIDI/audio pairs in both the ``hard'' and ``easy'' datasets using every alignment system generated during our Bayesian optimization trials.
-Then, for each system we computed the confidence score for every MIDI/audio pair using all combinations of the normalization schemes listed above (with and without length normalization, diagonal penalties, and mean distance normalization) resulting in 8 possible confidence scores per file pair.
-Finally, we computed the Kendall rank correlation coefficient \cite{kendall1938new} between each confidence score and the mean absolute error produced by all alignment systems for every pair in both datasets.
+To choose an optimal score normalization scheme, we first aligned all of the MIDI/audio pairs in both the ``hard'' and ``easy'' datasets using every alignment system generated during our Bayesian optimization trials.
+Then, for each system we computed the normalized DTW distance for every MIDI/audio pair using all combinations of the normalization schemes listed above (with and without length normalization, diagonal penalties, and mean distance normalization) resulting in 8 scores per file pair.
+Finally, we computed the Kendall rank correlation coefficient \cite{kendall1938new} between each score and the mean absolute error produced by all alignment systems for every pair in both datasets.
 A high correlation indicates that the system is able to accurately report the quality of its alignments.
 
 Among our 51 highest-accuracy systems, the highest correlation was 0.710.
 In general, the high-accuracy systems all produced rank correlations close to this value.
 All of the systems achieved the highest correlation when including the penalties in the score calculation, normalizing by the path length, and normalizing by the mean distance across the aligned portions.
-This suggests that these steps are all helpful for producing a reliable confidence score.
+This suggests that these steps are all helpful for producing a reliable score.
+We visualize the normalized DTW distances and mean errors for each alignment produced by the system which had the best performance on the ``easy'' dataset in \cref{fig:correlation}.
 
-%TODO: Add note about scaling range to [0, 1]
+\begin{figure}
+  \centering
+  \includegraphics[width=\textwidth]{figures/3-correlation.pdf}
+  \caption[Alignment errors and normalized DTW distances for the best-performing system]{Scatterplot of alignment errors (x-axis, log-scaled) and normalized DTW distance (y-axis) produced by the highest-performing alignment system using the DTW distance normalization scheme which produced the highest correlation between the two axes.
+Ideally, alignments with a small normalized distance will have a small mean error, indicating that the score can reliably predict when alignment was successful.
+The group of points in the top right correspond to alignments which were globally wrong (resulting in a mean error of $.5$, the maximum value).}
+  \label{fig:correlation}
+\end{figure}
 
 \subsection{Choosing Easily-Reproducible Parameters}
+\label{sec:goldstandard}
 
 As a final step in producing a ``gold standard'' alignment system, we decided to find parameter settings that were easy to report and implement but nevertheless produced alignments and confidence scores which were not significantly different than the best systems.
 We chose the following design: For a feature representation, we used log-magnitude constant-Q transforms computed on the non-beat-synchronous time scale described in Section \ref{sec:optimizing}.
@@ -187,6 +253,19 @@ Our dataset consisted of 500 MIDI files which had artist and song title informat
 This collection comprises MIDI files with a full range of transcription qualities, and includes some pairs which are incorrectly matched due to failure of the text matching procedure.
 By manually evaluating whether each resulting alignment was successful, we can determine how accurately the ``gold standard'' system performs alignments and how reliable the reported confidence scores are.
 
+Conveniently, the vast majority of the normalized DTW distances for our real-world alignments fell into the range $[0.5, 1.0]$.
+In order to more intuitively report this measure as a ``confidence score'', we decided to re-scale it as follows:
+\begin{equation}
+        c = \begin{cases}
+                0 & 2(1 - s) \le 0\\
+                1 & 2(1 - s) \ge 1\\
+                2(1 - s) & \mathrm{otherwise}
+        \end{cases}
+\end{equation}
+where $s$ is the normalized DTW distance and $c$ is the resulting confidence score.
+This maps the range to $[0, 1]$ where, ideally, $0$ indicates a failure and $1$ indicates a potential perfect alignment.
+We will use this re-scaled score for the remainder of this thesis.
+
 After aligning all pairs in this dataset, we synthesized the resulting aligned MIDI files and created stereo recordings with the aligned synthesized MIDI audio in one channel and the original audio recording in the other.
 We then listened to each aligned MIDI pair and annotated a score from 1-5 as follows:
 \begin{enumerate}
@@ -197,14 +276,49 @@ We then listened to each aligned MIDI pair and annotated a score from 1-5 as fol
 \item Perfect alignment and transcription
 \end{enumerate}
 For example, if a MIDI transcription was matched and successfully aligned to the correct song but was missing an instrument, a rating of 4 would be given; if the missing instrument caused the alignment to sound ``sloppy'', the rating would be 3 instead.
-Ideally, alignments with low confidence scores (normalized DTW distance) will be given higher ratings, and vice versa.
-% TODO: Update that sentence when we talk about re-scaling confidence range
+Ideally, alignments with high confidence scores will be given higher ratings, and vice versa.
 To prevent biasing the results, we did not have access to the reported confidence score while rating a given aligned pair.
+For further analysis, we also recorded notes about any interesting qualitative characteristics of each alignment.
+For example, \cref{tab:ratings} lists all of the ratings and confidence scores of alignments where we annotated that the audio recording was likely a remix (alternate version) of the song that the MIDI file is a transcription of.
+
+\begin{table}
+\centering
+\begin{tabular}{rrl}
+\toprule
+   Rating &   Confidence Score & Note                         \\
+\midrule
+        1 &          0.520807  & Audio sounds like a remix    \\
+        2 &          0.497009  & Audio is remix               \\
+        3 &          0.313761  & Remix?                       \\
+        2 &          0.219259  & Audio is remix               \\
+        2 &          0.21846   & Audio is remix/wrong section \\
+        1 &          0.16089   & Audio is remix/live          \\
+        2 &          0.146482  & Different versions (remix?)  \\
+        2 &          0.126939  & Audio is remix               \\
+        2 &          0.0978644 & Very sloppy/audio is remix?  \\
+        1 &          0.0739608 & Audio is remix               \\
+        1 &          0.0687189 & Audio may be remix           \\
+        1 &          0.0610702 & Audio is probably remix      \\
+        2 &          0.0484973 & Different versions (remix?)  \\
+        1 &          0.0431807 & Audio is remix?              \\
+        2 &          0.0353811 & Audio is remix               \\
+        1 &          0.0259135 & Audio is remix               \\
+        1 &          0.015929  & Audio is remix               \\
+        2 &          0.0117205 & Audio is remix?  Very sloppy \\
+        2 &          0.0116941 & Audio is remix               \\
+        1 &          0         & Audio is a remix             \\
+        2 &          0         & Very sloppy/remix?           \\
+\bottomrule
+\end{tabular}
+  \caption[Ratings for alignments which we annotated as likely remixes]{Ratings, confidence scores, and annotations for real-world alignments where we thought the audio recording was a remix of the song the MIDI file was a transcription of.
+Because remixes tend to have substantial differences in structure and instrumentation, it is likely that alignment will fail.}
+  \label{tab:ratings}
+\end{table}
 
 \begin{figure}[t]
   \centering
-  \includegraphics[width=\columnwidth]{figures/violin.pdf}
-  \caption{Violin plot (box plot with rotated kernel density estimates) showing the distribution of confidence scores for each rating in our qualitative evaluation.
+  \includegraphics[width=\textwidth]{figures/3-violin.pdf}
+  \caption[Distributions of confidence scores for each rating]{Violin plot (box plot with rotated kernel density estimates) showing the distribution of confidence scores for each rating in our qualitative evaluation.
 A smaller confidence score indicates a more successful alignment.
 The area of each violin corresponds to the number of pairs which had a given rating.
 Box plots in each violin show the median and upper and lower quartiles.}
