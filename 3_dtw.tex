@@ -172,7 +172,8 @@ As a high-level overview of these systems, none used beat-synchronization or a p
 Almost all of these systems used $L^2$ normalization (resulting in a cosine distance for local feature comparisons); a few used $L^1$ normalization.
 There was no clear trend in the use of z-scoring.
 \Cref{tab:best_systems} displays the parameter settings and the mean absolute error achieved by the 10 best-performing alignment systems.
-%TODO: Interestingly, a wide range of median scale values for the additive penalty $\phi$ were effective, so we can use the mean.
+Interestingly, a relatively wide range (about $0.9$ to $1.0$) of median scale values for the additive penalty $\phi$ were effective.
+We propose that this indicates a relative insensitivity to this parameter setting, i.e.\ as long as $\phi$ is close to the distance matrix median the alignment system can produce high-quality alignments.
 
 \begin{table}
 \centering
@@ -210,7 +211,7 @@ $$
 \frac{1}{L^2} \sum_{i = \min(p)}^{\max(p)} \sum_{j = \min(q)}^{\max(q)} \|X[i] - Y[j]\|_2^2
 $$
 i.e.\ the mean distance between all pairs of frames over the entire aligned portion of both feature sequences.
-% TODO: This is intended to help normalize out global differences between different distance matrices; for example, if a MIDI synthesis' timbre does not closely match an audio recording, entries in the resulting distance matrix will tend to be larger.
+This is intended to help normalize out global differences between different distance matrices; for example, if a MIDI synthesis' timbre does not closely match an audio recording, entries in the resulting distance matrix will tend to be larger which would inflate the DTW distance.
 
 To choose an optimal score normalization scheme, we first aligned all of the MIDI/audio pairs in both the ``hard'' and ``easy'' datasets using every alignment system generated during our Bayesian optimization trials.
 Then, for each system we computed the normalized DTW distance for every MIDI/audio pair using all combinations of the normalization schemes listed above (with and without length normalization, diagonal penalties, and mean distance normalization) resulting in 8 scores per file pair.
@@ -242,7 +243,6 @@ We chose a penalty $\phi$ as the median distance of all pairs of frames and used
 This system achieved a mean absolute alignment error on the ``easy'' dataset of 0.0188, with alignment errors which were not significantly different from the best-performing system.
 By normalizing the DTW distance (including penalties) by the path length and the mean distance across aligned portions, we achieved a rank correlation between confidence and accuracy of 0.700.
 This ``gold standard'' system is straightforward to implement, and will be used for the remainder of this thesis.
-%TODO: Should I turn this into a recipe?
 
 \section{Qualitative Evaluation on Real-World Data}
 \label{sec:qualitative}
@@ -341,9 +341,22 @@ The most important remaining flaw is the relative insensitivity to missing instr
 \label{sec:discussion}
 
 In summary, large-scale optimization over synthetic data has delivered a DTW-based system which is simple to implement and achieves accurate and reliable results for both alignment and matching.
+We demonstrated that on real-world data, our alignment system produced a confidence score which provided a trustworthy indicator of whether the alignment was successful or not.
+Nevertheless, there was some overlap between the distribution of confidence scores for each rating.
+This implies that our system cannot detect fine-grained issues such as missing instruments or other minor alignment issues.
 
-Not enough separation between different ratings.
-The goal (feature representation) for alignment is different than the goal for confidence reporting.
-There are still more dimensions to explore.
-Other corruptions could be made, such as pitch bends, data augmentation.
-DTW is still way to slow to do the large-scale matching problem.
+We believe this is caused by the fact that alignment and confidence reporting have somewhat different goals which result in different requirements of the feature representation.
+For example, alignment benefits from a representation which is invariant to missing instruments so that it can still be successful when a transcription is incomplete.
+On the other hand, it would be helpful to have a confidence score which was sensitive to whether or not a transcription is missing instruments.
+Given that the framework we have explored requires that the representation is the same for both tasks, it is unsurprising that there are minor alignment issues which our confidence score is insensitive to.
+We therefore propose that exploring systems which utilize different representations for alignment and confidence reporting would be a fruitful research direction.
+
+We also note that there are many other design choices and parameters for audio-to-MIDI alignment systems which we have not explored.
+These include larger selections of possible step sizes such as those described in \cite{muller2007dynamic, sakoe1978dynamic}, different feature representations, and even completely different alignment methods such as Smith-Waterman \cite{ewert2012towards} and Needleman-Wunsch \cite{grachten2013automatic}.
+In addition, there are additional avenues to be explored for creating realistic synthetic data, such as utilizing different synthesis programs, modifying pitch bend and other control change messages, and applying realistic acoustic noise and nonlinearities \cite{mcfee2015software}.
+Our proposed framework for creating alignment datasets and optimizing system design using Bayesian optimization could be straightforwardly extended to accomodate these new directions.
+
+Given the success of our system at discriminating between correct and incorrect matches, it would appear that it is a viable method matching MIDI transcriptions to corresponding audio recordings in a database.
+Specifically, we could compute the alignment and confidence score between a query MIDI file and every recording and assign matches according to those recordings which produced high confidence scores.
+Unfortunately, the proposed method is much too inefficient for searching all but the smallest databases.
+We explore this issue and develop methods for mitigating it in the following chapters.
