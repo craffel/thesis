@@ -818,9 +818,36 @@ Being sensitive to timbre can help us distinguish between the voices of differen
 
 \subsection{Time-Frequency Analysis}
 
-% In many cases, it is useful to decompose a signal into the combination of simpler signals... (sine wave, Fourier)
+In many cases, it is useful to decompose a signal into the combination of simpler signals.
+An extremely common method is the Fourier Transform, which is capable of representing any signal as a sum of complex sinusoids.
+This representation is well-suited for signals from the natural world which are produced by vibrating objects such as musical instruments.
+In addition, as mentioned above, our inner ear performs a similar decomposition because its different regions vary in their sensitivity to different frequencies.
 
-%Because our ear does this, we do this...
+For a discrete-time (i.e.\ sampled at discrete points in time, rather than being defined on a continuous timebase) length-$N$ signal $x$, the Discrete Fourier Transform (DFT) is computed as
+\begin{equation}
+        X[k] = \sum_{n = 1}^N x[n] e^{-2\pi j (k - 1)(n - 1)/N}, k \in \{1, \ldots, N\}
+\end{equation}
+The resulting complex values $X[k]$ are called the Fourier coefficients of $x$, and the collection of coefficients $X$ is called the Fourier spectrum (or, simply, the spectrum) of $x$.
+For real-valued signals (the only kind encountered in this thesis) where $N$ is even, the Fourier coefficients are Hermitian symmetric so that 
+\begin{equation}
+        X[k] = \overline{X[N - k + 2]}, k \in \{2, \ldots, N/2 + 1\}
+\end{equation}
+For this reason, the DFT of real-valued signals of even length $N$ is typically only computed for $k \in \{1, \ldots, N/2 + 1\}$.
+From its definition, it is clear that the DFT can be computed in $\mathcal{O}(N^2)$ time; in practice, the DFT is computed using the Fast Fourier Transform (FFT) algorithm, which runs in $\mathcal{O}(N \log(N))$ time.
+
+The DFT provides us with a decomposition of a signal in the form of complex-valued coefficients for sinusoids of varying frequency.
+However, for most audio signals, the human auditory system is much more sensitive to the {\em magnitude} of different frequencies than it is to the phase of these components \cite{}.
+For this reason, for analysis tasks the phase of the Fourier coefficients $X[k]$ is typically discarded and the magnitude $|X[k]|$ is used instead.
+As an example, the magnitude spectrum of the audio signal shown in \cref{fig:audio_signal} is shown in \cref{fig:spectrum}.
+
+\begin{figure}
+  \centering
+  \includegraphics[width=\textwidth]{figures/2-spectrum.pdf}
+  \caption[Magnitude spectrum of the acoustic guitar recording]{Magnitude spectrogram of the audio recording of an acoustic guitar shown in \cref{fig:audio_signal}.
+  The tall peaks correspond to the dominant frequencies; for example, the largest peak around 440 Hz corresponds to an A note which is played frequently and loudly in the recording.
+  For clarity, only the portion of the spectrum corresponding to frequencies up to 2000 Hz is shown.}
+  \label{fig:spectrum}
+\end{figure}
 
 \subsubsection{Sampling Frequency}
 
