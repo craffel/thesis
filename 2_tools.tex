@@ -816,6 +816,19 @@ Being sensitive to timbre can help us distinguish between the voices of differen
   \label{fig:timbres}
 \end{figure}
 
+\subsubsection{Sampling Frequency}
+
+Typically, the temporal spacing between subsequent elements in a digital signal is fixed and is determined by the signal's sampling frequency $f_s$.
+This is in contrast to continuous-time signals encountered in the real world, such as sonic waves, which can be considered functions of a continuous timebase.
+A fundamental relationship between the content of signals and their sampling frequency is codified in the Sampling Theorem \cite{}.
+This theorem states that any continuous-time signal can be perfectly reconstructed from discrete-time samples at sampling frequency $f_s$ as long as it has no frequency content above $f_s/2$.
+
+Due to our hearing range, in audio signals we are mostly interested in reproducing signals up to 20,000 Hz.
+Following the sampling theorem, this implies that in order to perfectly perceptually reconstruct audio signals, we should utilize a sampling rate of at least 40,000 Hz.
+In practice, a common sampling rate for audio signals is 44,100 Hz, which is utilized on compact discs and other recorded audio formats \cite{}.
+Because our sensitivity to high frequencies is limited, for analysis purposes it is common to use a lower sampling rate.
+Throughout this thesis, we will utilize a sampling rate of 22,050 Hz.
+
 \subsection{Time-Frequency Analysis}
 
 In many cases, it is useful to decompose a signal into the combination of simpler signals.
@@ -828,7 +841,7 @@ For a discrete-time (i.e.\ sampled at discrete points in time, rather than being
         X[k] = \sum_{n = 1}^N x[n] e^{-2\pi j (k - 1)(n - 1)/N}, k \in \{1, \ldots, N\}
 \end{equation}
 The resulting complex values $X[k]$ are called the Fourier coefficients of $x$, and the collection of coefficients $X$ is called the Fourier spectrum (or, simply, the spectrum) of $x$.
-For real-valued signals (the only kind encountered in this thesis) where $N$ is even, the Fourier coefficients are Hermitian symmetric so that 
+For real-valued signals (the only kind encountered in this thesis) where $N$ is even, the Fourier coefficients are Hermitian symmetric so that
 \begin{equation}
         X[k] = \overline{X[N - k + 2]}, k \in \{2, \ldots, N/2 + 1\}
 \end{equation}
@@ -848,10 +861,6 @@ As an example, the magnitude spectrum of the audio signal shown in \cref{fig:aud
   For clarity, only the portion of the spectrum corresponding to frequencies up to 2000 Hz is shown.}
   \label{fig:spectrum}
 \end{figure}
-
-\subsubsection{Sampling Frequency}
-
-% Typically, the temporal spacing between subsequent elements in a signal is fixed and is determined by the signal's sampling frequency $f_s$.
 
 \subsubsection{The Short-Time Fourier Transform}
 
