@@ -753,18 +753,91 @@ An alternative approach, which is also conceptually simple, is to maximize the u
 \end{equation}
 $\kappa \ge 0$ is a hyperparameter which scales the confidence limits and therefore balances exploration and exploitation.
 
-\section{Signal Processing}
+\section{Digital Signal Processing}
+
+The field of signal processing encompasses the analysis, modification, and generation of ``signals''.
+Signals are broadly defined as sequential data, i.e.\ data where at least one dimension has an implicit ordering (for some examples, see \cref{fig:example_sequences}).
+A digital signal is a sequence of numbers or vectors where each number represents the amplitude of the signal in a given dimension at a given point in time.
+In this setting, signals can be processed computationally, which allows for the development of algorithms to automatically manipulate, generate, and extract information from signals.
 
 \subsection{Audio Signals and Psychoacoustics}
 
-proposal1
+In this thesis, we will mainly deal with audio signals.
+An example audio signal, consisting of a series of notes plated on an acoustic guitar, can be seen in \cref{fig:audio_signal}.
+In the physical world, an audio signal is a time-varying change in air pressure called a sound wave.
+We ``hear'' sounds when our ear converts these sound waves into neural stimuli.
+The exact manner in which we perceive a sound wave is influenced by a wide variety of factors, including our sensory system and the brain's psychological response.
+The field of psychoacoustics attempts to measure and codify these factors, and the results can provide useful guidelines about the representation and processing of audio signals \cite{}.
+
+\begin{figure}
+  \centering
+  \includegraphics[width=\textwidth]{figures/2-audio_signal.pdf}
+  \caption[Audio recording of an acoustic guitar]{Audio signal of a few notes played on an acoustic guitar.
+  The peaks of amplitude correspond to each individual note being plucked.}
+  \label{fig:audio_signal}
+\end{figure}
+
+Three of the most important psychoacoustic charasterics of audio signals are the pitch, loudness, and timbre.
+The pitch of a signal mainly depends on its periodicity (e.g.\ how often the signal repeats itself); if a signal is has no periodic components, it might not be perceived as having a pitch.
+The longest periodicity, or the slowest vibration, is referred to as the fundamental frequency $f_0$ of a sound.
+Generally, we can perceive frequencies from 20 Hz to 20,000 Hz, although these limits depend on a variety of factors including the number of independent frequencies in a signal and the healthiness of the listener's auditory system \cite{}.
+Below 20 Hz, we begin to hear the periodicities of an audio signal as distinct events rather than as a ``pitch'' \cite{}.
+
+An additional important characteristic of pitch perception is that it is roughly logarithmic, i.e.\ we perceive the ``distance'' between signals with fundamental frequencies $f_0$ and $2f_0$ to be about the same as $2f_0$ and $4f_0$ \cite{}.
+This may be one reason that the spacing between pitches (called semitones) in Western music is defined on a logarithmic scale.
+In addition, our innear ear has different regions which are sensitive to different ranges of frequencies, which are also spaced roughly on a logarithmic scale.
+This helps our auditory system to distinguish between sources sounding simultaneously which differ in pitch.
+Whether or not a given signal is perceived as having multiple pitches or sources (e.g. in the case of multiple notes being played simultaneously on a single instrument) depends both on the characteristics of the signal and on psychological factors.
+
+Loudness corresponds to how ``strong'' a sound is perceived as being and most directly depends on the signal's ``sound pressure level``.
+The SPL is proportional to the logarithm of the signal's amplitude and is measured in Decibels (dB).
+In addition, perception of loudness is also heavily frequency-dependent; for example, a 20 dB signal with a fundamental frequency 1 kHz will be perceived to have the same loudness as a 100 Hz signal at about 45 dB.
+This relationship is typically characterized by equal loudness curves, which relate the required sound pressure level for each frequency to be perceived as the same loudness.
+An example curve can be seen in \cref{fig:equal_loudness}.
+
+\begin{figure}
+  \centering
+  \includegraphics[width=\textwidth]{figures/2-equal_loudness.pdf}
+  \caption[Equal loudness curve]{Equal loudness curve, along which all frequencies are perceived to have approximately the same loudness.
+  These curves reveal important characteristics about our sensitivity to different frequencies; for example, in order for a low-frequency sound to be perceived loudly, they must have a relatively high sound pressure level.}
+  \label{fig:equal_loudness}
+\end{figure}
+
+The remaining characteristics of a sound which allow it to be distinguished from other sounds are referred to as its ``timbre''.
+For example, the different frequencies (or periodicities) present and the evolution of their relative amplitudes over time strongly effect our perception of a sound.
+Being sensitive to timbre can help us distinguish between the voices of different people and notes played on different musical instruments.
+\Cref{fig:timbres} shows waveforms of a piano and a violin playing the same note at the same volume; despite having the same pitch and loudness, these sounds are easily distinguishable.
+
+\begin{figure}
+  \centering
+  \includegraphics[width=\textwidth]{figures/2-timbres.pdf}
+  \caption[Waveforms of piano and violin]{Waveforms of a few periods of the same note being played on a piano (blue) and a violin (green) at the same loudness.
+  These two signals will be perceived as having the same pitch and loudness, but are distinguishable due to differences in timbre.}
+  \label{fig:timbres}
+\end{figure}
 
 \subsection{Time-Frequency Analysis}
+
+% In many cases, it is useful to decompose a signal into the combination of simpler signals... (sine wave, Fourier)
+
+%Because our ear does this, we do this...
+
+\subsubsection{Sampling Frequency}
+
+% Typically, the temporal spacing between subsequent elements in a signal is fixed and is determined by the signal's sampling frequency $f_s$.
+
+\subsubsection{The Short-Time Fourier Transform}
+
+\subsubsection{Window Functions}
+
+\subsubsection{The Constant-Q Transform}
+
+\subsubsection{Chroma Vectors}
 
 \subsection{Dynamic Time Warping}
 \label{sec:dtw}
 
-A common task in signal processing is measuring the similarity between sequences of feature vectors.
+A common task in signal processing is measuring the similarity between two signalssequences of feature vectors.
 For example, given a collection of recorded speech utterances with word labels, we could perform rudimentary speech recognition by computing the similarity between a query utterance and all database entries and choosing the word corresponding to the most similar entry.
 In many domains, time-varying differences in phase can complicate direct comparison of sequences.
 For word utterances, this is realized by different speakers speaking different parts of words more quickly or slowly.
@@ -822,7 +895,3 @@ An example visualization of DTW on two one-dimensional sequences can be seen in 
   \caption[DTW alignment of two signals]{Example DTW alignment between two one-dimensional sequences.  The top figure shows the determined correspondences between elements of the two sequences as dashed lines.  The lower figure shows the pairwise distance matrix $C$ and the lowest-cost path through it, which defines the optimal alignment.  The x- and y-axes of the distance matrix correspond to sequence indices in the green and blue sequences respectively.}
   \label{fig:example_dtw}
 \end{figure}
-
-\subsubsection{Pruning Methods}
-
-icassp2016pruning1
