@@ -838,15 +838,21 @@ In addition, as mentioned above, our inner ear performs a similar decomposition 
 
 For a discrete-time (i.e.\ sampled at discrete points in time, rather than being defined on a continuous timebase) length-$N$ signal $x$, the Discrete Fourier Transform (DFT) is computed as
 \begin{equation}
-        X[k] = \sum_{n = 1}^N x[n] e^{-2\pi j (k - 1)(n - 1)/N}, k \in \{1, \ldots, N\}
+        X[k] = \sum_{n = 1}^N x[n] e^{-2\pi \jmath (k - 1)(n - 1)/N}, k \in \{1, \ldots, N\}
 \end{equation}
 The resulting complex values $X[k]$ are called the Fourier coefficients of $x$, and the collection of coefficients $X$ is called the Fourier spectrum (or, simply, the spectrum) of $x$.
+From its definition, it is clear that the DFT can be computed in $\mathcal{O}(N^2)$ time; in practice, the DFT is computed using the Fast Fourier Transform (FFT) algorithm, which runs in $\mathcal{O}(N \log(N))$ time.
+
 For real-valued signals (the only kind encountered in this thesis) where $N$ is even, the Fourier coefficients are Hermitian symmetric so that
 \begin{equation}
         X[k] = \overline{X[N - k + 2]}, k \in \{2, \ldots, N/2 + 1\}
 \end{equation}
 For this reason, the DFT of real-valued signals of even length $N$ is typically only computed for $k \in \{1, \ldots, N/2 + 1\}$.
-From its definition, it is clear that the DFT can be computed in $\mathcal{O}(N^2)$ time; in practice, the DFT is computed using the Fast Fourier Transform (FFT) algorithm, which runs in $\mathcal{O}(N \log(N))$ time.
+If the real-valued input signal has sampling rate $f_s$, then the $k$th Fourier coefficient (also called a ``frequency bin'') corresponds to a frequency of
+\begin{equation}
+        \frac{(k - 1)f_s}{N}, k \in \{1, \ldots, N/2 + 1\}
+        \label{eq:bin_freq}
+\end{equation}
 
 The DFT provides us with a decomposition of a signal in the form of complex-valued coefficients for sinusoids of varying frequency.
 However, for most audio signals, the human auditory system is much more sensitive to the {\em magnitude} of different frequencies than it is to the phase of these components \cite{}.
@@ -856,7 +862,7 @@ As an example, the magnitude spectrum of the audio signal shown in \cref{fig:aud
 \begin{figure}
   \centering
   \includegraphics[width=\textwidth]{figures/2-spectrum.pdf}
-  \caption[Magnitude spectrum of the acoustic guitar recording]{Magnitude spectrogram of the audio recording of an acoustic guitar shown in \cref{fig:audio_signal}.
+  \caption[Magnitude spectrum of the acoustic guitar recording]{Magnitude spectrum of the audio recording of an acoustic guitar shown in \cref{fig:audio_signal}.
   The tall peaks correspond to the dominant frequencies; for example, the largest peak around 440 Hz corresponds to an A note which is played frequently and loudly in the recording.
   For clarity, only the portion of the spectrum corresponding to frequencies up to 2000 Hz is shown.}
   \label{fig:spectrum}
@@ -864,11 +870,73 @@ As an example, the magnitude spectrum of the audio signal shown in \cref{fig:aud
 
 \subsubsection{The Short-Time Fourier Transform}
 
-\subsubsection{Window Functions}
+In many cases, we are most interested in the way the frequency content of a signal changes over time.
+The DFT as defined above can only provide a global summary in the form of a spectrum computed across the entire duration of a signal.
+This prompts the use of the Short-Time Fourier Transform (STFT), which computes a series of spectra over short, potentially overlapping ``frames'' of the signal.
+This produces a ``spectrogram'', computed by
+\begin{equation}
+        S[n, k] = \sum_{m = 1}^M w[m]x[m + nR] e^{-2\pi \jmath (k - 1)(m - 1)/M}, k \in \{1, \ldots, M\}
+\end{equation}
+where $w \in \mathbb{R}^{M}$ is a ``window'' function and $R$ is the ``hop'' size which determines how much (if at all) subsequent frames overlap.
+The resulting spectrogram $S$ will contain $\lfloor (N - M)/R \rfloor$ spectra, each with $M$ Fourier coefficients.
+
+The STFT is useful for audio signals because we are generally interested in how the audio content changes over time.
+For example, in music analysis we might be interested in where notes played in a recording start and stop.
+This information is discarded in the magnitude spectrum of the entire recording, but the individual spectra which encompass the start and end of notes retain this information in a localized manner.
+The magnitude spectrogram of the guitar recording from \cref{fig:audio_signal} is shown in \cref{fig:spectrogram}.
+
+\begin{figure}
+  \centering
+  \includegraphics[width=\textwidth]{figures/2-spectrogram.pdf}
+  \caption[Magnitude spectrogram of the acoustic guitar recording]{Magnitude spectrogram of the audio recording of an acoustic guitar shown in \cref{fig:audio_signal}.
+  As in \cref{fig:spectrum}, we only display frequencies up to 2,000 Hz.
+  The horizontal tracks correspond to different notes which were played.}
+  \label{fig:spectrogram}
+\end{figure}
+
+Important considerations when computing a spectrogram include the window function $w$, the frame length $M$, and the hop size $R$.
+
+\paragraph{Window Function}
+
+The choice of window function is generally a trade-off between the resolution and the sensitivity of the individual spectra \cite{}.
+For example, given a signal which consists of a pure tone (i.e.\ a sinusoid) at some frequency $f_0$, using a windowing function with low resolution would result in spectral energy being spread amongst the frequency bins around the one corresponding to $f_0$.
+On the other hand, using a window function with low sensitivity will result in the inability to detect low-amplitude signals in the presence of noise or other high-amplitude signals.
+The rectangular window
+\begin{equation}
+        w[m] = 1, m \in \{1, \ldots, M\}
+\end{equation}
+has the highest-possible resolution, but has poor sensitivity due to ``spectral leakage''.
+Spectral leakage manifests itself as periodic ``side lobes`` in the frequency domain which decay away from each peak in the spectrum.
+For spectra with high-energy bins, this leakage can prevent the accurate detection of other peaks, which decreases the resulting sensitivity.
+
+Leakage is caused by truncating each frame immediately to zero at the window edges.
+A common method for mitigating this is to use a window which tapers to zero.
+The Hann window
+\begin{equation}
+        w[m] = \frac{1}{2}\left(1 - \cos\left(\frac{2\pi m}{M}\right)\right)
+\end{equation}
+provides a good trade-off between resolution and sensitivity; it has half of the resolution of the rectangular window but decreases side-lobe level and decay by a few orders of magnitude.
+As a result, we will use the Hann window throughout this thesis.
+
+\paragraph{Frame Length}
+
+Increasing the frame length $M$ will result in higher-resolution spectra due to the fact that the frequencies corresponding to each bin are spaced according to \cref{eq:bin_freq}.
+However, it will also result in lower time resolution, due to the fact that if multiple events happen within a single frame then it is impossible to determine their ordering by inspecting the magnitude spectrum.
+Choosing $M$ is therefore a tradeoff of time and frequency resolution, i.e.\ we would like to be able to resolve differences of frequency and the timing of events which are relevant to the task.
+A more practical consideration is that the FFT is optimized for frame lengths which are a power of two.
+Based on these constraints, a common choice is to utilize a frame size of 2048 samples at a 22,050 Hz sampling rate, which corresponds to 92.8 ms with a 10.8 Hz resolution.
+
+\paragraph{Hop Size}
+
+Typically, there is some overlap between subsequent frames in an STFT.
+This is a necessity when using windows which taper to zero in order to avoid loss of information.
+For the Hann window in particular, in order to retain all information the hop size must be set no larger than half of the frame size \cite{}.
+Using more overlap can also smooth subsequent spectra in an STFT and can provide an additional form of temporal resolution, at a higher computational expense.
+We therefore utilize a hop size of 512 samples throughout this thesis which corresponds to 23.2 ms at 22,050 Hz; this is believed to be at the upper limit of the rate at which our auditory system performs spectral analysis \cite{}.
+
+\subsubsection{Log-Magnitude Spectra}
 
 \subsubsection{The Constant-Q Transform}
-
-\subsubsection{Chroma Vectors}
 
 \subsection{Dynamic Time Warping}
 \label{sec:dtw}
