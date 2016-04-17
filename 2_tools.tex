@@ -761,6 +761,7 @@ A digital signal is a sequence of numbers or vectors where each number represent
 In this setting, signals can be processed computationally, which allows for the development of algorithms to automatically manipulate, generate, and extract information from signals.
 
 \subsection{Audio Signals and Psychoacoustics}
+\label{sec:psychoacoustics}
 
 In this thesis, we will mainly deal with audio signals.
 An example audio signal, consisting of a series of notes plated on an acoustic guitar, can be seen in \cref{fig:audio_signal}.
@@ -934,9 +935,26 @@ For the Hann window in particular, in order to retain all information the hop si
 Using more overlap can also smooth subsequent spectra in an STFT and can provide an additional form of temporal resolution, at a higher computational expense.
 We therefore utilize a hop size of 512 samples throughout this thesis which corresponds to 23.2 ms at 22,050 Hz; this is believed to be at the upper limit of the rate at which our auditory system performs spectral analysis \cite{}.
 
-\subsubsection{Log-Magnitude Spectra}
+\subsubsection{Log-Magnitude}
 
-\subsubsection{The Constant-Q Transform}
+As discussed in \cref{sec:psychoacoustics}, our sensitivity to loudness is closer to logarithmic than linear in amplitude.
+The magnitude spectrograms we have studied so far report the amplitude of different frequencies across time.
+We can make this representation more similar to our perception by using log-magnitude spectra, i.e.\ computing the logarithm of the magnitude in each frequency bin.
+While sound pressure level is defined on a specific scale based on a reference SPL of 0 dB corresponding to the quietest perceptable sound, it is unimportant for the scale to be calibrated in analysis tasks which are scale invariant.
+
+A log-magnitude version of the spectrogram from \cref{fig:spectrogram} is shown in \cref{fig:log_spectrogram}.
+Note that this representation shows much more energy in higher frequencies.
+These higher-frequency signals are the harmonics of the notes played, which were much less apparent in \cref{fig:spectrogram} where notes appeared almost as pure tones.
+Accurately representing the our perception of these harmonics is important for representing different timbres.
+
+\begin{figure}
+  \centering
+  \includegraphics[width=\textwidth]{figures/2-log_spectrogram.pdf}
+  \caption[Log-magnitude spectrogram of the acoustic guitar recording]{Log-magnitude spectrogram of the audio recording of an acoustic guitar shown in \cref{fig:audio_signal}, for frequencies up to 2,000 Hz.}
+  \label{fig:log_spectrogram}
+\end{figure}
+
+\subsubsection{Constant-Q Transforms}
 
 \subsection{Dynamic Time Warping}
 \label{sec:dtw}
