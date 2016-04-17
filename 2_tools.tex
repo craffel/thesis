@@ -876,7 +876,7 @@ The DFT as defined above can only provide a global summary in the form of a spec
 This prompts the use of the Short-Time Fourier Transform (STFT), which computes a series of spectra over short, potentially overlapping ``frames'' of the signal.
 This produces a ``spectrogram'', computed by
 \begin{equation}
-        S[n, k] = \sum_{m = 1}^M w[m]x[m + nR] e^{-2\pi \jmath (k - 1)(m - 1)/M}, k \in \{1, \ldots, M\}
+        S[n, k] = \sum_{m = 1}^M w[m]x[m + nR - M/2] e^{-2\pi \jmath (k - 1)(m - 1)/M}, k \in \{1, \ldots, M\}
 \end{equation}
 where $w \in \mathbb{R}^{M}$ is a ``window'' function and $R$ is the ``hop'' size which determines how much (if at all) subsequent frames overlap.
 The resulting spectrogram $S$ will contain $\lfloor (N - M)/R \rfloor$ spectra, each with $M$ Fourier coefficients.
@@ -955,6 +955,37 @@ Accurately representing the our perception of these harmonics is important for r
 \end{figure}
 
 \subsubsection{Constant-Q Transforms}
+
+An additional way in which the spectrograms we have discussed so far do not match perception is that they are linear in frequency (as defined by \cref{eq:bin_freq}).
+This is in contrast to our roughly logarithmic perception of pitch, as well as the spacing of semitones in the common Western music scale.
+As a result, it can be beneficial to use a time-frequency representation which is also logarithmic in frequency.
+A common choice is a constant-Q transform (CQT), which has frequency bins which are logarithmically spaced and all have equal center frequencies-to-bandwidth ratios \cite{}.
+Fortunately, like the DFT, fast algorithms exist for computing the CQT \cite{} \cite{}.
+
+In this thesis, we will utilize the transform proposed by \cite{}, which is defined as follows:
+\begin{equation}
+        S[n, k] = \frac{1}{M_k} \sum_{m}^{M_k} w_k[m]x[m - M_k/2 + nR] e^{2\pi \jmath m f_k/f_s}
+\end{equation}
+where $f_k$ is the center frequency of each of the $k$ bins, $R$ is the hop size, $w_k \in \mathbb{R}^{M_k}$ is a window function, $f_s$ is the sampling frequency, and
+\begin{equation}
+        M_k = \frac{f_s}{f_k (\sqrt[B]{2} - 1)}
+\end{equation}
+where $B$ is the number of frequency bins per octave.
+For music signals, it is common to set $B$ to 12 because there are 12 semitones per octave in the Western music scale and to set $f_k$ to a sequence of subsequent semitone frequencies.
+Note that there is a different window size for each frequency bin; this is what allows the center frequency-to-bandwidth ratio to remain constant across bins.
+The choice of $w_k$ depends on the desired time-frequency resolution trade-off.
+In this thesis, we set $w_k$ to the length-$M_k$ Hann window, which provides a good balance for analysis tasks.
+
+As with the DFT, the CQT produces complex-valued coefficients, and a more more perceptually accurate transform can be obtained by computing a log-magnitude CQT.
+For comparison, the log-magnitude CQT of the audio signal in \cref{fig:audio_signal} is shown in \cref{fig:cqt}.
+
+\begin{figure}
+  \centering
+  \includegraphics[width=\textwidth]{figures/2-cqt.pdf}
+  \caption[Log-magnitude constant-Q spectrogram of the acoustic guitar recording]{Log-magnitude constant-Q spectrogram of the audio recording of an acoustic guitar shown in \cref{fig:audio_signal}.
+  The constant-Q transforms are computed over logarithmically-spaced bins from C2 to B5 (65.4 to 987.8 Hz), with 12 bins per octave.}
+  \label{fig:cqt}
+\end{figure}
 
 \subsection{Dynamic Time Warping}
 \label{sec:dtw}
