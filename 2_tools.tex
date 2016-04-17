@@ -764,11 +764,12 @@ In this setting, signals can be processed computationally, which allows for the 
 \label{sec:psychoacoustics}
 
 In this thesis, we will mainly deal with audio signals.
-An example audio signal, consisting of a series of notes plated on an acoustic guitar, can be seen in \cref{fig:audio_signal}.
+An example audio signal, consisting of a series of notes played on an acoustic guitar, can be seen in \cref{fig:audio_signal}.
 In the physical world, an audio signal is a time-varying change in air pressure called a sound wave.
 We ``hear'' sounds when our ear converts these sound waves into neural stimuli.
 The exact manner in which we perceive a sound wave is influenced by a wide variety of factors, including our sensory system and the brain's psychological response.
-The field of psychoacoustics attempts to measure and codify these factors, and the results can provide useful guidelines about the representation and processing of audio signals \cite{}.
+The field of psychoacoustics attempts to measure and codify these factors, and the results can provide useful guidelines about the representation and processing of audio signals.
+In this section, we present a small overview of some important psychoacoustic principles; a more thorough treatment can be found in \cite{cook1999music,bosi2012introduction}.
 
 \begin{figure}
   \centering
@@ -778,19 +779,24 @@ The field of psychoacoustics attempts to measure and codify these factors, and t
   \label{fig:audio_signal}
 \end{figure}
 
-Three of the most important psychoacoustic charasterics of audio signals are the pitch, loudness, and timbre.
+Three of the most important psychoacoustic characteristics of audio signals are the pitch, loudness, and timbre.
+
+\paragraph{Pitch}
+
 The pitch of a signal mainly depends on its periodicity (e.g.\ how often the signal repeats itself); if a signal is has no periodic components, it might not be perceived as having a pitch.
 The longest periodicity, or the slowest vibration, is referred to as the fundamental frequency $f_0$ of a sound.
-Generally, we can perceive frequencies from 20 Hz to 20,000 Hz, although these limits depend on a variety of factors including the number of independent frequencies in a signal and the healthiness of the listener's auditory system \cite{}.
-Below 20 Hz, we begin to hear the periodicities of an audio signal as distinct events rather than as a ``pitch'' \cite{}.
+Generally, we can perceive frequencies from 20 Hz to 20,000 Hz, although these limits depend on a variety of factors including the number of independent frequencies in a signal and the healthiness of the listener's auditory system.
+Below 20 Hz, we begin to hear the periodicities of an audio signal as distinct events rather than as a ``pitch''.
 
-An additional important characteristic of pitch perception is that it is roughly logarithmic, i.e.\ we perceive the ``distance'' between signals with fundamental frequencies $f_0$ and $2f_0$ to be about the same as $2f_0$ and $4f_0$ \cite{}.
+An additional important characteristic of pitch perception is that it is roughly logarithmic, i.e.\ we perceive the ``distance'' between signals with fundamental frequencies $f_0$ and $2f_0$ to be about the same as $2f_0$ and $4f_0$.
 This may be one reason that the spacing between pitches (called semitones) in Western music is defined on a logarithmic scale.
-In addition, our innear ear has different regions which are sensitive to different ranges of frequencies, which are also spaced roughly on a logarithmic scale.
-This helps our auditory system to distinguish between sources sounding simultaneously which differ in pitch.
-Whether or not a given signal is perceived as having multiple pitches or sources (e.g. in the case of multiple notes being played simultaneously on a single instrument) depends both on the characteristics of the signal and on psychological factors.
+In addition, our inner ear has different regions which are sensitive to different ranges of frequencies, which are also spaced roughly on a logarithmic scale.
+This helps our auditory system distinguish between sources sounding simultaneously which differ in pitch.
+Whether or not a given signal is perceived as having multiple pitches or sources (e.g.\ in the case of multiple notes being played simultaneously on a single musical instrument) depends both on the characteristics of the signal and on psychological factors.
 
-Loudness corresponds to how ``strong'' a sound is perceived as being and most directly depends on the signal's ``sound pressure level``.
+\paragraph{Loudness}
+
+Loudness corresponds to how ``strong'' a sound is perceived as being and most directly depends on the signal's sound pressure level (SPL).
 The SPL is proportional to the logarithm of the signal's amplitude and is measured in Decibels (dB).
 In addition, perception of loudness is also heavily frequency-dependent; for example, a 20 dB signal with a fundamental frequency 1 kHz will be perceived to have the same loudness as a 100 Hz signal at about 45 dB.
 This relationship is typically characterized by equal loudness curves, which relate the required sound pressure level for each frequency to be perceived as the same loudness.
@@ -803,6 +809,8 @@ An example curve can be seen in \cref{fig:equal_loudness}.
   These curves reveal important characteristics about our sensitivity to different frequencies; for example, in order for a low-frequency sound to be perceived loudly, they must have a relatively high sound pressure level.}
   \label{fig:equal_loudness}
 \end{figure}
+
+\paragraph{Timbre}
 
 The remaining characteristics of a sound which allow it to be distinguished from other sounds are referred to as its ``timbre''.
 For example, the different frequencies (or periodicities) present and the evolution of their relative amplitudes over time strongly effect our perception of a sound.
@@ -821,12 +829,12 @@ Being sensitive to timbre can help us distinguish between the voices of differen
 
 Typically, the temporal spacing between subsequent elements in a digital signal is fixed and is determined by the signal's sampling frequency $f_s$.
 This is in contrast to continuous-time signals encountered in the real world, such as sonic waves, which can be considered functions of a continuous timebase.
-A fundamental relationship between the content of signals and their sampling frequency is codified in the Sampling Theorem \cite{}.
+A fundamental relationship between the content of signals and their sampling frequency is codified in the Sampling Theorem.
 This theorem states that any continuous-time signal can be perfectly reconstructed from discrete-time samples at sampling frequency $f_s$ as long as it has no frequency content above $f_s/2$.
 
 Due to our hearing range, in audio signals we are mostly interested in reproducing signals up to 20,000 Hz.
 Following the sampling theorem, this implies that in order to perfectly perceptually reconstruct audio signals, we should utilize a sampling rate of at least 40,000 Hz.
-In practice, a common sampling rate for audio signals is 44,100 Hz, which is utilized on compact discs and other recorded audio formats \cite{}.
+In practice, a common sampling rate for audio signals is 44,100 Hz, which is utilized on compact discs and other recorded audio formats.
 Because our sensitivity to high frequencies is limited, for analysis purposes it is common to use a lower sampling rate.
 Throughout this thesis, we will utilize a sampling rate of 22,050 Hz.
 
@@ -836,8 +844,9 @@ In many cases, it is useful to decompose a signal into the combination of simple
 An extremely common method is the Fourier Transform, which is capable of representing any signal as a sum of complex sinusoids.
 This representation is well-suited for signals from the natural world which are produced by vibrating objects such as musical instruments.
 In addition, as mentioned above, our inner ear performs a similar decomposition because its different regions vary in their sensitivity to different frequencies.
+\cite{smith2011spectral,smith2007mathematics} give a comprehensive discussion of time-frequency analysis of audio signals.
 
-For a discrete-time (i.e.\ sampled at discrete points in time, rather than being defined on a continuous timebase) length-$N$ signal $x$, the Discrete Fourier Transform (DFT) is computed as
+For a discrete-time length-$N$ single-dimensional signal $x$, the Discrete Fourier Transform (DFT) is computed as
 \begin{equation}
         X[k] = \sum_{n = 1}^N x[n] e^{-2\pi \jmath (k - 1)(n - 1)/N}, k \in \{1, \ldots, N\}
 \end{equation}
@@ -856,7 +865,7 @@ If the real-valued input signal has sampling rate $f_s$, then the $k$th Fourier 
 \end{equation}
 
 The DFT provides us with a decomposition of a signal in the form of complex-valued coefficients for sinusoids of varying frequency.
-However, for most audio signals, the human auditory system is much more sensitive to the {\em magnitude} of different frequencies than it is to the phase of these components \cite{}.
+However, for most audio signals, the human auditory system is much more sensitive to the {\em magnitude} of different frequencies than it is to the phase of these components.
 For this reason, for analysis tasks the phase of the Fourier coefficients $X[k]$ is typically discarded and the magnitude $|X[k]|$ is used instead.
 As an example, the magnitude spectrum of the audio signal shown in \cref{fig:audio_signal} is shown in \cref{fig:spectrum}.
 
@@ -876,7 +885,7 @@ The DFT as defined above can only provide a global summary in the form of a spec
 This prompts the use of the Short-Time Fourier Transform (STFT), which computes a series of spectra over short, potentially overlapping ``frames'' of the signal.
 This produces a ``spectrogram'', computed by
 \begin{equation}
-        S[n, k] = \sum_{m = 1}^M w[m]x[m + nR - M/2] e^{-2\pi \jmath (k - 1)(m - 1)/M}, k \in \{1, \ldots, M\}
+        S[n, k] = \sum_{m = 1}^M w[m]x[m - M/2 + nR] e^{-2\pi \jmath (k - 1)(m - 1)/M}, k \in \{1, \ldots, M\}
 \end{equation}
 where $w \in \mathbb{R}^{M}$ is a ``window'' function and $R$ is the ``hop'' size which determines how much (if at all) subsequent frames overlap.
 The resulting spectrogram $S$ will contain $\lfloor (N - M)/R \rfloor$ spectra, each with $M$ Fourier coefficients.
@@ -899,7 +908,7 @@ Important considerations when computing a spectrogram include the window functio
 
 \paragraph{Window Function}
 
-The choice of window function is generally a trade-off between the resolution and the sensitivity of the individual spectra \cite{}.
+The choice of window function is generally a trade-off between the resolution and the sensitivity of the individual spectra.
 For example, given a signal which consists of a pure tone (i.e.\ a sinusoid) at some frequency $f_0$, using a windowing function with low resolution would result in spectral energy being spread amongst the frequency bins around the one corresponding to $f_0$.
 On the other hand, using a window function with low sensitivity will result in the inability to detect low-amplitude signals in the presence of noise or other high-amplitude signals.
 The rectangular window
@@ -931,7 +940,7 @@ Based on these constraints, a common choice is to utilize a frame size of 2048 s
 
 Typically, there is some overlap between subsequent frames in an STFT.
 This is a necessity when using windows which taper to zero in order to avoid loss of information.
-For the Hann window in particular, in order to retain all information the hop size must be set no larger than half of the frame size \cite{}.
+For the Hann window in particular, in order to retain all information the hop size must be set no larger than half of the frame size.
 Using more overlap can also smooth subsequent spectra in an STFT and can provide an additional form of temporal resolution, at a higher computational expense.
 We therefore utilize a hop size of 512 samples throughout this thesis which corresponds to 23.2 ms at 22,050 Hz; this is believed to be at the upper limit of the rate at which our auditory system performs spectral analysis \cite{}.
 
@@ -940,7 +949,7 @@ We therefore utilize a hop size of 512 samples throughout this thesis which corr
 As discussed in \cref{sec:psychoacoustics}, our sensitivity to loudness is closer to logarithmic than linear in amplitude.
 The magnitude spectrograms we have studied so far report the amplitude of different frequencies across time.
 We can make this representation more similar to our perception by using log-magnitude spectra, i.e.\ computing the logarithm of the magnitude in each frequency bin.
-While sound pressure level is defined on a specific scale based on a reference SPL of 0 dB corresponding to the quietest perceptable sound, it is unimportant for the scale to be calibrated in analysis tasks which are scale invariant.
+While sound pressure level is defined on a specific scale based on a reference SPL of 0 dB corresponding to the quietest perceptible sound, it is unimportant for the scale to be calibrated in analysis tasks which are scale invariant.
 
 A log-magnitude version of the spectrogram from \cref{fig:spectrogram} is shown in \cref{fig:log_spectrogram}.
 Note that this representation shows much more energy in higher frequencies.
@@ -959,12 +968,12 @@ Accurately representing the our perception of these harmonics is important for r
 An additional way in which the spectrograms we have discussed so far do not match perception is that they are linear in frequency (as defined by \cref{eq:bin_freq}).
 This is in contrast to our roughly logarithmic perception of pitch, as well as the spacing of semitones in the common Western music scale.
 As a result, it can be beneficial to use a time-frequency representation which is also logarithmic in frequency.
-A common choice is a constant-Q transform (CQT), which has frequency bins which are logarithmically spaced and all have equal center frequencies-to-bandwidth ratios \cite{}.
-Fortunately, like the DFT, fast algorithms exist for computing the CQT \cite{} \cite{}.
+A common choice is a constant-Q transform (CQT), which has frequency bins which are logarithmically spaced and all have equal center frequencies-to-bandwidth ratios \cite{brown1991calculation}.
+Fortunately, like the DFT, fast algorithms exist for computing the CQT \cite{brown1992efficient,schorkhuber2010constant}.
 
-In this thesis, we will utilize the transform proposed by \cite{}, which is defined as follows:
+In this thesis, we will utilize the transform proposed by \cite{schorkhuber2010constant}, which is defined as follows:
 \begin{equation}
-        S[n, k] = \frac{1}{M_k} \sum_{m}^{M_k} w_k[m]x[m - M_k/2 + nR] e^{2\pi \jmath m f_k/f_s}
+        S[n, k] = \frac{1}{M_k} \sum_{m = 1}^{M_k} w_k[m]x[m - M_k/2 + nR] e^{2\pi \jmath m f_k/f_s}
 \end{equation}
 where $f_k$ is the center frequency of each of the $k$ bins, $R$ is the hop size, $w_k \in \mathbb{R}^{M_k}$ is a window function, $f_s$ is the sampling frequency, and
 \begin{equation}
