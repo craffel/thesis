@@ -68,9 +68,9 @@ In this case, it is beneficial to have a loss function which is continuous and s
 A common solution to this problem is to use a surrogate loss function which has the desired properties (e.g.\ smoothness) and whose minimization will also minimize $\mathcal{L}$.
 
 There are supervised learning methods which do not follow the above framework.
-For example, the k-nearest neighbors algorithm is a classification algorithm which labels its input by assigning it the most common $y$ among the $k$ points in $\mathcal{S}$ which are closest to the input.
+For example, k-nearest neighbors \cite{cover1967nearest} is a classification algorithm which labels its input by assigning it the most common $y$ among the $k$ points in $\mathcal{S}$ which are closest to the input.
 This classifier has no loss function or indeed any parameters other than $k$ and $\mathcal{S}$ itself (i.e.\ it is nonparametric).
-However, all of the methods we will utilize in this thesis follow the recipe of defining a model with parameters $\theta$ which are adjusted by miniimzing the average loss over $\mathcal{S}$.
+However, all of the methods we will utilize in this thesis follow the recipe of defining a model with parameters $\theta$ which are adjusted by minimizing the average loss over $\mathcal{S}$.
 
 \subsection{Sequential Data}
 
@@ -96,10 +96,10 @@ Speech recognition is an exemplary case, where a sequence of discrete words must
 
 Most of the machine learning algorithms used in this thesis will come from a class of models known as ``neural netorks''.
 Neural networks can be considered learnable functions which consist of a sequence of nonlinear processing stages.
-First proposed in the XXXXs, these models were designed as an artificial model of the way the brain was understood to work at that time.
+First proposed in the 1940s \cite{mcculloch1943logical,hebb1949organization}, these models were designed as an artificial model of the way the brain was understood to work at that time.
 The modern understanding of the brain has diverged substantially from this model; nevertheless, the name ``neural network'' has endured.
 
-A predecessor to modern neural network models was the perceptron algorithm.
+A predecessor to modern neural network models was the perceptron algorithm \cite{rosenblatt1958perceptron}.
 The perceptron is a simple linear model which can perform binary classification of its input.
 Given an input feature vector $x \in \mathbb{R}^D$, the perceptron computes
 \begin{equation}
@@ -121,7 +121,7 @@ A common visualization of the perceptron is shown in \cref{fig:perceptron}.
   \label{fig:perceptron}
 \end{figure}
 
-The perceptron algorithm can only correctly classify its input when the data which falls into the two classes is linearly separable by class.
+The perceptron algorithm can only correctly classify its input when the data is linearly separable by class.
 To remedy this, the ``multilayer perceptron'' was proposed, which can be viewed as a sequence of perceptrons organized in ``layers'', each taking its input from the previous perceptron.
 In the multilayer perceptron, each perceptron can output a vector of values rather a single value.
 Furthermore, rather than producing a binary 1 or 0 depending on the sign of $w^\top x + b$, the layers in a multilayer perceptron may use any of a variety of nonlinear functions.
@@ -144,12 +144,12 @@ Under this generic definition, multilayer perceptrons are, in fact, equivalent t
   \label{fig:network}
 \end{figure}
 
-In a seminal paper, it was shown that feedforward networks with at least two layers are {\em universal function approximators} when the activation function of each layer is a ``squashing'' function (i.e.\ is monotonically increasing, $\lim_{x \rightarrow \infty} \sigma(x) = 1$ and $\lim_{x \rightarrow -\infty} \sigma(x) = 0$).
+In parallel seminal works \cite{cybenko1989approximation, hornik1989multilayer}, it was shown that feedforward networks with at least two layers are {\em universal function approximators} when the activation function of each layer is a ``squashing'' function (i.e.\ is monotonically increasing, $\lim_{x \rightarrow \infty} \sigma(x) = 1$ and $\lim_{x \rightarrow -\infty} \sigma(x) = 0$).
 This implies that such models can approximate any function to arbitrary precision.
-Similar results were later demonstrated for other classes of activation functions.
+Similar results were later demonstrated for other classes of activation functions, typically utilizing the Stone-Weierstrass theorem.
 
 Of course, the ability of a model to approximate any function is only valuable when there is a reliable method to adjust its parameters so that the desired function is suitably approximated.
-Currently, the most pervasive method to achieve this is ``backpropagation'', which computes the gradient of an error function which measures the deviation between the network's output and the target output with respect to the model parameters.
+Currently, the most pervasive method to achieve this is ``backpropagation'', which computes the gradient of an error function which measures the deviation between the network's output and the target output with respect to the model parameters \cite{rumelhart1986learning}.
 We give a derivation of backpropagation for feedforward networks in the following section.
 In the supervised learning context, the error function computes the deviation between the network's output and the target for input-target pairs in the training set $\mathcal{S}$.
 As a result, for supervised learning, universal approximation only implies that the multilayer feedforward network can ``memorize'' the target output for each input in $\mathcal{S}$, not that it will accurately approximate the data's underlying joint probability distribution $p(x, y)$.
@@ -167,10 +167,10 @@ These partial derivatives can then be used to update the network's parameters us
 In truth, backpropagation is a special case of the more generic ``reverse-mode automatic differentiation'' method.
 Deriving backpropagation involves numerous clever applications of the chain rule for functions of vectors.
 
-While originally introduced earlier, the wide-spread adoption of backpropagation for training neural networks is largely thanks to Rumelhart et.\ al's seminal paper \cite{}.
+While originally introduced earlier, the wide-spread adoption of backpropagation for training neural networks is largely thanks to Rumelhart et.\ al's seminal paper \cite{rumelhart1986learning}.
 Backpropagation is so successful and widely applied that in some sense the term ``neural network'' has become genericized to mean ``a machine learning model for which backpropagation is applicable''.
 Because it is fundamental in many of the approaches proposed in this thesis, we give a full derivation of backpropagation for a simple multilayer feedforward network in this section.
-A similar, higher-level and more verbose derivation can be found at \cite{}.
+A similar, higher-level and more verbose derivation can be found at \cite{nielsen2015neural}.
 
 By way of review, the chain rule is a way to compute the derivative of a function whose variables are themselves functions of other variables.
 If $\mathcal{L}$ is a scalar-valued function of a scalar $z$ and $z$ is itself a scalar-valued function of another scalar variable $w$, then the chain rule states that
@@ -368,43 +368,43 @@ This can effectively prevent the parameters of the first few layers from being a
 Fortunately, there has been a great deal of development into methods for mitigating these issues.
 Collectively, these techniques have been dubbed ``deep learning'' thanks to their applicability to networks with many layers.
 In this section, we motivate and describe those techniques which are used in this thesis.
-Practical and broader overviews can be found in \cite{bengio} \cite{lecun} \cite{nature}.
+Practical and broader overviews can be found in \cite{bengio2012practical, lecun2012efficient, lecun2015deep}.
 
 \paragraph{Number and Size of Layers}
 
 When designing a neural network model, one of the first choices which must be made is the number of layers and their sizes (output dimensionality).
-Because early theory proved that networks with a single layer could approximate any function arbitrarily well given that the layer was sufficiently ``wide'' (high-dimensional) \cite{}, and because networks with many layers can be more difficult to train due to the vanishing and exploding gradients problem \cite{}, early applications of neural networks typically only used a single hidden layer.
-However, recent results have shown that using many layers can help networks learn a hierarchical transformation to more and more abstract representations which, for real-world problems, can be highly beneficial \cite{}.
-Coupled with recent advances in training very deep networks \cite{}, the paradigm of ``deep'' networks (having many layers) has come to dominate.
+Because early theory proved that networks with a single layer could approximate any function arbitrarily well given that the layer was sufficiently ``wide'' (high-dimensional) \cite{cybenko1989approximation,hornik1989multilayer}, and because networks with many layers can be more difficult to train due to the vanishing and exploding gradients problem \cite{glorot2010understanding,erhan2009difficulty}, early applications of neural networks typically only used a single hidden layer.
+However, recent results have shown that using many layers can help networks learn a hierarchical transformation to more and more abstract representations which, for real-world problems, can be highly beneficial \cite{bengio2009learning}.
+Coupled with recent advances in training very deep networks \cite{glorot2011deep,glorot2010understanding,bengio2007greedy,hinton2006fast,hinton2012improving,hinton2006reducing,sutskever2013importance,ioffe2015batch,he2015delving,ciresan2010deep}, the paradigm of ``deep'' networks (having many layers) has come to dominate.
 
 Regardless of depth, the dimensionality of each intermediate representation (the ``layer sizes'') must be chosen.
 While increasing the dimensionality may increase modeling power, it also exacerbates overfitting and incurs a greater computational loss.
 However, Graphics Processing Units (GPUs) have recently been used to accelerate neural network models thanks to their ability to quickly perform large matrix multiplications.
-As a result, in modern practice high-dimensional layers are used in combination with regularization techniques \cite{}.
+As a result, in modern practice high-dimensional layers are used in combination with regularization techniques \cite{bengio2012practical}.
 
 \paragraph{Nonlinearities}
 
-A fundamental ingredient of neural networks is the elementwise nonlinearity applied at each layer; without them, the network would only be able to learn linear relationships between its input and output \cite{}.
+A fundamental ingredient of neural networks is the elementwise nonlinearity applied at each layer; without them, the network would only be able to learn linear relationships between its input and output.
 Early work typically used sigmoidal nonlinearities such as the logistic or hyperbolic tangent functions (see \cref{tab:nonlinearities}).
 However, these nonlinearities have a very small gradient for much of their domain which can cause vanishing gradient problems particularly for networks with many layers.
-Recently, the rectifier nonlinearity has become the standard for deep networks due to its computational efficiency and tendency to produce sparse representations \cite{}.
-The rectifier nonlinearity has zero gradient for half of its domain, which can hinder training in some cases; as a result a number of variants have recently been proposed which have been shown empirically to produce better results in some cases \cite{}.
+Recently, the rectifier nonlinearity has become the standard for deep networks due to its computational efficiency and tendency to produce sparse representations \cite{jarrett2009best,glorot2011deep,nair2010rectified}.
+The rectifier nonlinearity has zero gradient for half of its domain, which can hinder training in some cases; as a result a number of variants have recently been proposed which have been shown empirically to produce better results in some cases \cite{maas2013rectifier,he2015delving}.
 
 \paragraph{Regularization}
 
 Due to their tendency to overfit, some form of regularization is typically necessary to ensure that the optimized neural network's variance is not too high.
 A common regularizer which is used in many machine learning models is to include in the loss function a penalty on the norm of the model's parameters.
-In neural networks, adding the $L^2$ penalty $\lambda \sum_i \theta_i^2$ where $\lambda$ is a hyperparameter and $\theta_i$ are the model's parameters (e.g. individual entries of the weight matrices and bias vectors) is referred to as ``weight decay''.
+In neural networks, adding the $L^2$ penalty $\lambda \sum_i \theta_i^2$ where $\lambda$ is a hyperparameter and $\theta_i$ are the model's parameters (e.g. individual entries of the weight matrices and bias vectors) is referred to as ``weight decay'' \cite{hanson1989comparing}.
 This can encourge the weight matrix of a given layer from focusing too heavily (via a very large weight value) on a single dimension of its input.
-A related term is $\lambda \sum_i |\theta_i|$ which effectively encourages parameter values to be zero.
+A related term is $\lambda \sum_i |\theta_i|$ which effectively encourages parameter values to be zero \cite{bengio2012practical}.
 
-A completely different regularization method which has recently proven popular in neural networks is ``dropout'' \cite{}.
+A completely different regularization method which has recently proven popular in neural networks is ``dropout'' \cite{hinton2012improving}.
 In dropout, at each training iteration each dimension of each layer is randomly set to zero with probability $p$.
 After training, the weights in each layer are scaled by $1/p$.
 Dropout intends to prevent the dimensions of the output of a given layer from being too heavily dependent (correlated) with one of the inputs by randomly artificially removing connections.
 More simply, it provides a source of noise which prevents memorization of correspondences in the training set and has repeatedly been shown empirically to be an effective regularizer.
 
-In practice, the technique of ``early stopping'' is almost always used to avoid overfitting in neural network models.
+In practice, the technique of ``early stopping'' is almost always used to avoid overfitting in neural network models \cite{prechelt2012early}.
 To utilize early stopping, during training the performance on a held-out ``validation set'' (over which the parameters of the network are not optimized) is computed.
 Overfitting is indicated by performance degrading on the validation set, which simulates real-world performance.
 As a result, early stopping effectively prevents overfitting by simply stopping training once the performance begins to degrade.
@@ -412,29 +412,29 @@ The measure of performance and criteria for stopping my vary widely from task to
 
 Of course, regularization can be rendered unnecessary when a huge amount of training data is available.
 This is commonly simulated by applying hand-designed realistic deformations to the training data, which is referred to as ``data augmentation''.
-For example, applying elastic distortions to images can allow simple, unregularized neural network models to match the performance of more complex architectures \cite{}.
-Data augmentation has also been explored in the domain of audio and music signals \cite{}.
+For example, applying elastic distortions to images can allow simple, unregularized neural network models to match the performance of more complex architectures \cite{ciresan2010deep}.
+Data augmentation has also been explored in the domain of audio and music signals \cite{mcfee2015software,schluter2015exploring}.
 
 \paragraph{Parameter Initialization}
 
-Because the objective functions used for training neural networks tend to be highly nonconvex, the way parameters are initialized prior to training can have a substantial effect on the solutions found after optimization.
+Because the objective functions used for training neural networks tend to be highly nonconvex, the way parameters are initialized prior to training can have a substantial effect on the solutions found after optimization \cite{sutskever2013importance}.
 In fact, the recent sucess of neural network models was prompted by a new method for setting parameter values prior to supervised training called ``unsupervised pretraining''.
-Unsupervised pretraining starts by training an unsupervised model (e.g.\ a Restricted Boltzmann Machine \cite{} or an autoencoder \cite{}) and then using the parameters from that model to initialize a supervised model.
+Unsupervised pretraining starts by training an unsupervised model (e.g.\ a Restricted Boltzmann Machine \cite{hinton2006reducing,hinton2006fast} or an autoencoder \cite{bengio2007greedy,erhan2009difficulty}) and then using the parameters from that model to initialize a supervised model.
 Ideally, the unsupervised model will take care of disentangling factors of variation and producing a more efficient representation of the input space.
 After initialization with values from the unsupervised model, training of the model proceeds in the normal supervised fashion.
 This can greatly accelerate learning, and is of particular use when there is a great deal more unlabeled data available than labeled data.
 
 It has more recently been shown that unsupervised pretraining can be skipped (provided that there is a sufficient amount of labeled data) by carefully initializing the network's parameters.
 This typically involves sampling the values of the weight matrices from zero-mean Gaussian distributions whose variances are set so that the representation at each layer's output has unit variance.
-The actual variances used for the random variables depends on the input and output dimensionality as well as the nonlinearity; \cite{} provides a derivation for linear networks, \cite{} for rectifier networks and \cite{} gives a generic empirical procedure for any network architecture.
-An alternative is to use orthogonal matrices \cite{} or to use a sparse initialization so that a fixed number of output dimensions are non-zero \cite{}.
+The actual variances used for the random variables depends on the input and output dimensionality as well as the nonlinearity; \cite{glorot2010understanding} provides a derivation for linear networks, \cite{he2015delving} for rectifier networks and \cite{mishkin2015all} gives a generic empirical procedure for any network architecture.
+An alternative is to use orthogonal matrices \cite{saxe2013exact} or to use a sparse initialization so that a fixed number of output dimensions are non-zero \cite{sutskever2013importance}.
 
 
 \paragraph{Input Normalization}
 
 Most of the analysis performed on neural networks in order to determine how to facilitate training rely on the assumption that the feature dimensions of the input to the network have zero mean and unit variance.
 A necessary step in order to take advantage of many of these tricks is then to standardize the feature dimensions of the input, typically using statistics computed on the training set.
-An alternative which can also facilitate convergence is to whiten data using Pricipal Component Analysis before presenting it to the network.
+An alternative which can also facilitate convergence is to whiten data using Pricipal Component Analysis before presenting it to the network \cite{lecun2012efficient}.
 
 \paragraph{Model Architecture}
 
@@ -450,11 +450,11 @@ A natural extension to feedforward networks are {\em recurrent} connections, whi
 The resulting model can be considered a learnable function which at each time step produces an output based on its current input and previous output.
 This class of models, called a recurrent networks, are well-suited for sequential data due to their ability to model temporal dependencies.
 
-Training of recurrent networks is typically accomplished using ``backpropagation through time'' (BPTT) \cite{}.
+Training of recurrent networks is typically accomplished using ``backpropagation through time'' (BPTT) \cite{werbos1990backpropagation}.
 BPTT is a simple extension of backpropagation where, given a sequence of length $T$, the recurrent network is ``unrolled'' over time and is treated as a feedforward network with $T$ layers, each of which corresponds to a single time step.
-While BPTT provides a straightforward way to train recurrent networks, this approach can suffer dramatically from vanishing and exploding gradients for large values of $T$ for the same reasons that networks with many layers do \cite{}.
-The use of gating architectures \cite{hochreiter1997long,cho2014learning}, sophisticated optimization techniques \cite{martens2011learning,sutskever2013importance}, gradient clipping \cite{pascanu2012difficulty,graves2013generating}, and/or careful initialization \cite{sutskever2013importance,jaegar2012long,mikolov2014learning,le2015simple} can help mitigate this issue and has facilitated the success of RNNs in a variety of fields (see e.g.\ \cite{graves2012supervised} for an overview).
-However, these approaches don't {\em solve} the problem of vanishing and exploding gradients for recurrent networks, and as a result these models are in practice typically only applied in tasks where sequential dependencies span at most hundreds of time steps \cite{martens2011learning,sutskever2013importance,le2015simple,hochreiter1997long,krueger2015regularizing,arjovsky2015unitary}.
+While BPTT provides a straightforward way to train recurrent networks, this approach can suffer dramatically from vanishing and exploding gradients for large values of $T$ for the same reasons that networks with many layers do \cite{bengio1994learning,hochreiter1997long,pascanu2013difficulty}.
+The use of gating architectures \cite{hochreiter1997long,cho2014learning}, sophisticated optimization techniques \cite{martens2011learning,sutskever2013importance}, gradient clipping \cite{pascanu2013difficulty,graves2013generating}, and/or careful initialization \cite{sutskever2013importance,jaegar2012long,mikolov2014learning,le2015simple} can help mitigate this issue and has facilitated the success of RNNs in a variety of fields (see e.g.\ \cite{graves2012supervised} for an overview).
+However, these approaches don't {\em solve} the problem of vanishing and exploding gradients for recurrent networks, and as a result these models are in practice typically only applied in tasks where sequential dependencies span at most hundreds of time steps.
 Because the representations used for audio data are typically at least thousands of time steps in length, we will not use recurrent networks in this thesis, although we will use them as a point of comparison and motivation in some places.
 
 \subsubsection{Convolutional Networks}
@@ -470,8 +470,8 @@ The ``fully-connected'' feedforward networks we have discussed so far cause the 
 This ignores the structure of data with an ordered axis and may be inefficient when most of the dependencies are local.
 The {\em convolutional network} architecture is formulated specifically to take advantage of this common structure.
 As their name suggests, rather than utilizing an affine transformation using a fully-connected matrix, layers in these models convolve small filter ``kernels'' across their input.
-Networks with this structure were first proposed by Fukushima \cite{} and training them with backpropagation was popularized by LeCun et.\ al \cite{}.
-Recently, convolutional networks have provided breakthroughs in a variety of domains, including image classification \cite{}, speech recognition \cite{}, music information retrieval \cite{}, and natural language processing \cite{}.
+Networks with this structure were first proposed by Fukushima \cite{fukushima1980neocognitron} and training them with backpropagation was popularized by LeCun et.\ al \cite{lecun1989backpropagation}.
+Recently, convolutional networks have provided breakthroughs in a variety of domains, including image classification \cite{krizhevsky2012imagenet,he2015delving,szegedy2015going}, speech recognition \cite{abdel2012applying,sainath2013deep}, music information retrieval \cite{humphrey2012rethinking,schluter2014improved,ullrich2014boundary,mcfee2015software,schluter2015exploring}, and natural language processing \cite{kim2014convolutional,zhang2015text}.
 
 In the two-dimensional case (as used in this thesis), a convolutional layer takes as input $x \in \mathbb{R}^{M \times I_x \times I_y}$ and outputs $y \in \mathbb{R}^{N \times J_x \times J_y}$ by computing
 \begin{equation}
@@ -483,7 +483,7 @@ This operation is visualized in \cref{fig:convolution}.
 The first dimension of $x$ and $y$ is referred to as the ``channels'' and can be considered different views or representations of the data (e.g.\ R, G, and B channels in images or left and right channels in a stereo audio recording).
 The remaining dimensions are feature dimensions each of which has an inherent ordering, which is exploited by the translation inherent in the convolution operation.
 The exact form of \cref{eq:convolution} depends on a variety of design choices, such as the convolution's stride, whether the convolution is zero-centered, whether biases are shared across input channels, whether a correlation or convolution is computed, and whether the input will be zero-padded.
-We forgo a complete enumeration of these differences here and instead refer to \cite{}, which provides a thorough discussion of the arithmetic involved in convolutional networks.
+We forgo a complete enumeration of these differences here and instead refer to \cite{dumoulin2016guide}, which provides a thorough discussion of the arithmetic involved in convolutional networks.
 
 \begin{figure}
   \centering
@@ -515,7 +515,7 @@ Because pooling layers effectively downsample their input, they can be used to i
 
 Finally, in convolutional networks it is common for the last few layers to be standard fully-connected layers.
 This gives the output of the network access to the entire input region.
-In this framework, the series of convolutional and pooling layers transform and downsample the input, providing appropriate invariances and often learning a hierarchy of higher and higher-level representations \cite{}.
+In this framework, the series of convolutional and pooling layers transform and downsample the input, providing appropriate invariances and often learning a hierarchy of higher and higher-level representations \cite{zeiler2014visualizing}.
 In domains where none of the dimensions of the input vary from sample to sample, all of the channels and dimensions at the output of the convolutional portion of the network are flattened prior to being passed to the fully-connected layers.
 When one or more dimensions are variable in size, only the fixed-size dimensions are processed by the fully-connected layers.
 For example, in sequences where the sequence length varies, the output of the convolutional layersfor each time step are passed to the fully-connected layers independently.
@@ -525,7 +525,7 @@ For example, in sequences where the sequence length varies, the output of the co
 In modern practice, the datasets used for training neural networks are typically huge, so optimizing their parameters over the entire training set is often inefficient and sometimes infeasible.
 The prevailing solution is to train over a tiny subset of the training set (called a ``minibatch'') which is sampled randomly at each iteration.
 This causes the objective to change stochastically at each iteration of optimization.
-Beyond practical limitations, using a stochastic objective has also been shown to help avoid stationary points because the objective surface is constantly changing \cite{}.
+Beyond practical limitations, using a stochastic objective has also been shown to help avoid stationary points because the objective surface is constantly changing \cite{lecun2012efficient}.
 
 So far, we have only alluded to the fact that the gradient information produced by backpropagation is used to train a neural network.
 This is achieved using gradient descent methods, which specify a formula to adjust the network's parameters to minimize an objective.
@@ -542,7 +542,7 @@ The stochastic objective arising from training on minibatches and the requiremen
 Effective stochastic optimization techniques typically include mechanisms for smoothing the updates, which helps mitigate noise from stochasticity, for estimating second-order information, which improves convergence, and for adaptively updating different parameters by different amounts.
 In addition, most optimization methods have at least one hyperparameter; good optimization techniques are able to be effective without being particularly sensitive to their hyperparameter values.
 In this section, we discuss some of the more popular stochastic optimization methods, particularly those which are used or referenced to in this thesis.
-Similar overviews are available in \cite{}, and \cite{} provides a comparison of many of these techniques on a variety of toy optimization problems.
+Similar overviews are available in \cite{ruder2016overview,bayer2015climin}, and \cite{schaul2013unit} provides a comparison of many of these techniques on a variety of toy optimization problems.
 
 In the following, we will use $\mathcal{L}$ to refer to the loss function being minimized.
 $\mathcal{L}$ is typically a function of the target output, the input, and the parameters being optimized; because all but the latter can be treated as a constant, we omit those terms in this section.
@@ -557,10 +557,10 @@ Stochastic gradient descent (SGD) simply updates each parameter by subtracting t
 \end{equation}
 SGD provides the fundamental ingredient on which other stochastic optimization methods are built.
 Provided that $\eta$ is set correctly, SGD will decrease the loss function at each iteration because it is adjusting the parameters in the negative gradient direction.
-However, if $\eta$ is too large, SGD can diverge (increase the loss function or oscillate between increasing and decreasing it); if it's too small, it will decrease the objective value very slowly \cite{}.
+However, if $\eta$ is too large, SGD can diverge (increase the loss function or oscillate between increasing and decreasing it); if it's too small, it will decrease the objective value very slowly \cite{lecun2012efficient}.
 This sensitivity to the setting of $\eta$ is visualized in \cref{fig:learning_rate}.
 In addition, when the loss surface is ill-conditioned (i.e.\ the curvature of the loss surface is dramatically different along different parameter axes), convergence can also be extremely slow because $\eta$ must be set small enough so that it does not diverge along any parameter axis.
-Nevertheless, SGD can be effective when $\eta$ is chosen correctly; a common heuristic is to choose the largest value of $\eta$ which does not cause divergence by starting with a large $\eta$ and decreasing it by a factor of $3$ until optimization no lonver diverges \cite{}.
+Nevertheless, SGD can be effective when $\eta$ is chosen correctly; a common heuristic is to choose the largest value of $\eta$ which does not cause divergence by starting with a large $\eta$ and decreasing it by a factor of $3$ until optimization no lonver diverges \cite{bengio2012practical}.
 
 \begin{figure}
   \centering
@@ -578,20 +578,20 @@ Nevertheless, SGD can be effective when $\eta$ is chosen correctly; a common heu
 
 In SGD, the gradient $\nabla \mathcal{L}(\theta_t)$ often changes rapidly at each iteration due to the fact that the loss is being computed over different data.
 It can therefore be beneficial to smooth the updates at each iteration.
-This can be achieved by re-using the gradient value from the previous iteration, scaled by a ``momentum'' hyperparameter $\mu$, as follows \cite{}:
+This can be achieved by re-using the gradient value from the previous iteration, scaled by a ``momentum'' hyperparameter $\mu$, as follows \cite{polyak1964some}:
 
 \begin{align}
 v_{t + 1} &= \mu v_t - \eta \nabla \mathcal{L}(\theta_t) \\
 \theta_{t + 1} &= \theta_t + v_{t+1}
 \end{align}
 
-In addition, it has been argued that including the previous gradient step has the effect of approximating some second-order information about the gradient because directions with low curvature will tend to persist across iterations and accumulate, which can mitigate conditioning issues \cite{}.
+In addition, it has been argued that including the previous gradient step has the effect of approximating some second-order information about the gradient because directions with low curvature will tend to persist across iterations and accumulate, which can mitigate conditioning issues \cite{sutskever2013importance}.
 In practice, $\mu$ is often set close to $1$; this will cause parameters to change slowly from iteration to iteration.
-While early theory and intuition suggested that some of the benefits of momentum are lost in the stochastic setting \cite{}, it can be particularly beneficial in the early stages of learning before the loss function is close to any minima.
+While early theory and intuition suggested that some of the benefits of momentum are lost in the stochastic setting \cite{lecun2012efficient}, it can be particularly beneficial in the early stages of learning before the loss function is close to any minima.
 
 \subsubsection{Nesterov's Accelerated Gradient}
 
-In Nesterov's Accelerated Gradient (NAG) \cite{}, the gradient of the loss at each step is computed at $\theta_t + \mu v_t$ instead of $\theta_t$.  The update rules are then as follows:
+In Nesterov's Accelerated Gradient (NAG) \cite{nesterov1983method}, the gradient of the loss at each step is computed at $\theta_t + \mu v_t$ instead of $\theta_t$.  The update rules are then as follows:
 
 \begin{align}
 v_{t + 1} &= \mu v_t - \eta \nabla\mathcal{L}(\theta_t + \mu v_t) \\
@@ -600,11 +600,11 @@ v_{t + 1} &= \mu v_t - \eta \nabla\mathcal{L}(\theta_t + \mu v_t) \\
 
 In momentum, the parameter update could be written $\theta_{t + 1} = \theta_t + \mu v_t - \eta \nabla \mathcal{L}(\theta_t)$, so NAG effectively computes the gradient at the new parameter location but without considering the gradient term (i.e.\ using the first two terms of this update only).
 In practice, this causes NAG to behave more stably than regular momentum in many situations, and so it is often chosen over classical momentum.
-A more thorough analysis can be found in \cite{}.
+A more thorough analysis can be found in \cite{sutskever2013importance}.
 
 \subsubsection{Adagrad}
 
-Adagrad \cite{} effectively rescales the learning rate for each parameter according to the history of the gradients for that parameter.
+Adagrad \cite{duchi2011adaptive} effectively rescales the learning rate for each parameter according to the history of the gradients for that parameter.
 This is done by dividing each term in $\nabla \mathcal{L}$ by the square root of the sum of squares of its historical gradient:
 \begin{align}
 g_{t + 1} &= g_t + \nabla \mathcal{L}(\theta_t)^2 \\
@@ -614,11 +614,10 @@ where division is elementwise and $\epsilon$ is a small constant included for nu
 Rescaling in this way effectively lowers the learning rate for parameters which consistently have large gradient values, which can be particularly useful in ill-conditioned settings.
 It also effectively decreases the learning rate over time, because the sum of squares will continue to grow with the iteration.
 This can prove beneficial as the loss function becomes close to a minimum, where large changes in the loss function would be detrimental.
-\cite{} provides a discussion of its theoretical guarantees and empirical benefits.
 
 \subsubsection{RMSProp}
 
-In its originally proposed form \cite{}, RMSProp is very similar to Adagrad.
+In its originally proposed form \cite{tieleman2012lecture}, RMSProp is very similar to Adagrad.
 The only difference is that the $g_t$ term is computed as an exponentially decaying average instead of an accumulated sum.
 This makes $g_t$ an estimate of the second moment of $\nabla \mathcal{L}$ and prevents the learning rate from effectively shrinking over time.
 The name "RMSProp" comes from the fact that the update step is normalized by a decaying approximate RMS of recent gradients.
@@ -630,10 +629,10 @@ g_{t + 1} &= \gamma g_t + (1 - \gamma) \nabla \mathcal{L}(\theta_t)^2 \\
 \end{align}
 
 In the original lecture slides where it was proposed, $\gamma$ is set to $.9$, but it is most commonly treated as a variable hyperparameter.
-In \cite{}, it is shown that the $\sqrt{g_{t + 1}}$ term approximates (in expectation) the diagonal of the absolute value of the Hessian matrix (assuming the update steps are $\mathcal{N}(0, 1)$ distributed).
+In \cite{dauphin2015rmsprop}, it is shown that the $\sqrt{g_{t + 1}}$ term approximates (in expectation) the diagonal of the absolute value of the Hessian matrix (assuming the update steps are $\mathcal{N}(0, 1)$ distributed).
 It is also argued that the absolute value of the Hessian is better to use for non-convex problems which may have many saddle points.
 
-Alternatively, \cite{} defines RMSProp with an additional first moment approximator $m_t$ and a momentum term $v_t$:
+Alternatively, \cite{graves2013generating} defines RMSProp with an additional first moment approximator $m_t$ and a momentum term $v_t$:
 \begin{align}
 m_{t + 1} &= \gamma m_t + (1 - \gamma) \nabla \mathcal{L}(\theta_t) \\
 g_{t + 1} &= \gamma g_t + (1 - \gamma) \nabla \mathcal{L}(\theta_t)^2 \\
@@ -645,7 +644,7 @@ Including the first-order moment estimate in the denominator in this way causes 
 
 \subsubsection{Adam}
 
-Adam \cite{} is somewhat similar to Adagrad and RMSProp in that it computes a decayed moving average of the gradient and squared gradient (first and second moment estimates) at each time step.
+Adam \cite{kingma2015adam} is somewhat similar to Adagrad and RMSProp in that it computes a decayed moving average of the gradient and squared gradient (first and second moment estimates) at each time step.
 It differs mainly in two ways: First, the separate moving average coefficients $\gamma_1$ and $\gamma_2$ are used for first and second moments respectively (\cref{eq:adam_m} and \cref{eq:adam_g}).
 Second, because the first and second moment estimates are initialized to zero, some bias-correction is used to counteract the resulting bias towards zero (\cref{eq:adam_mhat} and \cref{eq:adam_ghat}).
 Given hyperparameters $\gamma_1$, $\gamma_2$, $\lambda$, and $\eta$, and setting $m_0 = 0$ and $g_0 = 0$, the update rule is as follows:
@@ -682,7 +681,7 @@ In practice, this type of problem is often tackled by adjusting parameters by ha
 This approach can be extremely time consuming and expensive and may produce suboptimal results, so various approaches for automating this process have been proposed.
 A popular choice is ``grid search'', which first quantizes any continuously-valued parameters and then exhaustively tries all combinations of all settings.
 This approach is only feasible when there are few parameters and possible settings due to the exponential number of trials which must be run.
-In addition, it has been shown that grid search is often less efficient than simply randomly trying different parameter values, particularly when the setting of one or more parameters does not have a strong effect on the objective value \cite{}.
+In addition, it has been shown that grid search is often less efficient than simply randomly trying different parameter values, particularly when the setting of one or more parameters does not have a strong effect on the objective value \cite{bergstra2012random}.
 While grid search and random search can be effective, neither utilize the results of previous trials to inform subsequent parameter settings.
 
 A valuable alternative is Bayesian Optimization, which utilizes all of the information available in previous trials to produce a probabilistic model of the black-box function being optimized.
@@ -690,7 +689,7 @@ This requires more computation than methods which only use local approximations 
 This is particularly valuable when the function itself is expensive to evaluate, as is the case when training machine learning models which take hours, days, or weeks (or when baking cakes, due to the price of ingredients).
 The use of a probabilistic model of the black-box function being optimized both allows for candidate parameter settings to be chosen in a principaled way and for prior information to be integrated into the optimization process.
 We utilize Bayesian Optimization techniques throughout this thesis for black-box optimization of different algorithms and systems.
-This section provides a brief overview of Bayesian Optimization; for more thorough treatments see \cite{}.
+This section provides a brief overview of Bayesian Optimization; for more thorough treatments see \cite{brochu2010tutorial,snoek2012practical}.
 A visualization of Bayesian Optimization is shown in \cref{fig:bayesian_optimization}.
 
 \begin{figure}
@@ -718,7 +717,7 @@ A common choice is the squared exponential kernel
         k(\theta_i, \theta_j) = \mathrm{exp}\left(-\frac{1}{2\omega^2}\|\theta_i - \theta_j\|^2\right)
 \end{equation}
 where $\omega$ is a hyperparameter controlling the width of the kernel.
-\cite{} argues that this kernel is too smooth for practical optimization problems and recommends the use of the Mat\'ern 5/2 kernel instead.
+\cite{snoek2012practical} argues that this kernel is too smooth for practical optimization problems and recommends the use of the Mat\'ern 5/2 kernel instead.
 In general, the covariance function should be defined so that it approaches $1$ as its arguments get closer together and $0$ as they get farther apart.
 The hyperparameters of the covariance function function can either be set according to prior beliefs about the function being modeled, or can be estimated by optimizing the marginal likelihood of the observed function evaluations under the Gaussian process.
 
@@ -744,7 +743,7 @@ where
 \end{align}
 \begin{equation}
 \end{equation}
-This can be used to obtain the predictive distribution (see \cite{} for a derivation)
+This can be used to obtain the predictive distribution (see \cite{rasmussen2006gaussian} for a derivation)
 \begin{equation}
         p(y_{n} | y_T, \theta_T, \theta_n) = \mathcal{N}(\mu_T(\theta_n), \sigma_T^2(\theta_n))
 \end{equation}
@@ -798,7 +797,7 @@ Maximizing the expectation of this improvement function has a closed-form soluti
         \mathrm{EI}(\theta) = (\mu_T(\theta) - y_{best})\Phi\left(\frac{\mu_T(\theta) - y_{best}}{\sigma_T(\theta)}\right) + \sigma(\theta)\phi\left(\frac{\mu_T(\theta) - y_{best}}{\sigma_T(\theta)}\right)
 \end{equation}
 where $\phi$ is the normal probability density function.
-\cite{} claims that Expected Improvement yielded the best performance among acquisition functions for hyperparameter optimization of machine learning systems.
+\cite{snoek2012practical} claims that Expected Improvement yielded the best performance among acquisition functions for hyperparameter optimization of machine learning systems.
 
 \paragraph{Upper Confidence Bound}
 
@@ -997,7 +996,7 @@ Typically, there is some overlap between subsequent frames in an STFT.
 This is a necessity when using windows which taper to zero in order to avoid loss of information.
 For the Hann window in particular, in order to retain all information the hop size must be set no larger than half of the frame size.
 Using more overlap can also smooth subsequent spectra in an STFT and can provide an additional form of temporal resolution, at a higher computational expense.
-We therefore utilize a hop size of 512 samples throughout this thesis which corresponds to 23.2 ms at 22,050 Hz; this is believed to be at the upper limit of the rate at which our auditory system performs spectral analysis \cite{}.
+We therefore utilize a hop size of 512 samples throughout this thesis which corresponds to 23.2 ms at 22,050 Hz; this is believed to be at the upper limit of the rate at which our auditory system performs spectral analysis.
 
 \subsubsection{Log-Magnitude}
 
