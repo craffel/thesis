@@ -102,16 +102,24 @@ The modern understanding of the brain has diverged substantially from this model
 A predecessor to modern neural network models was the perceptron algorithm.
 The perceptron is a simple linear model which can perform binary classification of its input.
 Given an input feature vector $x \in \mathbb{R}^D$, the perceptron computes
-
 \begin{equation}
 f(x) = \begin{cases}
 1,& w^\top x + b > 0\\
 0,& \mathrm{otherwise}
 \end{cases}
+\label{eq:perceptron}
 \end{equation}
-
 where $w \in \mathbb{R}^D$ and $b \in \mathbb{R}$ are the parameters of the model.
 These parameters are adjusted so that the desired label ($1$ or $0$) is produced given different inputs.
+A common visualization of the perceptron is shown in \cref{fig:perceptron}.
+
+\begin{figure}
+  \centering
+  \includegraphics[width=.7\textwidth]{figures/2-perceptron.pdf}
+  \caption[Visualization of a perceptron]{Diagram visualizing the perceptron of \cref{eq:perceptron}.
+  Each entry of $x \in \mathbb{R}^3$ is multiplied by an entry of the weight vector $w$, and the result is summed along with the bias $b$ before being passed into a Heaviside step function.}
+  \label{fig:perceptron}
+\end{figure}
 
 The perceptron algorithm can only correctly classify its input when the data which falls into the two classes is linearly separable by class.
 To remedy this, the ``multilayer perceptron'' was proposed, which can be viewed as a sequence of perceptrons organized in ``layers'', each taking its input from the previous perceptron.
@@ -124,6 +132,17 @@ f(x) = \sigma(W x + b)
 where $\sigma$ is a nonlinear ``activation'' function, $W \in \mathbb{R}^{M \times D}$ is the weight matrix, $b \in \mathbb{R}^M$ is the bias vector, and $M$ is the output dimensionality of the layer.
 The original perceptron is recovered when $\sigma$ is the Heaviside step function and $M = 1$.
 Under this generic definition, multilayer perceptrons are, in fact, equivalent to what are now called feedforward networks; we will use this terminology for the remainder of this thesis.
+\Cref{fig:network} shows a common schematic used to represent feedforward networks.
+
+\begin{figure}
+  \centering
+  \includegraphics[width=\textwidth]{figures/2-network.pdf}
+  \caption[Schematic of a feedforward network]{Schematic of a feedforward network (realized as a belt buckle).
+  Each column of nodes represents the number of units in each layer; this particular diagram shows two input units, a single hidden layer with three units, and a single output unit.
+  Lines indicate connections between units in each layer, i.e.\ entries of each weight matrix.
+  Aside from those in the input layer, each node indicates summing of its input, adding a bias, and applying a nonlinearity.}
+  \label{fig:network}
+\end{figure}
 
 In a seminal paper, it was shown that feedforward networks with at least two layers are {\em universal function approximators} when the activation function of each layer is a ``squashing'' function (i.e.\ is monotonically increasing, $\lim_{x \rightarrow \infty} \sigma(x) = 1$ and $\lim_{x \rightarrow -\infty} \sigma(x) = 0$).
 This implies that such models can approximate any function to arbitrary precision.
@@ -460,10 +479,21 @@ In the two-dimensional case (as used in this thesis), a convolutional layer take
 \label{eq:convolution}
 \end{equation}
 where $w \in \mathbb{R}^{N \times M \times K_x \times K_y}$ are the layer's filters (also referred to as kernels), $\sigma$ is a nonlinearity, and $b \in \mathbb{R}^N$ are the layer's biases.
+This operation is visualized in \cref{fig:convolution}.
 The first dimension of $x$ and $y$ is referred to as the ``channels'' and can be considered different views or representations of the data (e.g.\ R, G, and B channels in images or left and right channels in a stereo audio recording).
 The remaining dimensions are feature dimensions each of which has an inherent ordering, which is exploited by the translation inherent in the convolution operation.
 The exact form of \cref{eq:convolution} depends on a variety of design choices, such as the convolution's stride, whether the convolution is zero-centered, whether biases are shared across input channels, whether a correlation or convolution is computed, and whether the input will be zero-padded.
 We forgo a complete enumeration of these differences here and instead refer to \cite{}, which provides a thorough discussion of the arithmetic involved in convolutional networks.
+
+\begin{figure}
+  \centering
+  \includegraphics[width=\textwidth]{figures/2-convolution.pdf}
+  \caption[Convolution operation]{Visualization of the convolution operation defined in \cref{eq:convolution}.
+  The input and output are shown as $6 \times 6$ and $4 \times 4$ grids of units respectively.
+  The output unit highlighted in green depends on the green input units via a $3 \times 3$ filter, represented as horizontal lines.
+  Convolution involves evaluating this filtering operation at all possible positions in the input.}
+  \label{fig:convolution}
+\end{figure}
 
 From this definition, we can observe a number of beneficial properties of using convolutional networks.
 First, the number of parameters per layer is potentially dramatically decreased: Following the common practice of ``flattening'' dimensions, a fully-connected layer with the same input and output dimensionality would have a weight matrix of shape $NJ_xJ_y \times I_xI_y$, compared with $N \times M \times K_x \times K_y$ with $K_x < J_x \le I_x$ and $K_y < J_y \le I_x$.
@@ -528,8 +558,21 @@ Stochastic gradient descent (SGD) simply updates each parameter by subtracting t
 SGD provides the fundamental ingredient on which other stochastic optimization methods are built.
 Provided that $\eta$ is set correctly, SGD will decrease the loss function at each iteration because it is adjusting the parameters in the negative gradient direction.
 However, if $\eta$ is too large, SGD can diverge (increase the loss function or oscillate between increasing and decreasing it); if it's too small, it will decrease the objective value very slowly \cite{}.
+This sensitivity to the setting of $\eta$ is visualized in \cref{fig:learning_rate}.
 In addition, when the loss surface is ill-conditioned (i.e.\ the curvature of the loss surface is dramatically different along different parameter axes), convergence can also be extremely slow because $\eta$ must be set small enough so that it does not diverge along any parameter axis.
 Nevertheless, SGD can be effective when $\eta$ is chosen correctly; a common heuristic is to choose the largest value of $\eta$ which does not cause divergence by starting with a large $\eta$ and decreasing it by a factor of $3$ until optimization no lonver diverges \cite{}.
+
+\begin{figure}
+  \centering
+  \includegraphics[width=.7\textwidth]{figures/2-learning_rate.pdf}
+  \caption[Sensitivity of gradient descent to the learning rate]{Visualization of the sensitivity of gradient descent to the learning rate $\eta$.
+  The function being optimized is a simple quadratic function represented as a blue line, and each iteration of optimization is represented as a black dot.
+  In the top left, the learning rate is set too high and the optimization will diverge.
+  In the top right, the learning rate is small enough that optimization will eventually converge, albeit slowly due to oscillations around the minimum.
+  In the bottom left, the learning rate is set near-optimally and the minimum has effectively been reached in two iterations.
+  In the bottom right, the learning rate is set too small and progress towards the minimum is slow.}
+  \label{fig:learning_rate}
+\end{figure}
 
 \subsubsection{Momentum}
 
@@ -648,6 +691,18 @@ This is particularly valuable when the function itself is expensive to evaluate,
 The use of a probabilistic model of the black-box function being optimized both allows for candidate parameter settings to be chosen in a principaled way and for prior information to be integrated into the optimization process.
 We utilize Bayesian Optimization techniques throughout this thesis for black-box optimization of different algorithms and systems.
 This section provides a brief overview of Bayesian Optimization; for more thorough treatments see \cite{}.
+A visualization of Bayesian Optimization is shown in \cref{fig:bayesian_optimization}.
+
+\begin{figure}
+  \centering
+  \includegraphics[width=.8\textwidth]{figures/2-bayesian_optimization.pdf}
+  \caption[Bayesian optimization of a synthetic function]{Visualization of Bayesian optimization of a synthetic one-dimensional objective function, shown as a blue line.
+  Points at which the objective has been evaluated are shown as black dots.
+  The gray shaded area shows the posterior estimate of the function, modeled by a Gaussian process with a squared exponential kernel.
+  The acquisition function, calculated using expected improvement, is shown in green.
+  Due to the locations of the objective evaluations, the posterior estimate has failed to account for the true maximum at the right of the plot.}
+  \label{fig:bayesian_optimization}
+\end{figure}
 
 \subsubsection{Gaussian Processes}
 
