@@ -127,9 +127,10 @@ In the multilayer perceptron, each perceptron can output a vector of values rath
 Furthermore, rather than producing a binary 1 or 0 depending on the sign of $w^\top x + b$, the layers in a multilayer perceptron may use any of a variety of nonlinear functions.
 In summary, a given layer's output is computed as
 \begin{equation}
-f(x) = \sigma(W x + b)
+        a = f(x) = \sigma(W x + b)
 \end{equation}
-where $\sigma$ is a nonlinear ``activation'' function, $W \in \mathbb{R}^{M \times D}$ is the weight matrix, $b \in \mathbb{R}^M$ is the bias vector, and $M$ is the output dimensionality of the layer.
+where $\sigma$ is a nonlinear ``activation'' function, $x \in \mathbb{D}$ is the layer's input, $W \in \mathbb{R}^{M \times D}$ is the weight matrix, $b \in \mathbb{R}^M$ is the bias vector, $a \in \mathbb{R}^M$ is the layer's output, and $M$ is the output dimensionality of the layer.
+The individual entries of $a$ are referred to as the layer's ``units''.
 The original perceptron is recovered when $\sigma$ is the Heaviside step function and $M = 1$.
 Under this generic definition, multilayer perceptrons are, in fact, equivalent to what are now called feedforward networks; we will use this terminology for the remainder of this thesis.
 \Cref{fig:network} shows a common schematic used to represent feedforward networks.
@@ -178,7 +179,7 @@ If $\mathcal{L}$ is a scalar-valued function of a scalar $z$ and $z$ is itself a
 \frac{\partial \mathcal{L}}{\partial w} = \frac{\partial \mathcal{L}}{\partial z}\frac{\partial z}{\partial w}
 \end{equation}
 For scalar-valued functions of more than one variable (e.g.\ a scalar-valued function of a vector), the chain rule essentially becomes additive.
-In other words, if $L$ is a scalar-valued function of a vector $z \in \mathbb{R}^N$, whose dimensions are each a function of some variable $w$, the chain rule states that
+In other words, if $L$ is a scalar-valued function of a vector $z \in \mathbb{R}^N$, whose entries are each a function of some variable $w$, the chain rule states that
 \begin{equation}
 \frac{\partial \mathcal{L}}{\partial w} = \sum_{i = 1}^N \frac{\partial \mathcal{L}}{\partial z[i]}\frac{\partial z[i]}{\partial w}
 \end{equation}
@@ -373,14 +374,14 @@ Practical and broader overviews can be found in \cite{bengio2012practical, lecun
 \paragraph{Number and Size of Layers}
 
 When designing a neural network model, one of the first choices which must be made is the number of layers and their sizes (output dimensionality).
-Because early theory proved that networks with a single layer could approximate any function arbitrarily well given that the layer was sufficiently ``wide'' (high-dimensional) \cite{cybenko1989approximation,hornik1989multilayer}, and because networks with many layers can be more difficult to train due to the vanishing and exploding gradients problem \cite{glorot2010understanding,erhan2009difficulty}, early applications of neural networks typically only used a single hidden layer.
+Because early theory proved that networks with a single layer could approximate any function arbitrarily well given that the layer was sufficiently ``wide'' (having many units) \cite{cybenko1989approximation,hornik1989multilayer}, and because networks with many layers can be more difficult to train due to the vanishing and exploding gradients problem \cite{glorot2010understanding,erhan2009difficulty}, early applications of neural networks typically only used a single hidden layer.
 However, recent results have shown that using many layers can help networks learn a hierarchical transformation to more and more abstract representations which, for real-world problems, can be highly beneficial \cite{bengio2009learning}.
 Coupled with recent advances in training very deep networks \cite{glorot2011deep,glorot2010understanding,bengio2007greedy,hinton2006fast,hinton2012improving,hinton2006reducing,sutskever2013importance,ioffe2015batch,he2015delving,ciresan2010deep}, the paradigm of ``deep'' networks (having many layers) has come to dominate.
 
 Regardless of depth, the dimensionality of each intermediate representation (the ``layer sizes'') must be chosen.
 While increasing the dimensionality may increase modeling power, it also exacerbates overfitting and incurs a greater computational loss.
 However, Graphics Processing Units (GPUs) have recently been used to accelerate neural network models thanks to their ability to quickly perform large matrix multiplications.
-As a result, in modern practice high-dimensional layers are used in combination with regularization techniques \cite{bengio2012practical}.
+As a result, in modern practice ``wide'' layers are used in combination with regularization techniques \cite{bengio2012practical}.
 
 \paragraph{Nonlinearities}
 
@@ -395,13 +396,13 @@ The rectifier nonlinearity has zero gradient for half of its domain, which can h
 Due to their tendency to overfit, some form of regularization is typically necessary to ensure that the optimized neural network's variance is not too high.
 A common regularizer which is used in many machine learning models is to include in the loss function a penalty on the norm of the model's parameters.
 In neural networks, adding the $L^2$ penalty $\lambda \sum_i \theta_i^2$ where $\lambda$ is a hyperparameter and $\theta_i$ are the model's parameters (e.g. individual entries of the weight matrices and bias vectors) is referred to as ``weight decay'' \cite{hanson1989comparing}.
-This can encourge the weight matrix of a given layer from focusing too heavily (via a very large weight value) on a single dimension of its input.
+This can encourge the weight matrix of a given layer from focusing too heavily (via a very large weight value) on a single unit of its input.
 A related term is $\lambda \sum_i |\theta_i|$ which effectively encourages parameter values to be zero \cite{bengio2012practical}.
 
 A completely different regularization method which has recently proven popular in neural networks is ``dropout'' \cite{hinton2012improving}.
-In dropout, at each training iteration each dimension of each layer is randomly set to zero with probability $p$.
+In dropout, at each training iteration each unit of each layer is randomly set to zero with probability $p$.
 After training, the weights in each layer are scaled by $1/p$.
-Dropout intends to prevent the dimensions of the output of a given layer from being too heavily dependent (correlated) with one of the inputs by randomly artificially removing connections.
+Dropout intends to prevent the units of the output of a given layer from being too heavily dependent (correlated) with one of the inputs by randomly artificially removing connections.
 More simply, it provides a source of noise which prevents memorization of correspondences in the training set and has repeatedly been shown empirically to be an effective regularizer.
 
 In practice, the technique of ``early stopping'' is almost always used to avoid overfitting in neural network models \cite{prechelt2012early}.
@@ -427,7 +428,7 @@ This can greatly accelerate learning, and is of particular use when there is a g
 It has more recently been shown that unsupervised pretraining can be skipped (provided that there is a sufficient amount of labeled data) by carefully initializing the network's parameters.
 This typically involves sampling the values of the weight matrices from zero-mean Gaussian distributions whose variances are set so that the representation at each layer's output has unit variance.
 The actual variances used for the random variables depends on the input and output dimensionality as well as the nonlinearity; \cite{glorot2010understanding} provides a derivation for linear networks, \cite{he2015delving} for rectifier networks and \cite{mishkin2015all} gives a generic empirical procedure for any network architecture.
-An alternative is to use orthogonal matrices \cite{saxe2013exact} or to use a sparse initialization so that a fixed number of output dimensions are non-zero \cite{sutskever2013importance}.
+An alternative is to use orthogonal matrices \cite{saxe2013exact} or to use a sparse initialization so that a fixed number of entries are non-zero \cite{sutskever2013importance}.
 
 
 \paragraph{Input Normalization}
@@ -440,7 +441,7 @@ An alternative which can also facilitate convergence is to whiten data using Pri
 
 Beyond the simple feedforward network model we have focused on thus far, a variety of more specialized models have been proposed which intend to exploit different types of structure present in real-world data.
 For example, presenting sequential data one step at a time to a feedforward network assumes temporal independence, which is invalid for most real-world temporal data.
-Other types of data, such as images, exhibit local dependencies in their dimensions which are invariant to translation.
+Other types of data, such as images, exhibit local dependencies which are invariant to translation.
 Modeling this type of structure can be greatly facilitated by the important choice of model architecture.
 We give an overview of the two most relevant architectures for sequential data, recurrent and convolutional networks, in the next two sections.
 
@@ -459,15 +460,15 @@ Because the representations used for audio data are typically at least thousands
 
 \subsubsection{Convolutional Networks}
 
-For many types of data (represented as multi-dimensional arrays), one or more of the axes may have an explicit ordering.
-Most relevant to this thesis is sequential data, which always has a temporal axis.
-Traversing this axis corresponds to the passing of time; if one event occurred before another, it will appear first.
-Similarly, images have ``width'' and ``height'' axes, which correspond to left-right and top-bottom traversal.
-In many cases, the correlations on these axes are highly localized.
+For many types of data (represented as multi-dimensional arrays), one or more of the dimensions may have an explicit ordering.
+Most relevant to this thesis is sequential data, which always has a temporal dimension.
+Traversing this dimension corresponds to the passing of time; if one event occurred before another, it will appear first.
+Similarly, images have ``width'' and ``height'' dimensions, which correspond to left-right and top-bottom traversal.
+In many cases, the correlations along these dimensions are highly localized.
 For example, in a text document the probability that a given word appears in a certain place depends much more strongly on the words appearing around it than it does on words which appeared hundreds of words ago.
 
-The ``fully-connected'' feedforward networks we have discussed so far cause the output of each layer to depend on each dimension of the layer's input due to the fact that the weight matrix has an entry which connects each input dimension to each output dimension.
-This ignores the structure of data with an ordered axis and may be inefficient when most of the dependencies are local.
+The ``fully-connected'' feedforward networks we have discussed so far cause the output of each layer to depend on each unit of the layer's input due to the fact that the weight matrix has an entry which connects each input unit to each output unit.
+This ignores the structure of data with an ordered dimension and may be inefficient when most of the dependencies are local.
 The {\em convolutional network} architecture is formulated specifically to take advantage of this common structure.
 As their name suggests, rather than utilizing an affine transformation using a fully-connected matrix, layers in these models convolve small filter ``kernels'' across their input.
 Networks with this structure were first proposed by Fukushima \cite{fukushima1980neocognitron} and training them with backpropagation was popularized by LeCun et.\ al \cite{lecun1989backpropagation}.
@@ -511,7 +512,7 @@ y[m, j_x, j_y] = \max(x[m, j_x:j_x + p, j_y:j_y + p])
 for $j_x \in 1, \ldots, \frac{I_x}{p}$ and $j_y \in 1, \ldots, \frac{I_y}{p}$.
 The value of $p = 2$ is almost uniformly used.
 The max-pooling layer can thus be seen as indicating whether a given feature is present or absent over a region of the input.
-Because pooling layers effectively downsample their input, they can be used to increase the ``receptive field'' (region of the input effecting a single dimension of the output) of layers in networks consisting of many convolutional and pooling layers.
+Because pooling layers effectively downsample their input, they can be used to increase the ``receptive field'' (region of the input affecting a single unit of the output) of layers in networks consisting of many convolutional and pooling layers.
 
 Finally, in convolutional networks it is common for the last few layers to be standard fully-connected layers.
 This gives the output of the network access to the entire input region.
