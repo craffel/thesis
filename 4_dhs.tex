@@ -1,17 +1,69 @@
 \chapter{Learning an Efficient Representation for Dynamic Time Warping}
 \label{ch:dhs}
 
-\section{Speeding up DTW}
+The system developed in \cref{ch:dtw} produces a confidence score which proved to be extremely reliable at determining whether or not a MIDI file was a transcription of a given audio file.
+The goal of this thesis is to match a large collection of 178,561 MIDI files to corresponding audio recordings.
+We cannot rely on any source of metadata from these MIDI files (see \cref{sec:score_overview}), so we must instead utilize a {\em content-based} comparison scheme like the one proposed in \cref{ch:dtw}.
+To maximize the chances of finding a matching audio recording for a given MIDI file, we need to use a large and comprehensive pool of audio files.
+We use the 994,960 7digital preview clips \cite{schindler2012facilitating} corresponding to the Million Song Dataset (MSD) \cite{bertin2011million}, which consist of (typically) 30 second portions of recordings from the largest standard research corpus of popular music.
+A complete search for matches could thus involve 994,960 alignments for each of our 178,561 MIDI files, resulting in 177,661,052,560 comparison.
 
-ismir2015large3, nips2015accelerating2
+The method proposed in \cref{ch:dtw} is much too inefficient to be used in this manner.
+Under this approach, aligning a typical-length MIDI file to a single audio recording from the MSD takes on average about 132 milliseconds on an Intel Core i7-4930k processor when using an extremely efficient LLVM-compiled DTW routine and a parallelized distance matrix computation.
+Matching our entire collection of MIDI files using this approach would therefore take approximately
+\begin{equation}
+\frac{(.132 \mathrm{\;seconds})(178{,}561 \mathrm{\;MIDI\;files})(994{,}960 \mathrm{\;audio\;files})}{(60 \mathrm{\;seconds})(60 \mathrm{\;minutes})(24 \mathrm{\;hours})(365 \mathrm{\;days})} \approx 745 \mathrm{\;years}
+\end{equation}
+Clearly, a more efficient approach is warranted.
+
+In fact, the problem of finding the sequence in a large database (here, a collection of audio recordings) which is most similar under DTW distance to a query (here, a MIDI file) is common in the field of data mining \cite{berndt1994using}.
+Unsurprisingly, a variety of methods have been proposed for speeding up this task to make it feasible for very large databases.
+A pervasive framework is ``pruning'', where a computationally efficient operation is used to discard a large portion of the database and the remaining entries are compared using a more expensive, but highly accurate, method.
+Under certain assumptions, there are methods which can achieve {\em exact} pruning (i.e.\ without every erroneously discarding the correct match) of large-scale nearest-neighbor DTW search.
+\cite{rakthanmanon2012searching} provides a thorough overview of these techniques and shows that for some problems they can allow exact search of databases with trillions of data points.
+However, one of the core assumptions of these methods is that the query is always a subsequence of its correct match, and equivalently that the length of the aligned sequence is known a priori, which does not hold in the setting of MIDI-to-audio matching.
+In fact, because the 7digital MP3s are truncated preview clips and MIDI files are usually complete transcriptions, for our problem we nearly always have the opposite case where the correct match is a subsequence of the query.
+We therefore cannot leverage these pruning methods for our problem.
+
+One of the reasons DTW-based search is so expensive is that it has $\mathcal{O}(MN)$ complexity, where $M$ and $N$ are the lengths of the two sequences being compared.
+Clearly, then, DTW can be made quadratically more efficient by decreasing the number of elements in the sequences being compared.
+For example, \cite{keogh2001dimensionality,yi2000fast} proposed downsampling sequences by computing their average over non-overlapping blocks, which for some tasks provided orders of magnitude speedup without dramatically affecting accuracy.
+The appropriateness of downsampling sequences depends on the sequences being oversampled (i.e.\ having an unnecessarily high correlation between consecutive sequence elements).
+
+Computing the DTW distance between two sequences also potentially involves computing the pairwise Euclidean distance between all of their elements.
+In data mining tasks, entries in sequences are often one-dimensional, so the cost of this operation is usually not considered independent of the overall cost of DTW.
+For the time-frequency representation we utilize in \cref{ch:dtw}, our sequences consist of 48-dimensional feature vectors.
+As a result, in our problem setting computing the pairwise distance matrix is actually more expensive than finding the lowest-cost path through it because each entry in the distance matrix requires at least $D$ operations, where $D$ is the feature dimensionality.
+While computing the distance matrix similarly receives quadratic speed gains when the sequences are downsampled, it also can benefit when a lower-dimensional or otherwise more efficient feature representation is used.
+
+In addition, the ``raw'' representation in which data is initially provided may not produce the most effective measure of similarity under the Euclidian distance utilized by DTW.
+More concretely, while the audio-to-synthesized MIDI CQT comparison utilized in \cref{ch:dtw} proved effective, it may be that we are able to transform the individual feature vectors to a space where similarity is better represented so that matching MIDI files and audio recordings have a smaller DTW distance.
+Recently, the framework of ``representation learning'' has proven to be effective for this type of problem \cite{bengio2013representation}.
+Representation learning utilizes prior knowledge, such as a collection of pairs of known-similar and dissimilar elements, to learn a mapping to a more effective transformed space.
+This process is also capable of producing ``mutilmodal'' mappings, i.e.\ transformations which allow the comparison of heterogeneous data.
+
+From the above discussion, it is clear that mapping very long sequences of high-dimensional feature vectors to shorter, lower-dimensional sequences such that similarity is preserved would provide substantial gains when comparing sequences with DTW.
+Motivated by this possibility, in this chapter we propose a system with the following capabilities:
+\begin{description}
+\item[Maps to a Hamming space:] By replacing continuous-valued feature vectors with bitvectors in an embedded Hamming space, computing the distance between a pair of feature vectors simplifies to a single POPCNT SSE4.2 operation \cite{intel2007programming}, which substantially speeds up distance matrix calculation.
+\item[Downsamples sequences:] Rather than creating a one-to-one correspondence between the original featured vectors and mapped bitvectors, groups of subsequent feature vectors are mapped to a single bitvector, giving a quadratic increase in efficiency.
+\item[Preserves similarity:] The system is trained with an objective which seeks to produce a mapping where aligned feature vectors from matching sequences have a small Hamming distance in the embedded space, and non-matched feature vectors have a large distance.
+\item[Learns its representation:] Our approach is entirely data-driven, which allows it to adapt to different problem settings including multimodal data, as we show in \cref{sec:multimodal}.
+\end{description}
+
+In the following section, we describe our model and training approach in detail.
+In \cref{sec:dhs_experiment}, we test our system's accuracy on the task of matching MIDI files to the Million Song Dataset.
+Finally, we discuss possibilities for improvement in \cref{sec:dhs_discussion}.
 
 \section{Hashing and Downsampling with Convolutional Networks}
+
 
 ismir2015large3.1, nips2015accelerating2.1
 
 Add network diagram figures.
 
 \section{Experiment: MIDI to MSD Matching}
+\label{sec:dhs_experiment}
 
 \subsection{Preparing Data}
 
@@ -27,6 +79,7 @@ Thresholding CQT PCA
 LSH
 
 \subsection{Adapting to Multi-Modal Data}
+\label{sec:multimodal}
 
 nips2015accelerating3
 
@@ -36,3 +89,6 @@ ismir2015large4
 
 Add qualitative network behavior plots (deep dream).
 Add percentage-below-rank plot.
+
+\section{Discussion}
+\label{sec:dhs_discussion}
