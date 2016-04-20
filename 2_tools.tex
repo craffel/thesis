@@ -350,6 +350,7 @@ However, this would require a separate forward pass for each parameter.
 Modern neural networks contain millions of parameters, so clearly backpropagation is an efficient choice.
 
 \subsubsection{Tricks}
+\label{sec:tricks}
 
 Combined with a gradient descent technique, backpropagation provides an effective method for optimizing the parameters of a neural network (``training'') to minimize a given loss function.
 However, training neural networks is made difficult in practice by a variety of factors.
@@ -459,6 +460,7 @@ However, these approaches don't {\em solve} the problem of vanishing and explodi
 Because the representations used for audio data are typically at least thousands of time steps in length, we will not use recurrent networks in this thesis, although we will use them as a point of comparison and motivation in some places.
 
 \subsubsection{Convolutional Networks}
+\label{sec:convolutional_networks}
 
 For many types of data (represented as multi-dimensional arrays), one or more of the dimensions may have an explicit ordering.
 Most relevant to this thesis is sequential data, which always has a temporal dimension.

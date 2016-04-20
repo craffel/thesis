@@ -45,7 +45,7 @@ This process is also capable of producing ``mutilmodal'' mappings, i.e.\ transfo
 From the above discussion, it is clear that mapping very long sequences of high-dimensional feature vectors to shorter, lower-dimensional sequences such that similarity is preserved would provide substantial gains when comparing sequences with DTW.
 Motivated by this possibility, in this chapter we propose a system with the following capabilities:
 \begin{description}
-\item[Maps to a Hamming space:] By replacing continuous-valued feature vectors with bitvectors in an embedded Hamming space, computing the distance between a pair of feature vectors simplifies to a single POPCNT SSE4.2 operation \cite{intel2007programming}, which substantially speeds up distance matrix calculation.
+\item[Maps to a Hamming space:] By replacing continuous-valued feature vectors with bitvectors in an embedded Hamming space, computing the distance between a pair of feature vectors simplifies to an exclusive-or followed by a single POPCNT SSE4.2 operation \cite{intel2007programming}, which substantially speeds up distance matrix calculation.
 \item[Downsamples sequences:] Rather than creating a one-to-one correspondence between the original featured vectors and mapped bitvectors, groups of subsequent feature vectors are mapped to a single bitvector, giving a quadratic increase in efficiency.
 \item[Preserves similarity:] The system is trained with an objective which seeks to produce a mapping where aligned feature vectors from matching sequences have a small Hamming distance in the embedded space, and non-matched feature vectors have a large distance.
 \item[Learns its representation:] Our approach is entirely data-driven, which allows it to adapt to different problem settings including multimodal data, as we show in \cref{sec:multimodal}.
@@ -55,12 +55,69 @@ In the following section, we describe our model and training approach in detail.
 In \cref{sec:dhs_experiment}, we test our system's accuracy on the task of matching MIDI files to the Million Song Dataset.
 Finally, we discuss possibilities for improvement in \cref{sec:dhs_discussion}.
 
-\section{Hashing and Downsampling with Convolutional Networks}
+\section{Learning to Downsample and Hash}
 
+As a high-level overview, our system will learn a mapping from sequences of feature vectors to downsampled sequences of binary vectors in a Hamming space where similarity is preserved based on a training set of matched and aligned sequences.
+This training set can be constructed by obtaining a collection of sequences in which matching pairs are known, and then using DTW to find the optimal alignment of feature vectors in matching sequences.
+From this data, we extract groups of sequentially co-occuring feature vectors to construct $\mathcal{P}$, such that $(x, y) \in \mathcal{P}$ indicates that $x$ is a group of feature vectors which is aligned to the group $y$ from a matching sequence.
+For example, in the context of MIDI to audio matching, $x$ will be subsequent constant-Q spectra of a synthesized MIDI which are aligned in time to $y$, consisting of co-occuring constant-Q spectra from a matching audio recording.
+We then construct $\mathcal{N}$, a set of ``dissimilar'' pairs, by repeatedly randomly choosing two pairs $(x_1, y_1), (x_2, y_2) \in \mathcal{P}$ and swapping to obtain $(x_1, y_2), (x_2, y_1) \in \mathcal{N}$.
 
-ismir2015large3.1, nips2015accelerating2.1
+Given this training data, our goal is to map sequences of feature vectors to sequences of binary vectors in a Hamming space where groups of sequentially co-occuring vectors in $\mathcal{P}$ have a small distance and groups in $\mathcal{N}$ have a large distance.
+Motivated by the multimodal hashing technique of \cite{masci2014multimodal}, we use the following objective function to measure the quality of the mapping:
 
-Add network diagram figures.
+\begin{equation}
+\mathcal{L} = \frac{1}{|\mathcal{P}|} \sum_{(x, y) \in \mathcal{P}} \| f(x) - g(y) \|_2^2  + \frac{\alpha}{|\mathcal{N}|} \sum_{(a, b) \in \mathcal{N}} \max(0, m - \|f(a) - g(b) \|_2)^2
+\label{eq:hashing_objective}
+\end{equation}
+
+where $f$ and $g$ are learned nonlinear functions, $\alpha$ is a parameter to control the importance of separating dissimilar items, and $m$ is a target separation of dissimilar pairs.
+More specifically, if $x, y \in \mathbb{R}^{G \times D}$ where $G$ is the number of subsequent feature vectors which are grouped together (and therefore the downsampling ratio) and $D$ is the feature dimensionality, then $f(x), g(y) \in \mathbb{H}^E$ where $\mathbb{H}^E$ is the Hamming space of dimensionality $E$.
+This system is then optimized over $\mathcal{P}$ and $\mathcal{N}$ by to adjust the parameters of $f$ and $g$ such that $\mathcal{L}$ is minimized.
+The use of two different functions $f$ and $g$ allows for different mappings to be learned for different types of data; we expect this to be beneficial for our problem setting because synthesized MIDI CQTs and real-world audio CQTs may have different characteristics.
+This also allows us to experiment with multimodal data, i.e.\ cases where $x$ and $y$ come from different, and potentially non-comparable, feature spaces.
+A visualization of this process is shown in \cref{fig:hashing_schematic}.
+
+\begin{figure}
+  \includegraphics[width=\textwidth]{figures/4-hashing_schematic.pdf}
+  \caption[Hashing groups of subsequent feature vectors]{Diagram visualizing how subsequent groups of feature vectors are mapped to binary vectors.
+Matching sequences of feature vectors which have been aligned in time are shown at the top and bottom.
+Co-occuring groups of feature vectors, highlighted in light boxes, are passed through two learned nonlinear functions $f$ and $g$ (visualized as neural network diagrams).
+The functions then output a single hash vector each, which are ideally close together in the embedded Hamming space because they represent co-occuring feature vectors from matched and aligned sequences.
+For groups of feature vectors from non-matching sequences, the networks are trained to output binary vectors with a large Hamming distance.}
+  \label{fig:hashing_schematic}
+\end{figure}
+
+After minimizing $\mathcal{L}$ on a training set, sequences of feature vectors in either modality can then be mapped to downsampled sequences of hash vectors using $f$ and $g$.
+Once mapped, we can perform DTW much more efficiently to compute a distance between hash sequences, where the Euclidean distance calculation inherent in DTW has been replaced by Hamming distance.
+More specifically, we expect a speedup by a factor of up to $G^2 D$, because we have effectively downsampled both sequences by a factor of $G$ and have replaced the $D$-operation Euclidean distance with a Hamming distance calculation.
+In practice, the resulting binary vectors can be represented efficiently as unsigned integers, whose Hamming distance can be computed with an exclusive-or operation followed by a call to the POPCNT SSE4.2 instruction \cite{intel2007programming}.
+The exclusive-or compares bit-by-bit whether the entries of the binary vectors are equal, and the POPCNT implements a ``population count'' or ``hamming weight'' calculation, which simply counts the number of nonzero bits in the result.
+This process is visualized in \cref{fig:popcnt}.
+Ideally, utilizing DTW to compare sequences which have been mapped to this efficient representation will effectively recover matching and non-matching sequences.
+
+\begin{figure}
+  \includegraphics[width=\textwidth]{figures/4-popcnt.pdf}
+  \caption[Computing Hamming distance with XOR and POPCNT]{Computing the Hamming distance between two binary vectors via an exclusive-or followed by a POPCNT instruction.
+The exclusive-or of the top two vectors produces the bottom vector, which is $1$ where the input vectors differ and $0$ where they match.
+The result of the exclusive-or is passed to the POPCNT SSE4.2 instruction, which simply counts the number of non-zero bits in its input.
+These two steps therefore can produce the distance between two binary vectors in two machine instructions.}
+  \label{fig:popcnt}
+\end{figure}
+
+Given our training procedure, we now need to choose appropriate models for the hashing functions $f$ and $g$.
+Neural networks are an attractive choice, because they can in principle be optimized with respect to unusual loss functions like the one defined in \cref{eq:hashing_objective}.
+In addition, the suite of tricks discussed in \cref{sec:tricks} can help ensure effective results.
+
+In \cite{masci2014multimodal}, dense feed-forward neural networks are used for the learnable functions $f$ and $g$.
+We could potentially utilize this type of network for our hashing and downsampling procedure by concatenating input $x, y \in \mathbb{R}^{G \times D}$ into single-dimensional vectors in $\mathbb{R}^{GD}$.
+However, we argue that convolutional networks (discussed in \cref{sec:convolutional_networks}) are a better choice for sequential data for the following reasons:
+Sequential data has at least one ordered (temporal) dimension, and in most natural data, the strongest dependencies along the temporal axis are localized.
+This is exactly the kind of structure convolutional networks are designed to efficiently exploit.
+Furthermore, the pooling layers which are a common ingredient in convolutional networks provide a natural method of downsampling the sequences.
+They also allow the network's output a given point in time to depend on a large ``receptive field'' of the input.
+In our problem setting, this means that a given hash vector produced by $f$ or $g$ will be affected not only by the corresponding group of $G$ feature vectors but also on a window of feature vectors surrounding it.
+For the above reasons, we utilize convolutional networks for the rest of this chapter.
 
 \section{Experiment: MIDI to MSD Matching}
 \label{sec:dhs_experiment}
@@ -72,6 +129,8 @@ ismir2015large2
 \subsection{System Specifics}
 
 ismir2015large3.2
+
+Receptive field
 
 \subsection{Baseline Methods}
 
