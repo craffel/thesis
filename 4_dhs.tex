@@ -76,7 +76,7 @@ Motivated by the multimodal hashing technique of \cite{masci2014multimodal}, we 
 where $f$ and $g$ are learned nonlinear functions, $\alpha$ is a parameter to control the importance of separating dissimilar items, and $m$ is a target separation of dissimilar pairs.
 The first term in the loss function encourages the embedded distance between similar pairs to be small and the second term encourages dissimilar pairs to have a distance of at least $m$.
 More specifically, if $x, y \in \mathbb{R}^{G \times D}$ where $G$ is the number of subsequent feature vectors which are grouped together (and therefore the downsampling ratio) and $D$ is the feature dimensionality, then $f(x), g(y) \in \mathbb{H}^E$ where $\mathbb{H}^E$ is the Hamming space of dimensionality $E$.
-This system is then optimized over $\mathcal{P}$ and $\mathcal{N}$ by to adjust the parameters of $f$ and $g$ such that $\mathcal{L}$ is minimized.
+This system is then optimized over $\mathcal{P}$ and $\mathcal{N}$ by to adjust the parameters of $f$ and $g$ such that \cref{eq:hashing_objective} is minimized.
 The use of two different functions $f$ and $g$ allows for different mappings to be learned for different types of data; we expect this to be beneficial for our problem setting because synthesized MIDI CQTs and real-world audio CQTs may have different characteristics.
 This also allows us to experiment with multimodal data, i.e.\ cases where $x$ and $y$ come from different, and potentially non-comparable, feature spaces.
 A visualization of this process is shown in \cref{fig:hashing_schematic}.
@@ -91,7 +91,7 @@ For groups of feature vectors from non-matching sequences, the networks are trai
   \label{fig:hashing_schematic}
 \end{figure}
 
-After minimizing $\mathcal{L}$ on a training set, sequences of feature vectors in either modality can then be mapped to downsampled sequences of hash vectors using $f$ and $g$.
+After minimizing \cref{eq:hashing_objective} on a training set, sequences of feature vectors in either modality can then be mapped to downsampled sequences of hash vectors using $f$ and $g$.
 Once mapped, we can perform DTW much more efficiently to compute a distance between hash sequences, where the Euclidean distance calculation inherent in DTW has been replaced by Hamming distance.
 More specifically, we expect a speedup by a factor of up to $G^2 D$, because we have effectively downsampled both sequences by a factor of $G$ and have replaced the $D$-operation Euclidean distance with a Hamming distance calculation.
 In practice, the resulting binary vectors can be represented efficiently as unsigned integers, whose Hamming distance can be computed with an exclusive-or operation followed by a call to the POPCNT SSE4.2 instruction \cite{intel2007programming}.
@@ -149,20 +149,79 @@ To match these datasets to the clean MIDI subset, we used the Python search engi
 This resulted in 25,707 audio/MIDI file pairs corresponding to 5,249 unique songs.
 
 Fuzzy metadata matching is not enough to ensure that we have MIDI and audio files with matching content; for instance, the metadata could be incorrect, the fuzzy text match could have failed, the MIDI could be a poor transcription (e.g., missing instruments or sections), and/or the MIDI and audio data could correspond to different versions of the song.
-We therefore utilized the alignment technique developed in \cref{ch:dtw}, which was empirically shown to produce a confidence score which reliably reports whether the content of a MIDI file matches a given audio file.
+We therefore utilized the alignment technique developed in \cref{sec:goldstandard}, which was empirically shown to produce a confidence score which reliably reports whether the content of a MIDI file matches a given audio file.
 Conveniently, utilizing an alignment system to verify matches also provides the aligned sequences we need for training our hashing system.
 Based on the real-world results presented in \cref{sec:qualitative}, we decided to consider a match ``correct'' when its confidence score was above $0.5$; for the 500 matches annotated, this produces the correct label for all but 1 of the failed matches and for the majority of the correct matches.
 Retaining all alignments with confidence scores higher than this threshold resulted in 10,094 successful matches.
 
 Recall that these matched and aligned pairs serve two purposes: They provide training data for our hashing model; and we also use them to evaluate the entire content-based matching system.
-For a fair evaluation, we exclude items used in training from the evaluation, thus we split the successful alignments into three parts: $65\%$ to use as training data, $10\%$ as a ``development set'' to tune the content-based matching system, and the remaining $25\%$ to use for final evaluation of our system.
+For a fair evaluation, we exclude items used in training from the evaluation, thus we split the successful alignments into three parts: $60\%$ to use as training data, $5\%$ as a validation set used for rapid evaluation of models as they are being trained, $10\%$ as a ``development set'' to tune the content-based matching system, and the remaining $25\%$ to use for final evaluation of our system.
 Care was taken to split based on \textit{songs}, rather than by entry (since some songs appear multiple times).
 
 \subsection{System Specifics}
 
-ismir2015large3.2
+Training the hashing model involves presenting training examples and backpropagating the gradient of \cref{eq:hashing_objective} through the model parameters; we therefore need to specify the data format, model architecture, and training process.
+As a feature representation, we used the same one chosen in \cref{sec:goldstandard}, i.e.\ log-magnitude constant-Q spectrograms consisting of spectra with 12 bins per octave from MIDI note C2 (65.4 Hz) to B6 (987.8 Hz) computed every 46 milliseconds.
+Because utilizing a cosine distance for comparing spectra was consistently beneficial for alignment (see \cref{sec:optimizing}), we also $L^2$-normalized each feature vector.
+In order to improve convergence, we also standardized the feature dimensions of all data utilizing statistics from the training set.
 
-Receptive field
+For efficiency, we trained the networks using minibatches of training examples; each minibatch consisted of 50 sequences obtained by choosing a random offset for each training sequence pair and cropping out the next 100 spectra.
+For $\mathcal{N}$, we simply presented the network with length-100 subsequences chosen at random from different songs.
+Each time the network had iterated over minibatches from the entire training set (one epoch), we repeated the random sampling process.
+For optimization, we used RMSProp, a recently-proposed stochastic optimization technique \cite{tieleman2012lecture}.
+After each 100 minibatches, we computed the loss over the validation set.
+If the validation loss was less than $99\%$ of the previous lowest, we trained for 1000 more iterations (minibatches).
+
+While the loss computed over the validation set is a reasonable indicator of network performance, its scale will vary depending on the $\alpha$ and $m$ regularization hyperparameters.
+To obtain a more consistent metric, we also computed the distribution of distances between the hash vectors produced by the network for the pairs in $\mathcal{P}$ and those in $\mathcal{N}$.
+We then used the Bhattacharya distance \cite{bhattacharyya1943measure} to compute the separation of these distributions to obtain a more direct measure of network performance.
+
+In each modality, the hashing networks have the same architecture: A series of alternating convolutional and pooling layers followed by a series of fully-connected layers.
+While the exact specification of this architecture will effect performance, the most impactful design choice for our problem setting is the extent to which the temporal axis is downsampled by pooling layers.
+Following the common convention of pooling by 2, each pooling layer will result in sequence lengths being halved and the resulting DTW calculation being faster by up to a factor of 4.
+However, too much downsampling may result in a loss of precision, particularly if the resulting sequences become extremely short.
+We therefore chose to utilize a total of three pooling layers, which corresponds to downsampling by a factor of 8.
+This resulted in the 30-second 7digital preview clips being mapped to length-80 hash sequences, which provided enough information for high precision while still achieving up to a factor of 64 speedup when computing DTW.
+
+For the convolutional front-end of our networks, we experimented with a variety of architectures and chose the following:
+Each of the three max-pooling layers were preceded by two convolutional layers, each with $3 \times 3$ filters (where the first dimension is time and the second is constant-Q frequency bin).
+The use of a larger number of smaller convolutional filters is advocated by Simonyan and Zisserman \cite{simonyan2014very}, who argue that this structure improves the network's modeling capabilities without sacrificing receptive field size.
+The convolutional layers in each of the three ``groups'' had 16, 32, and 64 filters, respectively.
+We padded the input to each convolutional layer so that the output size was the same as the input size.
+All of the max-pooling layers utilized $2 \times 2$ pooling with a stride of $2$.
+
+After the convolutional layers, we utilized two dense layers with $2048$ units each, followed by the output layer.
+The fully-connected layers were applied independently over the temporal axis to the output of the convolutional portion of the network.
+In our networks, all layers except the output use rectifier nonlinearities; as in \cite{masci2014multimodal}, the output layer uses a hyperbolic tangent.
+This choice in output nonlinearity allows us to obtain binary hash vectors by testing whether each output unit is greater or less than zero.
+We chose 32 bits as the dimensionality of our embedded Hamming space, since 32 bit values are efficiently manipulated as unsigned integers.
+For initial weight parameter values, as suggested in \cite{he2015delving}, we used normally-distributed random variables with a mean of zero and a standard deviation of $\sqrt{2/n_{in}}$, where $n_{in}$ is the number of inputs to each layer.
+All bias values were initialized to $0$.
+Our model was implemented using \texttt{theano} \cite{bastien2012theano,bergstra2010theano} and \texttt{lasagne} \cite{dieleman2015lasagne}.
+
+For regularization, we found it benificial to add a squared $L^2$ penalty to the network's output prior to thresholding.
+This effectively encourages the network to produce values near 0, which we believe improves convergence due to the fact that the gradient of the hyperbolic tangent nonlinearity vanishes away from 0.
+This is in contrast to the intuition provided in \cite{masci2014multimodal} for using a hyperbolic tangent, where it is argued that saturating the nonlinearity will more closely simulate a binary embedding.
+To control the amount of regularization, we multiplied this $L^2$ penalty by a scalar hyperparameter $\beta$ before adding it to \cref{eq:hashing_objective}.
+
+To ensure good performance, we optimized all model hyperparameters using the Bayesian optimization framework proposed in \cite{snoek2012practical}.
+We optimized over the convolutional/pooling layer architecture, the RMSProp learning rate and decay parameters, and the $\alpha$, $\beta$ and $m$ regularization parameters of the loss function and the output $L^2$ penalty.
+As a hyperparameter optimization objective, we used the Bhattacharyya distance as described above.
+The best performing network had the structure we described above, a learning rate of $0.001$ with an RMSProp decay parameter of $0.67$, $\alpha = 4.755$, and $m = 3$, and $\beta = 0.01$.
+This hyperparameter configuration achieved a Bhattacharyya separation of $0.359$.
+
+Beyond those described above, we also experimented with a number of other regularizers, model architectures, and optimization schemes.
+For posterity, we report those here:
+\begin{itemize}
+\item We tried $2 \times 1$ pooling (i.e.\ not downsampling the frequency axis) as advocated in \cite{humphrey2012rethinking} but found it did not effect results despite being somewhat more computationally expensive.
+\item We experimented with a larger $5 \times 12$ filter size in the first layer as used in \cite{raffel2015large} with single $3 \times 3$ convolutional in the second and third layers, but found this structure resulted in slightly worse performance despite having a similar receptive field.
+\item We tested the use of dropout \cite{hinton2012improving} in the fully-connected layers, but it slightly decreased performance.
+\item We tried adding a ``stress'' \cite{kruskal1964multidimensional} term to the loss function to encourage the networks' outputs to preserve the distances of their input, but found it hurt performance.
+\item We also tried the hash entropy-encouraging loss term proposed in \cite[equation (3)]{yang2015supervised} but it did not significantly affect the resulting hash distribution.
+\item In early experiments, we utilized fully-connected networks with no convolutional layers, but quickly achieved better results after including the convolutional front-end.
+\item We experimented with a variety of architectures for the fully-connected portion of the network, including using 1, 2, or 3 hidden layers, with 256, 512, 1024, 2048, or 4096 layers; 2 layers with 2048 units was the largest configuration which could fit in memory and incidentally produced the best performance.
+\item Apart from RMSProp, we also experimentied with Nesterov's accelerated gradient \cite{nesterov1983method} and Adam \cite{kingma2015adam} (see \cref{sec:sgd}) but found that RMSProp produced the best results.
+\end{itemize}
 
 \subsection{Baseline Methods}
 
