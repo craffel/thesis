@@ -474,7 +474,7 @@ This ignores the structure of data with an ordered dimension and may be ineffici
 The {\em convolutional network} architecture is formulated specifically to take advantage of this common structure.
 As their name suggests, rather than utilizing an affine transformation using a fully-connected matrix, layers in these models convolve small filter ``kernels'' across their input.
 Networks with this structure were first proposed by Fukushima \cite{fukushima1980neocognitron} and training them with backpropagation was popularized by LeCun et.\ al \cite{lecun1989backpropagation}.
-Recently, convolutional networks have provided breakthroughs in a variety of domains, including image classification \cite{krizhevsky2012imagenet,he2015delving,szegedy2015going}, speech recognition \cite{abdel2012applying,sainath2013deep}, music information retrieval \cite{humphrey2012rethinking,schluter2014improved,ullrich2014boundary,mcfee2015software,schluter2015exploring}, and natural language processing \cite{kim2014convolutional,zhang2015text}.
+Recently, convolutional networks have provided breakthroughs in a variety of domains, including image classification \cite{krizhevsky2012imagenet,he2015delving,szegedy2015going}, speech recognition \cite{abdel2012applying,sainath2013deep}, music information retrieval \cite{humphrey2012rethinking,van2013deep,schluter2014improved,ullrich2014boundary,mcfee2015software,schluter2015exploring}, and natural language processing \cite{kim2014convolutional,zhang2015text}.
 
 In the two-dimensional case (as used in this thesis), a convolutional layer takes as input $x \in \mathbb{R}^{M \times I_x \times I_y}$ and outputs $y \in \mathbb{R}^{N \times J_x \times J_y}$ by computing
 \begin{equation}
