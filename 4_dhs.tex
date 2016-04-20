@@ -74,6 +74,7 @@ Motivated by the multimodal hashing technique of \cite{masci2014multimodal}, we 
 \end{equation}
 
 where $f$ and $g$ are learned nonlinear functions, $\alpha$ is a parameter to control the importance of separating dissimilar items, and $m$ is a target separation of dissimilar pairs.
+The first term in the loss function encourages the embedded distance between similar pairs to be small and the second term encourages dissimilar pairs to have a distance of at least $m$.
 More specifically, if $x, y \in \mathbb{R}^{G \times D}$ where $G$ is the number of subsequent feature vectors which are grouped together (and therefore the downsampling ratio) and $D$ is the feature dimensionality, then $f(x), g(y) \in \mathbb{H}^E$ where $\mathbb{H}^E$ is the Hamming space of dimensionality $E$.
 This system is then optimized over $\mathcal{P}$ and $\mathcal{N}$ by to adjust the parameters of $f$ and $g$ such that $\mathcal{L}$ is minimized.
 The use of two different functions $f$ and $g$ allows for different mappings to be learned for different types of data; we expect this to be beneficial for our problem setting because synthesized MIDI CQTs and real-world audio CQTs may have different characteristics.
