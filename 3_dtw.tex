@@ -40,7 +40,7 @@ For reference, we follow the notation used in \cref{sec:dtw}.
 \begin{description}
 \item[Feature representation ($X$ and $Y$):] Prior to alignment, audio and MIDI data must be converted to an intermediate representation where their distance can be computed.
 This is often done by synthesizing the MIDI file to obtain an audio signal and computing a common spectral transform of the audio recording and synthesized MIDI audio.
-Chroma vectors (discussed in \cref{sec:chroma}), which represent the amount of energy in each semitone summed across octaves \cite{fujishima1999realtime} are a common choice \cite{hu2003polyphonic, ewert2012towards}.
+Chroma vectors, which represent the amount of energy in each semitone summed across octaves \cite{fujishima1999realtime} are a common choice \cite{hu2003polyphonic, ewert2012towards}.
 The constant-Q transform (CQT) (discussed in \cref{sec:cqt}), which represents the amount of energy in logarithmically spaced bins \cite{brown1991calculation} has also been used \cite{raffel2015large, dixon2005match, ellis2013aligning}.
 Occasionally, log-magnitude features are used in order to more closely mimic human perception \cite{raffel2015large, ellis2013aligning, turetsky2003ground}.
 In \cite{turetsky2003ground} and \cite{hu2003polyphonic} it is noted that Mel-Frequency Cepstral Coefficients result in poor performance for music signals because they obscure pitch information.
