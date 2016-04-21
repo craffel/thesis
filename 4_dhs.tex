@@ -131,7 +131,7 @@ First, we assembled a collection of known-correct MIDI-MSD matches.
 We then aligned these pairs using the method described in \cref{sec:goldstandard} and used a subset of the matched and aligned pairs to train our hashing model.
 Finally, we utilized the trained model to produce hash sequences for the entire MSD and a held-out subset of MIDI files from our collection of known-correct matches.
 Our approach was then evaluated based on how accurately it was able to recover the correct match in the MSD by nearest-neighbor DTW search utilizing the downsampled hash sequences.
-To explore the ability of our approach to handle multi-modal data, we repeated this experiment using piano roll matrices to represent MIDI files rather than constant-Q spectrograms.
+To explore the ability of our approach to handle multimodal data, we repeated this experiment using piano roll matrices to represent MIDI files rather than constant-Q spectrograms.
 We also compared our technique to a simple baseline, to ensure that our learning-based approach is beneficial.
 
 \subsection{Preparing Data}
@@ -159,9 +159,11 @@ For a fair evaluation, we exclude items used in training from the evaluation, th
 Care was taken to split based on \textit{songs}, rather than by entry (since some songs appear multiple times).
 
 \subsection{System Specifics}
+\label{sec:hashing_system}
 
 Training the hashing model involves presenting training examples and backpropagating the gradient of \cref{eq:hashing_objective} through the model parameters; we therefore need to specify the data format, model architecture, and training process.
 As a feature representation, we used the same one chosen in \cref{sec:goldstandard}, i.e.\ log-magnitude constant-Q spectrograms consisting of spectra with 12 bins per octave from MIDI note C2 (65.4 Hz) to B6 (987.8 Hz) computed every 46 milliseconds.
+We utilized \texttt{pretty\char`_midi} \cite{raffel2014pretty_midi} to synthesize MIDI file and \texttt{librosa} \cite{mcfee2015librosa, mcfee2015librosa_scipy} to compute features.
 Because utilizing a cosine distance for comparing spectra was consistently beneficial for alignment (see \cref{sec:optimizing}), we also $L^2$-normalized each feature vector.
 In order to improve convergence, we also standardized the feature dimensions of all data utilizing statistics from the training set.
 
@@ -223,20 +225,36 @@ For posterity, we report those here:
 \item Apart from RMSProp, we also experimentied with Nesterov's accelerated gradient \cite{nesterov1983method} and Adam \cite{kingma2015adam} (see \cref{sec:sgd}) but found that RMSProp produced the best results.
 \end{itemize}
 
+\subsection{Adapting to Multimodal Data}
+\label{sec:multimodal}
+
+Our proposed system is structured to learn mappings from two different modalities thanks to the fact that two separate networks $f$ and $g$ are trained.
+Utilizing the shared constant-Q spectrogram representation described in the previous section does not test the multimodal capabilities of our model because it allows MIDI files and audio recordings to be directly compared (as demonstrated in \cref{ch:dtw}).
+We therefore also evaluated the use of a ``piano roll'' representation for the MIDI data.
+A piano roll matrix $P$ is constructed such that $P[i, j] = v$, where $v$ is the total velocity of all notes on all instruments playing with pitch $i$ at the time corresponding to the $j^{th}$ feature vector.
+This representation can be readily extracted from the MIDI file itself (i.e.\ without synthesis), and contains substantially less information than the CQT.
+It is, however, still a ``time-frequency'' matrix, so it is not truly multimodal in the strictest sense.
+
+For ease of comparison, we utilized the exact same system as outlined in \cref{sec:hashing_system} except that we replaced the constant-Q spectrograms of synthesized MIDI files with piano roll matrices, computed over the same timebase and range of semitones.
+Specifically, after matching and aligning entries from the clean MIDI subset, we computed piano roll matries using the \texttt{get\char`_piano\char`_roll} method of the \texttt{pretty\char`_midi} library \cite{raffel2014pretty_midi}.
+As with the constant-Q spectrograms, we also $L^2$ normalized each feature vector in the piano roll matrices and standardized the feature dimensions using statistics from the training set.
+We then carried out a separate hyperparameter optimization, because we don't necessarily expect the same system design to perform best using both feature representations.
+The best performance was attained with a learning rate of $0.00011$, an RMSProp decay parameter of $0.90$, $\alpha = 5.72$, and $m = 5$, and $\beta = 0.036$, producing a Bhattacharyya distance of $0.428$.
+
 \subsection{Baseline Methods}
 
 Thresholding CQT PCA
 LSH
 
-\subsection{Adapting to Multi-Modal Data}
-\label{sec:multimodal}
-
-nips2015accelerating3
 
 \subsection{Results}
 
+
+
 ismir2015large4
 
+Add histogram plots.
+Add cqt/cqt, dhs/dhs, distance matrices plot.
 Add qualitative network behavior plots (deep dream).
 Add percentage-below-rank plot.
 
