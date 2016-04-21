@@ -241,15 +241,29 @@ As with the constant-Q spectrograms, we also $L^2$ normalized each feature vecto
 We then carried out a separate hyperparameter optimization, because we don't necessarily expect the same system design to perform best using both feature representations.
 The best performance was attained with a learning rate of $0.00011$, an RMSProp decay parameter of $0.90$, $\alpha = 5.72$, and $m = 5$, and $\beta = 0.036$, producing a Bhattacharyya distance of $0.428$.
 
-\subsection{Baseline Methods}
+\subsection{Baseline}
 
-Thresholding CQT PCA
-LSH
-
+In order to verify whether our hashing system is beneficial, we also evaluated a simple learning-free baseline method.
+This approach is inspired by the ``piecewise aggregate approximation'' approach proposed in \cite{keogh2001dimensionality,yi2000fast}, which downsamples a sequence by computing the average of feature vectors within non-overlapping blocks of fixed length.
+Given a constant-Q spectrogram, our baseline method first computes the averate spectrum over non-overlapping blocks of 8 spectra, which achieves the same downsampling ratio as our convolutional network models.
+In order to produce binary vectors, we first computed the mean value in each feature dimension among all sequences in our training set, and then thresholded the downsampled sequences about this value.
+More explicitly, given a sequence $X \in \mathbb{R}^{M \times D}$ which consists of $M$ $D$-dimensional feature vectors, we compute
+\begin{equation}
+\hat{X}[n, d] = \begin{dcases}
+1, \frac{1}{G} \sum_{n = Gm}^{G(m + 1)} X[m, d] \ge \bar{X}[d]\\
+0, \mathrm{otherwise}
+\end{dcases}
+\end{equation}
+where $G$ is the downsampling factor ($8$ in our experiments), $\hat{X} \in \mathbb{H}^{\lfloor \frac{M}{G} \rfloor \times D}$ is the resulting downsampled hash sequence, and
+\begin{equation}
+\bar{X}[d] = \frac{1}{|\mathcal{S}|} \sum_{k = 1}^{|\mathcal{S}|} \sum_{m = 1}^{M_k} X_k[m, d]
+\end{equation}
+where $X_1, \ldots, X_{|\mathcal{S}|} \in \mathcal{S}$ is the training set of sequences with $X_k \in \mathbb{R}^{M_k \times D}$.
+After thresholding our constant-Q spectrograms, this resulted in binary vectors in $\mathbb{H}^{48}$.
+For more direct comparison, and to enable the use of exclusive-or and POPCNT to measure Hamming distance, we simply discarded the bottom and top eight entries in each of the resulting binary vectors so that they instead were embedded in $\mathbb{H}^{32}$.
+Intuitively, the resulting downsampled hash sequences represent whether a given semitone had more or less energy than average over subsequent blocks of 8 frames (corresponding to 370 milliseconds).
 
 \subsection{Results}
-
-
 
 ismir2015large4
 
