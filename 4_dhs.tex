@@ -263,6 +263,19 @@ After thresholding our constant-Q spectrograms, this resulted in binary vectors 
 For more direct comparison, and to enable the use of exclusive-or and POPCNT to measure Hamming distance, we simply discarded the bottom and top eight entries in each of the resulting binary vectors so that they instead were embedded in $\mathbb{H}^{32}$.
 Intuitively, the resulting downsampled hash sequences represent whether a given semitone had more or less energy than average over subsequent blocks of 8 frames (corresponding to 370 milliseconds).
 
+\subsection{Matching MIDI Files to the MSD}
+
+After training our hashing system as described above, the process of evaluating the effectivness of matching MIDI files to the MSD proceeds as follows:
+First, we precompute downsampled hash sequences for every 7digital preview clip and every MIDI file in the test and development sets for which we know a priori the correct match(es) in the MSD.
+Then, we compute the DTW cost as described in \cref{sec:dtw} between every audio and MIDI hash sequence, except that the Euclidean distance of \cref{eq:dtw_objective} is replaced with Hamming distance.
+We can evaluate the effectiveness of a given approach by ranking MSD entries according to their hash sequence DTW distance to a given MIDI file, and determining the rank of the correct match for each MIDI file.
+
+We tuned the parameters of the DTW cost calculation to optimize results over our ``development'' set of successfully aligned MIDI/MSD pairs.
+We found it beneficial to use a smaller value of $g = 0.9$.
+In \cref{ch:dtw}, we utilized the median pairwise distance for the ``non-diagonal move'' penalty for CQT-based distance matrices, but we found that this median was consistent across Hamming-distance matrices.
+Using a fixed value for the additive non-diagonal move penalty $\phi$ avoids the median calculation, so we chose a fixed $\phi = 15$, the median distance we observed.
+Similarly, we found that normalizing by the average distance value as defined in \cref{eq:dtw_mean_distance_normalization} did not help, so we skipped this step.
+
 \subsection{Results}
 
 ismir2015large4

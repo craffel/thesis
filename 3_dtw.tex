@@ -210,6 +210,7 @@ Furthermore, it's not clear whether the non-diagonal path penalties $\phi$ shoul
 Finally, \cite{raffel2015large} advocates further normalizing this distance by
 \begin{equation}
 \frac{1}{L^2} \sum_{i = \min(p)}^{\max(p)} \sum_{j = \min(q)}^{\max(q)} \|X[i] - Y[j]\|_2^2
+\label{eq:dtw_mean_distance_normalization}
 \end{equation}
 i.e.\ the mean distance between all pairs of frames over the entire aligned portion of both feature sequences.
 This is intended to help normalize out global differences between different distance matrices; for example, if a MIDI synthesis' timbre does not closely match an audio recording, entries in the resulting distance matrix will tend to be larger which would inflate the DTW distance.
