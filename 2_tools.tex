@@ -992,7 +992,7 @@ Increasing the frame length $M$ will result in higher-resolution spectra due to 
 However, it will also result in lower time resolution, due to the fact that if multiple events happen within a single frame then it is impossible to determine their ordering by inspecting the magnitude spectrum.
 Choosing $M$ is therefore a tradeoff of time and frequency resolution, i.e.\ we would like to be able to resolve differences of frequency and the timing of events which are relevant to the task.
 A more practical consideration is that the FFT is optimized for frame lengths which are a power of two.
-Based on these constraints, a common choice is to utilize a frame size of 2048 samples at a 22,050 Hz sampling rate, which corresponds to 92.8 ms with a 10.8 Hz resolution.
+Based on these constraints, a common choice is to utilize a frame size of 2048 samples at a 22,050 Hz sampling rate, which corresponds to 92.8 milliseocnds with a 10.8 Hz resolution.
 
 \paragraph{Hop Size}
 
@@ -1000,7 +1000,7 @@ Typically, there is some overlap between subsequent frames in an STFT.
 This is a necessity when using windows which taper to zero in order to avoid loss of information.
 For the Hann window in particular, in order to retain all information the hop size must be set no larger than half of the frame size.
 Using more overlap can also smooth subsequent spectra in an STFT and can provide an additional form of temporal resolution, at a higher computational expense.
-We therefore utilize a hop size of 512 samples throughout this thesis which corresponds to 23.2 ms at 22,050 Hz; this is believed to be at the upper limit of the rate at which our auditory system performs spectral analysis.
+We therefore utilize a hop size of 1024 samples throughout this thesis which corresponds to 46.4 milliseconds at 22,050 Hz; this is believed to be at the upper limit of the rate at which our auditory system performs spectral analysis.
 
 \subsubsection{Log-Magnitude}
 
