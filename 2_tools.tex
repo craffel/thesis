@@ -594,6 +594,7 @@ In practice, $\mu$ is often set close to $1$; this will cause parameters to chan
 While early theory and intuition suggested that some of the benefits of momentum are lost in the stochastic setting \cite{lecun2012efficient}, it can be particularly beneficial in the early stages of learning before the loss function is close to any minima.
 
 \subsubsection{Nesterov's Accelerated Gradient}
+\label{sec:nesterov}
 
 In Nesterov's Accelerated Gradient (NAG) \cite{nesterov1983method}, the gradient of the loss at each step is computed at $\theta_t + \mu v_t$ instead of $\theta_t$.  The update rules are then as follows:
 
@@ -620,6 +621,7 @@ It also effectively decreases the learning rate over time, because the sum of sq
 This can prove beneficial as the loss function becomes close to a minimum, where large changes in the loss function would be detrimental.
 
 \subsubsection{RMSProp}
+\label{sec:rmsprop}
 
 In its originally proposed form \cite{tieleman2012lecture}, RMSProp is very similar to Adagrad.
 The only difference is that the $g_t$ term is computed as an exponentially decaying average instead of an accumulated sum.
@@ -647,6 +649,7 @@ Including the first-order moment estimate in the denominator in this way causes 
 
 
 \subsubsection{Adam}
+\label{sec:adam}
 
 Adam \cite{kingma2015adam} is somewhat similar to Adagrad and RMSProp in that it computes a decayed moving average of the gradient and squared gradient (first and second moment estimates) at each time step.
 It differs mainly in two ways: First, the separate moving average coefficients $\gamma_1$ and $\gamma_2$ are used for first and second moments respectively (\cref{eq:adam_m} and \cref{eq:adam_g}).

@@ -19,7 +19,7 @@ Clearly, a more efficient approach is warranted.
 In fact, the problem of finding the sequence in a large database (here, a collection of audio recordings) which is most similar under DTW distance to a query (here, a MIDI file) is common in the field of data mining \cite{berndt1994using}.
 Unsurprisingly, a variety of methods have been proposed for speeding up this task to make it feasible for very large databases.
 A pervasive framework is ``pruning'', where a computationally efficient operation is used to discard a large portion of the database and the remaining entries are compared using a more expensive, but highly accurate, method.
-Under certain assumptions, there are methods which can achieve {\em exact} pruning (i.e.\ without every erroneously discarding the correct match) of large-scale nearest-neighbor DTW search.
+Under certain assumptions, there are methods which can achieve {\em exact} pruning (i.e.\ without ever erroneously discarding the correct match) of large-scale nearest-neighbor DTW search.
 \cite{rakthanmanon2012searching} provides a thorough overview of these techniques and shows that for some problems they can allow exact search of databases with trillions of data points.
 However, one of the core assumptions of these methods is that the query is always a subsequence of its correct match, and equivalently that the length of the aligned sequence is known a priori, which does not hold in the setting of MIDI-to-audio matching.
 In fact, because the 7digital MP3s are truncated preview clips and MIDI files are usually complete transcriptions, for our problem we nearly always have the opposite case where the correct match is a subsequence of the query.
@@ -35,19 +35,19 @@ Computing the DTW distance between two sequences also potentially involves compu
 In data mining tasks, entries in sequences are often one-dimensional, so the cost of this operation is usually not considered independent of the overall cost of DTW.
 For the time-frequency representation we utilize in \cref{ch:dtw}, our sequences consist of 48-dimensional feature vectors.
 As a result, in our problem setting computing the pairwise distance matrix is actually more expensive than finding the lowest-cost path through it because each entry in the distance matrix requires at least $D$ operations, where $D$ is the feature dimensionality.
-While computing the distance matrix similarly receives quadratic speed gains when the sequences are downsampled, it also can benefit when a lower-dimensional or otherwise more efficient feature representation is used.
+Computing the distance matrix similarly receives quadratic speed gains when the sequences are downsampled, but also can be made faster by using a lower-dimensional or otherwise more efficient feature representation.
 
 In addition, the ``raw'' representation in which data is initially provided may not produce the most effective measure of similarity under the Euclidian distance utilized by DTW.
 More concretely, while the audio-to-synthesized MIDI CQT comparison utilized in \cref{ch:dtw} proved effective, it may be that we are able to transform the individual feature vectors to a space where similarity is better represented so that matching MIDI files and audio recordings have a smaller DTW distance.
 Recently, the framework of ``representation learning'' has proven to be effective for this type of problem \cite{bengio2013representation}.
 Representation learning utilizes prior knowledge, such as a collection of pairs of known-similar and dissimilar elements, to learn a mapping to a more effective transformed space.
-This process is also capable of producing ``mutilmodal'' mappings, i.e.\ transformations which allow the comparison of heterogeneous data.
+This process is also capable of producing ``multimodal'' mappings, i.e.\ transformations which allow the comparison of heterogeneous data.
 
 From the above discussion, it is clear that mapping very long sequences of high-dimensional feature vectors to shorter, lower-dimensional sequences such that similarity is preserved would provide substantial gains when comparing sequences with DTW.
 Motivated by this possibility, in this chapter we propose a system with the following capabilities:
 \begin{description}
-\item[Maps to a Hamming space:] By replacing continuous-valued feature vectors with bitvectors in an embedded Hamming space, computing the distance between a pair of feature vectors simplifies to an exclusive-or followed by a single POPCNT SSE4.2 operation \cite{intel2007programming}, which substantially speeds up distance matrix calculation.
-\item[Downsamples sequences:] Rather than creating a one-to-one correspondence between the original featured vectors and mapped bitvectors, groups of subsequent feature vectors are mapped to a single bitvector, giving a quadratic increase in efficiency.
+\item[Maps to a Hamming space:] By replacing continuous-valued feature vectors with binary vectors in an embedded Hamming space, computing the distance between a pair of feature vectors simplifies to an exclusive-or followed by a single POPCNT SSE4.2 operation \cite{intel2007programming}, which substantially speeds up distance matrix calculation.
+\item[Downsamples sequences:] Rather than creating a one-to-one correspondence between the original feature vectors and mapped binary vectors, groups of subsequent feature vectors are mapped to a single binary vector, giving a quadratic increase in efficiency.
 \item[Preserves similarity:] The system is trained with an objective which seeks to produce a mapping where aligned feature vectors from matching sequences have a small Hamming distance in the embedded space, and non-matched feature vectors have a large distance.
 \item[Learns its representation:] Our approach is entirely data-driven, which allows it to adapt to different problem settings including multimodal data, as we show in \cref{sec:multimodal}.
 \end{description}
@@ -61,11 +61,11 @@ Finally, we discuss possibilities for improvement in \cref{sec:dhs_discussion}.
 
 As a high-level overview, our system will learn a mapping from sequences of feature vectors to downsampled sequences of binary vectors in a Hamming space where similarity is preserved based on a training set of matched and aligned sequences.
 This training set can be constructed by obtaining a collection of sequences in which matching pairs are known, and then using DTW to find the optimal alignment of feature vectors in matching sequences.
-From this data, we extract groups of sequentially co-occuring feature vectors to construct $\mathcal{P}$, such that $(x, y) \in \mathcal{P}$ indicates that $x$ is a group of feature vectors which is aligned to the group $y$ from a matching sequence.
-For example, in the context of MIDI to audio matching, $x$ will be subsequent constant-Q spectra of a synthesized MIDI which are aligned in time to $y$, consisting of co-occuring constant-Q spectra from a matching audio recording.
+From this data, we extract groups of sequentially co-occurring feature vectors to construct $\mathcal{P}$, such that $(x, y) \in \mathcal{P}$ indicates that $x$ is a group of feature vectors which is aligned to the group $y$ from a matching sequence.
+For example, in the context of MIDI to audio matching, $x$ will be subsequent constant-Q spectra of a synthesized MIDI which are aligned in time to $y$, consisting of co-occurring constant-Q spectra from a matching audio recording.
 We then construct $\mathcal{N}$, a set of ``dissimilar'' pairs, by repeatedly randomly choosing two pairs $(x_1, y_1), (x_2, y_2) \in \mathcal{P}$ and swapping to obtain $(x_1, y_2), (x_2, y_1) \in \mathcal{N}$.
 
-Given this training data, our goal is to map sequences of feature vectors to sequences of binary vectors in a Hamming space where groups of sequentially co-occuring vectors in $\mathcal{P}$ have a small distance and groups in $\mathcal{N}$ have a large distance.
+Given this training data, our goal is to map sequences of feature vectors to sequences of binary vectors in a Hamming space where groups of sequentially co-occurring vectors in $\mathcal{P}$ have a small distance and groups in $\mathcal{N}$ have a large distance.
 Motivated by the multimodal hashing technique of \cite{masci2014multimodal}, we use the following objective function to measure the quality of the mapping:
 
 \begin{equation}
@@ -76,7 +76,7 @@ Motivated by the multimodal hashing technique of \cite{masci2014multimodal}, we 
 where $f$ and $g$ are learned nonlinear functions, $\alpha$ is a parameter to control the importance of separating dissimilar items, and $m$ is a target separation of dissimilar pairs.
 The first term in the loss function encourages the embedded distance between similar pairs to be small and the second term encourages dissimilar pairs to have a distance of at least $m$.
 More specifically, if $x, y \in \mathbb{R}^{G \times D}$ where $G$ is the number of subsequent feature vectors which are grouped together (and therefore the downsampling ratio) and $D$ is the feature dimensionality, then $f(x), g(y) \in \mathbb{H}^E$ where $\mathbb{H}^E$ is the Hamming space of dimensionality $E$.
-This system is then optimized over $\mathcal{P}$ and $\mathcal{N}$ by to adjust the parameters of $f$ and $g$ such that \cref{eq:hashing_objective} is minimized.
+This system is then optimized over $\mathcal{P}$ and $\mathcal{N}$ to adjust the parameters of $f$ and $g$ such that \cref{eq:hashing_objective} is minimized.
 The use of two different functions $f$ and $g$ allows for different mappings to be learned for different types of data; we expect this to be beneficial for our problem setting because synthesized MIDI CQTs and real-world audio CQTs may have different characteristics.
 This also allows us to experiment with multimodal data, i.e.\ cases where $x$ and $y$ come from different, and potentially non-comparable, feature spaces.
 A visualization of this process is shown in \cref{fig:hashing_schematic}.
@@ -85,8 +85,8 @@ A visualization of this process is shown in \cref{fig:hashing_schematic}.
   \includegraphics[width=\textwidth]{figures/4-hashing_schematic.pdf}
   \caption[Hashing groups of subsequent feature vectors]{Diagram visualizing how subsequent groups of feature vectors are mapped to binary vectors.
 Matching sequences of feature vectors which have been aligned in time are shown at the top and bottom.
-Co-occuring groups of feature vectors, highlighted in light boxes, are passed through two learned nonlinear functions $f$ and $g$ (visualized as neural network diagrams).
-The functions then output a single hash vector each, which are ideally close together in the embedded Hamming space because they represent co-occuring feature vectors from matched and aligned sequences.
+Co-occurring groups of feature vectors, highlighted in light boxes, are passed through two learned nonlinear functions $f$ and $g$ (visualized as neural network diagrams).
+The functions then output a single hash vector each, which are ideally close together in the embedded Hamming space because they represent co-occurring feature vectors from matched and aligned sequences.
 For groups of feature vectors from non-matching sequences, the networks are trained to output binary vectors with a large Hamming distance.}
   \label{fig:hashing_schematic}
 \end{figure}
@@ -151,11 +151,10 @@ This resulted in 25,707 audio/MIDI file pairs corresponding to 5,249 unique song
 Fuzzy metadata matching is not enough to ensure that we have MIDI and audio files with matching content; for instance, the metadata could be incorrect, the fuzzy text match could have failed, the MIDI could be a poor transcription (e.g., missing instruments or sections), and/or the MIDI and audio data could correspond to different versions of the song.
 We therefore utilized the alignment technique developed in \cref{sec:goldstandard}, which was empirically shown to produce a confidence score which reliably reports whether the content of a MIDI file matches a given audio file.
 Conveniently, utilizing an alignment system to verify matches also provides the aligned sequences we need for training our hashing system.
-Based on the real-world results presented in \cref{sec:qualitative}, we decided to consider a match ``correct'' when its confidence score was above $0.5$; for the 500 matches annotated, this produces the correct label for all but 1 of the failed matches and for the majority of the correct matches.
+Based on the real-world results presented in \cref{sec:qualitative}, we decided to consider a match ``correct'' when its confidence score was above $0.5$; for the 500 alignments annotated in \cref{sec:qualitative}, this produced the correct label for all but 1 of the failed matches and for the majority of the correct matches.
 Retaining all alignments with confidence scores higher than this threshold resulted in 10,094 successful matches.
 
-Recall that these matched and aligned pairs serve two purposes: They provide training data for our hashing model; and we also use them to evaluate the entire content-based matching system.
-For a fair evaluation, we exclude items used in training from the evaluation, thus we split the successful alignments into three parts: $60\%$ to use as training data, $5\%$ as a validation set used for rapid evaluation of models as they are being trained, $10\%$ as a ``development set'' to tune the content-based matching system, and the remaining $25\%$ to use for final evaluation of our system.
+For a fair evaluation, we exclude items used in training from the evaluation of our system, thus we split the successful alignments into three parts: $60\%$ to use as training data, $5\%$ as a validation set used for rapid evaluation of models as they are being trained, $10\%$ as a ``development set'' to tune the content-based matching system, and the remaining $25\%$ to use for final evaluation of our system.
 Care was taken to split based on \textit{songs}, rather than by entry (since some songs appear multiple times).
 
 \subsection{System Specifics}
@@ -163,14 +162,14 @@ Care was taken to split based on \textit{songs}, rather than by entry (since som
 
 Training the hashing model involves presenting training examples and backpropagating the gradient of \cref{eq:hashing_objective} through the model parameters; we therefore need to specify the data format, model architecture, and training process.
 As a feature representation, we used the same one chosen in \cref{sec:goldstandard}, i.e.\ log-magnitude constant-Q spectrograms consisting of spectra with 12 bins per octave from MIDI note C2 (65.4 Hz) to B6 (987.8 Hz) computed every 46 milliseconds.
-We utilized \texttt{pretty\char`_midi} \cite{raffel2014pretty_midi} to synthesize MIDI file and \texttt{librosa} \cite{mcfee2015librosa, mcfee2015librosa_scipy} to compute features.
-Because utilizing a cosine distance for comparing spectra was consistently beneficial for alignment (see \cref{sec:optimizing}), we also $L^2$-normalized each feature vector.
+We utilized \texttt{pretty\char`_midi} \cite{raffel2014pretty_midi} and \texttt{fluidsynth}\footnote{\texttt{http://fluidsynth.org}} to synthesize MIDI files and \texttt{librosa} \cite{mcfee2015librosa, mcfee2015librosa_scipy} to compute features.
+Because utilizing a cosine distance for comparing spectra was consistently beneficial for alignment (see \cref{sec:optimizing}), we $L^2$-normalized each feature vector.
 In order to improve convergence, we also standardized the feature dimensions of all data utilizing statistics from the training set.
 
 For efficiency, we trained the networks using minibatches of training examples; each minibatch consisted of 50 sequences obtained by choosing a random offset for each training sequence pair and cropping out the next 100 spectra.
 For $\mathcal{N}$, we simply presented the network with length-100 subsequences chosen at random from different songs.
 Each time the network had iterated over minibatches from the entire training set (one epoch), we repeated the random sampling process.
-For optimization, we used RMSProp, a recently-proposed stochastic optimization technique \cite{tieleman2012lecture}.
+For optimization, we used RMSProp \cite{tieleman2012lecture}, described in \cref{sec:rmsprop}.
 After each 100 minibatches, we computed the loss over the validation set.
 If the validation loss was less than $99\%$ of the previous lowest, we trained for 1000 more iterations (minibatches).
 
@@ -201,7 +200,7 @@ For initial weight parameter values, as suggested in \cite{he2015delving}, we us
 All bias values were initialized to $0$.
 Our model was implemented using \texttt{theano} \cite{bastien2012theano,bergstra2010theano} and \texttt{lasagne} \cite{dieleman2015lasagne}.
 
-For regularization, we found it benificial to add a squared $L^2$ penalty to the network's output prior to thresholding.
+For regularization, we found it beneficial to add a squared $L^2$ penalty to the network's output prior to thresholding.
 This effectively encourages the network to produce values near 0, which we believe improves convergence due to the fact that the gradient of the hyperbolic tangent nonlinearity vanishes away from 0.
 This is in contrast to the intuition provided in \cite{masci2014multimodal} for using a hyperbolic tangent, where it is argued that saturating the nonlinearity will more closely simulate a binary embedding.
 To control the amount of regularization, we multiplied this $L^2$ penalty by a scalar hyperparameter $\beta$ before adding it to \cref{eq:hashing_objective}.
@@ -209,7 +208,7 @@ To control the amount of regularization, we multiplied this $L^2$ penalty by a s
 To ensure good performance, we optimized all model hyperparameters using the Bayesian optimization framework proposed in \cite{snoek2012practical}.
 We optimized over the convolutional/pooling layer architecture, the RMSProp learning rate and decay parameters, and the $\alpha$, $\beta$ and $m$ regularization parameters of the loss function and the output $L^2$ penalty.
 As a hyperparameter optimization objective, we used the Bhattacharyya distance as described above.
-The best performing network had the structure we described above, a learning rate of $0.001$ with an RMSProp decay parameter of $0.67$, $\alpha = 4.755$, and $m = 3$, and $\beta = 0.01$.
+The best performing network had the structure we described above, a learning rate of $0.001$ with an RMSProp decay parameter of $0.67$, $\alpha = 4.76$, and $m = 3$, and $\beta = 0.01$.
 This hyperparameter configuration achieved a Bhattacharyya separation of $0.359$.
 
 Beyond those described above, we also experimented with a number of other regularizers, model architectures, and optimization schemes.
@@ -222,7 +221,7 @@ For posterity, we report those here:
 \item We also tried the hash entropy-encouraging loss term proposed in \cite[equation (3)]{yang2015supervised} but it did not significantly affect the resulting hash distribution.
 \item In early experiments, we utilized fully-connected networks with no convolutional layers, but quickly achieved better results after including the convolutional front-end.
 \item We experimented with a variety of architectures for the fully-connected portion of the network, including using 1, 2, or 3 hidden layers, with 256, 512, 1024, 2048, or 4096 layers; 2 layers with 2048 units was the largest configuration which could fit in memory and incidentally produced the best performance.
-\item Apart from RMSProp, we also experimentied with Nesterov's accelerated gradient \cite{nesterov1983method} and Adam \cite{kingma2015adam} (see \cref{sec:sgd}) but found that RMSProp produced the best results.
+\item Apart from RMSProp, we also experimentied with Nesterov's accelerated gradient \cite{nesterov1983method} and Adam \cite{kingma2015adam} (see \cref{sec:nesterov} and \cref{sec:adam}) but found that RMSProp produced the best results.
 \end{itemize}
 
 \subsection{Adapting to Multimodal Data}
@@ -231,12 +230,12 @@ For posterity, we report those here:
 Our proposed system is structured to learn mappings from two different modalities thanks to the fact that two separate networks $f$ and $g$ are trained.
 Utilizing the shared constant-Q spectrogram representation described in the previous section does not test the multimodal capabilities of our model because it allows MIDI files and audio recordings to be directly compared (as demonstrated in \cref{ch:dtw}).
 We therefore also evaluated the use of a ``piano roll'' representation for the MIDI data.
-A piano roll matrix $P$ is constructed such that $P[i, j] = v$, where $v$ is the total velocity of all notes on all instruments playing with pitch $i$ at the time corresponding to the $j^{th}$ feature vector.
+A piano roll matrix $P$ is constructed such that $P[i, j] = v$, where $v$ is the total velocity of all notes on all instruments playing with pitch $j$ at the time corresponding to the $i^{th}$ feature vector.
 This representation can be readily extracted from the MIDI file itself (i.e.\ without synthesis), and contains substantially less information than the CQT.
 It is, however, still a ``time-frequency'' matrix, so it is not truly multimodal in the strictest sense.
 
 For ease of comparison, we utilized the exact same system as outlined in \cref{sec:hashing_system} except that we replaced the constant-Q spectrograms of synthesized MIDI files with piano roll matrices, computed over the same timebase and range of semitones.
-Specifically, after matching and aligning entries from the clean MIDI subset, we computed piano roll matries using the \texttt{get\char`_piano\char`_roll} method of the \texttt{pretty\char`_midi} library \cite{raffel2014pretty_midi}.
+Specifically, after matching and aligning entries from the clean MIDI subset, we computed piano roll matrices using the \texttt{get\char`_piano\char`_roll} method of the \texttt{pretty\char`_midi} library \cite{raffel2014pretty_midi}.
 As with the constant-Q spectrograms, we also $L^2$ normalized each feature vector in the piano roll matrices and standardized the feature dimensions using statistics from the training set.
 We then carried out a separate hyperparameter optimization, because we don't necessarily expect the same system design to perform best using both feature representations.
 The best performance was attained with a learning rate of $0.00011$, an RMSProp decay parameter of $0.90$, $\alpha = 5.72$, and $m = 5$, and $\beta = 0.036$, producing a Bhattacharyya distance of $0.428$.
@@ -262,15 +261,15 @@ where $G$ is the downsampling factor ($8$ in our experiments), $\hat{X} \in \mat
 where $X_1, \ldots, X_{|\mathcal{S}|} \in \mathcal{S}$ is the training set of sequences with $X_k \in \mathbb{R}^{M_k \times D}$.
 After thresholding our constant-Q spectrograms, this resulted in binary vectors in $\mathbb{H}^{48}$.
 For more direct comparison, and to enable the use of exclusive-or and POPCNT to measure Hamming distance, we simply discarded the bottom and top eight entries in each of the resulting binary vectors so that they instead were embedded in $\mathbb{H}^{32}$.
-Intuitively, the resulting downsampled hash sequences represent whether a given semitone had more or less energy than average over subsequent blocks of 8 frames (corresponding to 370 milliseconds).
+Intuitively, the resulting downsampled hash sequences represent whether a given semitone had more or less energy than average over subsequent blocks of 8 frames (corresponding to 371.5 milliseconds).
 We will refer to this approach as ``thresholded piecewise aggregate approximation'' (TPAA).
 
 \subsection{Matching MIDI Files to the MSD}
 
-After training our hashing system as described above, the process of evaluating the effectivness of matching MIDI files to the MSD proceeds as follows:
+After training our hashing system as described above, the process of evaluating the effectiveness of matching MIDI files to the MSD proceeds as follows:
 First, we precompute downsampled hash sequences for every 7digital preview clip and every MIDI file in the test and development sets for which we know a priori the correct match(es) in the MSD.
 Then, we compute the DTW cost as described in \cref{sec:dtw} between every audio and MIDI hash sequence, except that the Euclidean distance of \cref{eq:dtw_objective} is replaced with Hamming distance.
-We can evaluate the effectiveness of a given approach by ranking MSD entries according to their hash sequence DTW distance to a given MIDI file, and determining the rank of the correct match for each MIDI file.
+We can evaluate the effectiveness of a given approach by ranking MSD entries according to their hash sequence DTW distance to a given MIDI file, and determining the rank of the correct match.
 
 We tuned the parameters of the DTW cost calculation to optimize results over our ``development'' set of successfully aligned MIDI/MSD pairs.
 We found it beneficial to use a smaller value of $g = 0.9$.
@@ -288,7 +287,7 @@ Similarly, we found that normalizing by the average distance value as defined in
 The downsampled hash sequences were created using the trained model described in \cref{sec:hashing_system}.
 As utilized in our experiments, the constant-Q spectrograms are log-magnitude and $L^2$-normalized.
 For the spectrograms, the feature dimension corresponds to semitones; for the hash sequence, the Hamming space dimensions have no explicit meaning.
-The spectrogram utilizes a timebase of 46.4 milliseconds per sequence step, which the hash sequence downsamples by a factor of 8 to 371.2 milliseconds.}
+The spectrogram utilizes a timebase of 46.4 milliseconds per sequence step, which the hash sequence downsamples by a factor of 8 to 371.5 milliseconds.}
   \label{fig:cqts_and_dhs}
 \end{figure}
 
@@ -326,8 +325,8 @@ These distributions, for the raw CQT-to-CQT, piano roll-to-CQT, and each of the 
 
 The overlap between the matching and non-matching distributions of CQT-to-CQT distances in the top left shows that there is certainly some room for improvement in this representation.
 Below this, the distributions for the piano roll-to-CQT distances show that comparing these two representations is substantially less effective, although there is some trend towards smaller distances for matching feature vectors.
-At the bottom right, the distributions for raw (pre-thresholding) distances are shown.
-This plot gives a clear picture that representation learning is helpful, because there is virtually no overlap between matching and non-matching distances, and furthermore the Euclidian distance in the embedded space for matching sequence elements is generally very small.
+At the bottom left, the distributions for raw (pre-thresholding) distances are shown.
+This plot gives a clear picture that representation learning is helpful, because there is virtually no overlap between matching and non-matching distances, and furthermore the Euclidean distance in the embedded space for matching sequence elements is generally very small.
 The effect of thresholding this representation is shown in the top right; thresholding clearly limits some of the discriminative power of the representation, but nevertheless there is much less overlap in the distributions than there was for the ``raw'' CQT feature representation.
 Below, the Hamming distance distributions are shown for the model which learned to embed piano roll vectors; the separation of the distributions almost matches the CQT-to-CQT-based model, showing that our system is adaptable to differing input representations.
 Finally, in the bottom right, we show the distributions for our baseline TPAA method.
@@ -336,7 +335,7 @@ Clearly, there is substantially move overlap between matching and non-matching e
 \subsubsection{Ranking Metrics}
 
 To evaluate our system using the known MIDI-audio pairs of our test set, we ranked MSD entries according to their hash sequence DTW distance to a given MIDI file, and determined the rank of the correct match.
-Because some MIDI files were matched to multiple MSD entries due to duplicates in the MSD, we made the forgiving choice of utilizing the minimum rank among all correct matches for a given MIDI file.
+Because some MIDI files were matched to multiple MSD entries due to duplicates in the MSD, we made the forgiving choice of utilizing the best rank among all correct matches for a given MIDI file.
 We also ignored all resulting hash sequences with less than 30 sequence elements; these generally corresponded to corrupt MP3 files and occasionally confounded the results.
 The mean reciprocal rank (MRR) across the test set for the three methods we evaluated is shown in the first row of \cref{tab:ranking_metrics}.
 This metric makes it clear that our learning-based system outperforms our baseline, producing a MRR of $0.722$ compared to $0.270$.
@@ -377,9 +376,9 @@ In a relatively small proportion of cases, the MIDI hash sequence ended up being
 
 Given that we cannot reliably assume the top hit is the correct MSD entry, it is more realistic to look at our system as a pruning technique; that is, it can be used to discard MSD entries which we can be reasonably confident do not match a given MIDI file.
 We therefore propose that a useful metric is to find the rank threshold below which we can be highly confident that the correct match appears, which we report for our different methods in the second row of \cref{tab:ranking_metrics}.
-Specifically, we computed the threshold $N$ at which 95\% of the correct matches in the test set had a rank lower than $N$.
-Given this high-confidence rank threshold $N$, we can compute the hash sequence DTW distance between a query MIDI and all MSD entries, discard all entries in the MSD except those with the $N$-smallest distances, and then perform the more precise DTW on the full CQT representations to find the best match in the remaining candidates.
-Inspecting the resulting values of $N$ for the methods we evaluated, we see that we can discard the vast majority (over 99.98\%) of the MSD with high confidence using the CQT hashing technique of \cref{sec:hashing_system}.
+Specifically, we computed the threshold $N$ at which 95\% of the correct matches in the test set had a rank better than $N$.
+Given this high-confidence rank threshold $N$, we can compute the hash sequence DTW distance between a query MIDI and all MSD entries, discard all entries in the MSD except those with the $N$-smallest distances, and then perform the more precise and more expensive method of \cref{ch:dtw} to find the best match in the remaining candidates.
+Inspecting the resulting values of $N$ for the methods we evaluated, we see that we can discard the vast majority (all but 167 entries, or over 99.98\%) of the MSD with high confidence using the CQT hashing technique of \cref{sec:hashing_system}.
 Once again, utilizing piano roll matrices incurs a modest decrease in precision, and the baseline TPAA method has substantially worse performance.
 
 \section{Discussion}
@@ -391,7 +390,12 @@ These speedups can be attributed to the fact that computing an exclusive-or and 
 In summary, a straightforward way to describe the success of our system is to observe that we can, with high confidence, discard over xxx\% of the entries of the MSD by performing a calculation that takes about as much time as matching against xxx\% of the MSD.
 In addition, our learning-based approach provides a huge improvement over simply thresholding the raw feature values.
 
+We identify a variety of potential avenues for improving our approach.
+First, our simple method of randomly swapping matching pairs to construct our dissimilar pair set $\mathcal{N}$ may not be the most effective approach.
+Preferentially choosing pairs on which our model is having difficulty, as done in \cite{schroff2015facenet}, or using a curriculum learning approach which presents more and more difficult examples to the network over time \cite{bengio2009curriculum} could prove beneficial.
+Furthermore, we are interested in trying the various other loss functions which have been proposed for similarity-preserving embedding, such as the ``coscos'' loss from \cite{kamper2016deep} or the $k$-means style loss from \cite{hershey2016deep}.
+
 Despite our system's efficiency, we estimate that comparing each of the MIDI files in our 178,561 file collection to the entire the MSD would still take xxx.
 There is therefore room for improving the efficiency of our technique.
 The main bottleneck is that it still requires DTW to compare hash sequences; if we could avoid this quadratic-complexity operation we could potentially develop an even faster pruning method.
-We explore this possibliity in the following chapter.
+We explore this possibility in the following chapter.
