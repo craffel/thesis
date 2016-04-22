@@ -21,11 +21,92 @@ Finally, we discuss results and possibilities for improvement in \cref{sec:pse_d
 
 \subsection{Embedding}
 
-icassp2016pruning2
+The idea behind ``embedding'' is attractive: Given data in a representation which is either inefficient or does not readily reveal factors of interest, can we produce a mapping to fixed-length vectors that possesses these desired properties?
+Because many simple machine learning methods are particularly effective given data where Euclidean distance corresponds to some notion of similarity, embedding can make data more amenable to learning and comparison.
+
+As a concrete example, in \cite{schroff2015facenet}, a neural network architecture is used to embed images of faces such that images of the same person have small pairwise distances in the embedded space and images of different people have large distances.
+The authors were able to achieve state-of-the-art results on the ``labeled faces the wild'' dataset by simply thresholding the resulting distances to denote ``same person'' or ``different person''.
+In addition, the embedded representation produced qualitatively useful results when performing unsupervised clustering using $k$-means.
+Alternatively, \cite{yang2015supervised} proposes a supervised method for learning embeddings for images in a Hamming space which reflect salient characteristics of the images being embedded.
+This allows for rapid ``semantic'' nearest neighbor queries to be made over large image databases.
+
+Most relevant to this thesis, embedding has been applied to the task of large-scale DTW search: \cite{papapetrou2011embedding} proposes a technique which maps a variable-length sequence of feature vectors to a fixed-length embedded space where DTW distance is approximated by Euclidean distance.
+The embedding is constructed by pre-computing the DTW distance between each sequence in the database and a small collection of ``reference'' sequences that are chosen to optimize retrieval accuracy.
+Then, to match a query sequence to the database, its DTW distance is computed against the reference sequences, and the resulting vector of DTW distances is matched against the database of embeddings using a standard Euclidean distance-based nearest-neighbor search.
+The resulting algorithm is approximate, but provided state-of-the-art results both in terms of accuracy and speed.
+This technique relies on the assumption that the query is a subsequence of its correct match, and the training procedure involves repeatedly aligning a training set of sequences to the database.
+These restrictions make it invalid in some cases, such as our MIDI-to-MSD matching problem where the correct database entry may be a subsequence of a given query and where it is computationally unreasonable to repeatedly align sequences to the entire database in the training process.
+
+The idea of embedding has also been utilized in other sequential data problems.
+For fixed-length sequences, the same type of feedforward model used for fixed-size input can be used.
+For example, \cite{kamper2016deep,bengio2014word} learn to embed spoken utterances of a fixed length in a Euclidean space where utterances of the same word are close together.
+
+For variable-length sequences, it is common to use a model with some form of temporal awareness.
+A natural example are recurrent networks (see \cref{sec:recurrent_networks}) whose hidden state can be treated as a learned embedding of the input sequence up to a given point in time.
+Notably, in \cite{sutskever2014sequence}, a recurrent network was trained to map a sequence of words in a source language to a fixed-length vector, which was then used to generate a sequence of words in a target language, resulting in a quality translation of the original sentence.
+The resulting source-sentence embeddings encoded high-level linguistic characteristics, such as invariance to word order in sentences with the same meaning.
+For text, a striking application is word2vec, which is a family of models for mapping words to a Euclidean space with desirable properties \cite{mikolov2013distributed}.
+For example, the difference between ``China'' and ``Beijing'' in the embedded space is roughly equivalent to the difference between ``Rome'' and ``Italy''.
+These embeddings are typically learned in a unsupervised manner based on a word's context.
+Finally, \cite{hershey2016deep} train a recurrent network to embed time-frequency ``pixels'' in spectrograms of acoustic mixtures so that sources can be separated using clustering techniques.
+
+\subsection{Attention}
+
+While recurrent networks have proven to be an effective method for embedding variable-length sequences, they have difficulty in modeling long-term dependencies when trained with backpropagation through time \cite{bengio1994learning,hochreiter1997long,pascanu2013difficulty} (see \cref{sec:recurrent_networks} for a discussion).
+In the embedding setting, this may result in the end of the sequence having a greater impact on the embedding than the beginning.
+A recent technique for mitigating this issue has been dubbed ``attention'' \cite{bahdanau2014neural}.
+Conceptually, an attention-based model includes a mechanism which learns to assign a weight to each sequence step based on the current and previous states.
+When used with recurrent networks, the addition of attention has proven effective in a wide variety of domains, including machine translation \citep{bahdanau2014neural}, image captioning \citep{xu2015show}, and speech recognition \cite{chan2015listen,bahdanau2015end}; see \cite{cho2015describing} for an overview.
+Attention can also be seen as analogous to the ``soft addressing'' mechanisms of the recently proposed Neural Turing Machine \cite{graves2014neural} and End-To-End Memory Network \cite{sukhbaatar2015end} models.
+
+More specifically, following the definition from \cite{bahdanau2014neural}, given a length-$T$ sequence $h$, attention-based models compute a ``context'' vector $c_t$ as the weighted mean of the sequence $h$ by
+\begin{equation}
+c_t = \sum_{j = 1}^T \alpha_t[j] h[j]
+\end{equation}
+where $\alpha_t \in \mathbb{R}^T$ is a vector of weights computed at each time step $t$, with an entry for each sequence step in $h$.
+These context vectors are then used to compute a new sequence $s$, where $s_t$ depends on $s_{t - 1}$, $c_t$ and the model's output at $t - 1$.
+The weightings $\alpha_t[j]$ are computed by
+\begin{align}
+e_t[j] &= a(s_{t - 1}, h[j])\\
+\alpha_t[j] &= \frac{\exp(e_t[j])}{\sum_{k = 1}^T \exp(e_t[k])}
+\end{align}
+where $a$ is a learned function which can be thought of as computing a scalar importance value for $h[j]$ given the value of $h[j]$ and the previous state $s_{t - 1}$.
+This formulation allows the new sequence $s$ to have more direct access to the entire sequence $h$.
 
 \subsection{Feed-Forward Attention}
 
-icassp2016pruning3
+While previous work on attention-based models has focused on recurrent networks, in the present work we will use feed-forward networks for the following reasons:
+First, even with attention, recurrent networks have difficulty modeling very long-term dependencies.
+The constant-Q spectrogram representation we have been using can result in sequences with thousands of timesteps, which is prohibitively long even for sophisticated models such as long short-term memory networks \cite{hochreiter1997long}.
+Second, feed-forward networks are much more efficient to train and evaluate than recurrent networks because their operations can be completely parallelized, whereas recurrent networks must evaluate each time step sequentially.
+Finally, attention provides its own form of temporal modeling because it integrates over the entire sequence.
+
+We therefore propose a ``feed-forward'' variant of attention, which computes a weighting for each sequence step independent of all other steps as follows:
+\begin{align}
+e[t] &= a(h[t])\\
+\alpha[t] &= \frac{\exp(e[t])}{\sum_{k = 1}^T \exp(e[k])}\\
+\label{eq:ffattention}
+c &= \sum_{t = 1}^T \alpha[t] h[t]
+\end{align}
+Conceptually, this attention mechanism can be thought of as using the learned nonlinear function $a$ to compute scalar ``importance'' values for each sequence step in $h$, which are then normalized using the softmax function and used to compute a weighted mean $c$ over all sequence elements in $h$.
+Clearly, this mechanism will produce a single fixed-length vector regardless of the length of the sequence, which is what is necessary in sequence embedding.
+A schematic of our feed-forward attention mechanism is shown in \cref{fig:attention_schematic}.
+
+\begin{figure}
+  \includegraphics[width=\textwidth]{figures/5-attention_schematic.pdf}
+  \caption[Feed-forward attention mechanism]{Diagram visualizing our feed-forward attention mechanism.
+Given a length-$T$ input sequence $h$, the learned nonlinear function $a$ computes a weighting $\alpha[t]$ for each sequence element $h[t]$.
+The resulting probability vector $\alpha \in \mathbb{R}^T$ is used to compute a weighted average $c$ of $h$.}
+  \label{fig:attention_schematic}
+\end{figure}
+
+The main difference between this formulation and the one proposed in \cite{bahdanau2014neural, cho2015describing} (stated in the previous section) is that here we are only producing a single weighting $\alpha$ and context vector $c$ rather than a different $\alpha_t$ and context vector $c_t$ at each time step.
+This is primarily because our goal in embedding is to produce a single vector for the entire sequence whereas previous applications of attention have mainly focused on sequence-to-sequence transduction.
+As a result, \cref{eq:ffattention} does not contain any terms for a previous attention vector or a previous hidden state, because in the present contexts these quantities do not exist.
+The main disadvantage to using attention in this way is that it ignores temporal order by computing an average over the entire sequence.
+However, computing an order-agnostic integration of sequence has in fact been shown to be highly effective in the domain of music information retrieval.
+A common technique is to summarize a sequence of feature vectors by the mean, variance, and occasionally covariance of feature dimensions, which has been used for genre classification \cite{tzanetakis2002musical}, instrument classification \cite{deng2008study}, artist recognition \cite{mandel2005song}, and similarity rating prediction \cite{foster2014sequential}.
+
 
 \section{Experiment: MIDI to MSD Matching}
 \label{sec:pse_experiment}
