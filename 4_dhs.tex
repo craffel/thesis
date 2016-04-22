@@ -384,3 +384,14 @@ Once again, utilizing piano roll matrices incurs a modest decrease in precision,
 
 \section{Discussion}
 \label{sec:dhs_discussion}
+
+Pruning methods are valuable only when they are substantially faster than performing the original computation; fortunately, our approach is orders of magnitude faster:
+On an same Intel Core i7-4930k processor, for the median hash sequence lengths, calculating a Hamming distance matrix between downsampled hash sequences is about xxx times faster than computing the CQT cosine distance matrix (xxx microseconds vs. xxx milliseconds) and computing the DTW score is about xxx times faster (xxx microseconds vs. xx microseconds).
+These speedups can be attributed to the fact that computing an exclusive-or and a POPCNT is much more efficient than computing the cosine distance between two vectors and that, thanks to downsampling, our hash-based distance matrices have $\frac{1}{64}$ of the entries of the CQT-based ones.
+In summary, a straightforward way to describe the success of our system is to observe that we can, with high confidence, discard over xxx\% of the entries of the MSD by performing a calculation that takes about as much time as matching against xxx\% of the MSD.
+In addition, our learning-based approach provides a huge improvement over simply thresholding the raw feature values.
+
+Despite our system's efficiency, we estimate that comparing each of the MIDI files in our 178,561 file collection to the entire the MSD would still take xxx.
+There is therefore room for improving the efficiency of our technique.
+The main bottleneck is that it still requires DTW to compare hash sequences; if we could avoid this quadratic-complexity operation we could potentially develop an even faster pruning method.
+We explore this possibliity in the following chapter.
