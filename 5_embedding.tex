@@ -1,11 +1,23 @@
 \chapter{Pruning Subsequence Search by Embedding Sequences}
 \label{ch:embedding}
 
-\section{Pruning Subsequence Search}
+The DTW-based approaches for computing sequence similarity we have discussed so far have quadratic complexity in the sequence length because they compute the pairwise distance between each element in the sequences being compared.
+While the downsampling and binary embedding approach proposed in \cref{ch:dhs} can make this operation much more efficient by lowering the number of sequence elements and making the pairwise comparisons faster, it is nevertheless still quadratic in complexity.
+When datapoints can be represented as single fixed-length vectors, rather than as sequences of vectors, comparing two datapoints is effectively linear-time in the vector dimensionality.
+This makes the task of matching a query to its most similar entry in a database extremely efficient.
+An obvious question, then, is whether we can replace the operation of comparing two sequenes with comparing two fixed-length vectors.
 
-icassp2016pruning1
+Motivated by this question, we propose a learning-based system for mapping variable-length sequences of feature vectors to a fixed-length embedded space where sequence similarity is approximated by Euclidean distance.
+This allows us to pre-computed embeddings for all entries in a large database of sequences, and rapidly estimate similarity by embedding a query sequence and computing its Euclidean distance to all of the database embeddings.
+As a result, this operation does not become less efficient for longer or higher-dimensional sequences, i.e.\ it is effectively invariant to sequence length and feature vector dimensionality.
+Our approach utilizes a novel attention-based neural network model which can adapt to any problem setting according to the training data provided.
+
+In the next section we discuss embedding and attention-based neural networks, which we use to motivate our proposed model.
+In \cref{sec:pse_experiment}, we evaluate the effectiveness of our proposed model on our central task of matching MIDI files to entries in the Million Song Dataset.
+Finally, we discuss results and possibilities for improvement in \cref{sec:pse_discussion}.
 
 \section{Embedding Sequences with Attention}
+\label{pse:model}
 
 \subsection{Embedding}
 
@@ -16,6 +28,7 @@ icassp2016pruning2
 icassp2016pruning3
 
 \section{Experiment: MIDI to MSD Matching}
+\label{sec:pse_experiment}
 
 icassp2015pruning4
 
@@ -31,3 +44,6 @@ Papapetrou technique
 \subsection{Results}
 
 Add similarity matrix
+
+\section{Discussion}
+\label{sec:pse_discussion}
