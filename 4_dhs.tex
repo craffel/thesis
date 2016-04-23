@@ -135,6 +135,7 @@ To explore the ability of our approach to handle multimodal data, we repeated th
 We also compared our technique to a simple baseline, to ensure that our learning-based approach is beneficial.
 
 \subsection{Preparing Data}
+\label{sec:training_data}
 
 For evaluation, we need a collection of ground-truth MIDI-audio pairs which are correctly matched.
 To train our hashing model, we further require a collection of {\em aligned} MIDI and audio files, to supply the matching groups of feature vectors from each domain that will be used to train our model.
@@ -161,7 +162,7 @@ Care was taken to split based on \textit{songs}, rather than by entry (since som
 \label{sec:hashing_system}
 
 Training the hashing model involves presenting training examples and backpropagating the gradient of \cref{eq:hashing_objective} through the model parameters; we therefore need to specify the data format, model architecture, and training process.
-As a feature representation, we used the same one chosen in \cref{sec:goldstandard}, i.e.\ log-magnitude constant-Q spectrograms consisting of spectra with 12 bins per octave from MIDI note C2 (65.4 Hz) to B6 (987.8 Hz) computed every 46 milliseconds.
+As a feature representation, we used the same one chosen in \cref{sec:goldstandard}, i.e.\ log-magnitude constant-Q spectrograms consisting of spectra with 12 bins per octave from MIDI note C2 (65.4 Hz) to B6 (987.8 Hz) computed every 46.4 milliseconds.
 We utilized \texttt{pretty\char`_midi} \cite{raffel2014pretty_midi} and \texttt{fluidsynth}\footnote{\texttt{http://fluidsynth.org}} to synthesize MIDI files and \texttt{librosa} \cite{mcfee2015librosa, mcfee2015librosa_scipy} to compute features.
 Because utilizing a cosine distance for comparing spectra was consistently beneficial for alignment (see \cref{sec:optimizing}), we $L^2$-normalized each feature vector.
 In order to improve convergence, we also standardized the feature dimensions of all data utilizing statistics from the training set.
@@ -265,6 +266,7 @@ Intuitively, the resulting downsampled hash sequences represent whether a given 
 We will refer to this approach as ``thresholded piecewise aggregate approximation'' (TPAA).
 
 \subsection{Matching MIDI Files to the MSD}
+\label{sec:matching_process}
 
 After training our hashing system as described above, the process of evaluating the effectiveness of matching MIDI files to the MSD proceeds as follows:
 First, we precompute downsampled hash sequences for every 7digital preview clip and every MIDI file in the test and development sets for which we know a priori the correct match(es) in the MSD.

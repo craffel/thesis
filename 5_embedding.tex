@@ -5,10 +5,10 @@ The DTW-based approaches for computing sequence similarity we have discussed so 
 While the downsampling and binary embedding approach proposed in \cref{ch:dhs} can make this operation much more efficient by lowering the number of sequence elements and making the pairwise comparisons faster, it is nevertheless still quadratic in complexity.
 When datapoints can be represented as single fixed-length vectors, rather than as sequences of vectors, comparing two datapoints is effectively linear-time in the vector dimensionality.
 This makes the task of matching a query to its most similar entry in a database extremely efficient.
-An obvious question, then, is whether we can replace the operation of comparing two sequenes with comparing two fixed-length vectors.
+An obvious question, then, is whether we can avoid the operation of comparing sequences for the majority of the database by comparing fixed-length vector surrogates for the sequences whose distance approximates their similarity.
 
 Motivated by this question, we propose a learning-based system for mapping variable-length sequences of feature vectors to a fixed-length embedded space where sequence similarity is approximated by Euclidean distance.
-This allows us to pre-computed embeddings for all entries in a large database of sequences, and rapidly estimate similarity by embedding a query sequence and computing its Euclidean distance to all of the database embeddings.
+This allows us to pre-compute embeddings for all entries in a large database of sequences, and rapidly estimate similarity by embedding a query sequence and computing its Euclidean distance to all of the database embeddings.
 As a result, this operation does not become less efficient for longer or higher-dimensional sequences, i.e.\ it is effectively invariant to sequence length and feature vector dimensionality.
 Our approach utilizes a novel attention-based neural network model which can adapt to any problem setting according to the training data provided.
 
@@ -107,24 +107,129 @@ The main disadvantage to using attention in this way is that it ignores temporal
 However, computing an order-agnostic integration of sequence has in fact been shown to be highly effective in the domain of music information retrieval.
 A common technique is to summarize a sequence of feature vectors by the mean, variance, and occasionally covariance of feature dimensions, which has been used for genre classification \cite{tzanetakis2002musical}, instrument classification \cite{deng2008study}, artist recognition \cite{mandel2005song}, and similarity rating prediction \cite{foster2014sequential}.
 
-
 \section{Experiment: MIDI to MSD Matching}
 \label{sec:pse_experiment}
 
-icassp2015pruning4
+Recall that the goal of this chapter is to prune large-scale sequence similarity searches by embedding sequences in a fixed-dimensional space where Euclidean distance approximates sequence similarity.
+Towards this end, we will utilize embeddings as follows:
+First, given a training set of matching sequences, we will train a feed-forward network with attention to embed sequences in a Euclidean space where matching pairs have a small distance and non-matching pairs have a large distance.
+Then, we will utilize this network to pre-compute embeddings for all sequences in a database.
+In order to match a query sequence, we will compute the distance between its embedding and all pre-computed embeddings from the database.
+Before proceeding, then, we need to specify the structure of our embedding model, our loss function, and our evaluation technique.
+In fact, this problem setting is remarkably similar to the previous chapter, and we will evaluate it on the same task and data.
+The primary difference is that rather than embedding groups of aligned feature vectors to a shared Hamming space, we are embedding entire unaligned sequences as fixed-length vectors.
 
-\subsection{System Specifics}
+For our loss function, we can actually re-use \cref{eq:hashing_objective} exactly, which we re-print here for convenience:
+\begin{equation}
+\mathcal{L} = \frac{1}{|\mathcal{P}|} \sum_{(x, y) \in \mathcal{P}} \| f(x) - g(y) \|_2^2  + \frac{\alpha}{|\mathcal{N}|} \sum_{(a, b) \in \mathcal{N}} \max(0, m - \|f(a) - g(b) \|_2)^2
+\label{eq:embedding_objective}
+\end{equation}
+However, the learned embedding functions $f$ and $g$ will produce a single vector, and their input will be entire unaligned sequences rather than short groups of aligned feature vectors.
+In order to produce a single vector from an entire sequence, we will utilize the feed-forward attention mechanism described in the previous section.
+Specifically, we will utilize two different embedding networks for $f$ and $g$, each of which will consist of a feed-forward attention mechanism followed by fully-connected feedforward layers.
+For the attention mechanism's learned adaptive weighting function $a$, we use the standard architecture of a small neural network with one hidden layer:
+\begin{equation}
+a(x) = v^\top\tanh(Wx + b)
+\label{eq:weighting_function}
+\end{equation}
+where $x \in \mathbb{R}^D$ is a single feature vector from the input sequence and $W \in \mathbb{R}^{D \times D}$, $b \in \mathbb{R}^D$, and $v \in \mathbb{R}^D$ are parameters.
+.4
+\subsection{Experiment Specifics}
 
-Add network diagram figure
+As training data, we use the same collection assembled in \cref{sec:training_data}.
+However, we will solely use the matches as ground-truth, {\em not} the alignments, because our system needs to be able to produce similarity-preserving embeddings regardless of whether the input sequences are aligned.
+We use the same feature representation, i.e.\ log-magnitude constant-Q spectrograms consisting of spectra with 12 bins per octave from MIDI note C2 (65.4 Hz) to B6 (987.8 Hz) computed every 46.4 milliseconds.
+We also use the same exact training, validation, development, and test splits, and utilize the statistics from the training split to standardize feature vectors.
 
-\subsection{Baseline Methods}
+For our networks, we fed the sequences first into a convolutional layer with 64 $3 \times 3$ filters followed by a $2 \times 2$ max-pooling layer, followed by the attention mechanism of \cref{eq:ffattention} with the weighting function of \cref{eq:weighting_function}, followed by two fully-connected layers with 2048 units each, followed by a 128-dimensional output layer.
+We utilized rectified linear nonlinearities throughout, except on the final output layer and the weighting function which used $\tanh$.
+All weights were initialized using He et.\ al.'s method \cite{he2015delving} and all biases were initialized to zero.
+The networks were optimized with respect to \cref{eq:embedding_objective} using RMSProp with mini-batches of 20 similar and dissimilar pairs.
+As in \cref{ch:dhs}, we assembled $\mathcal{N}$ by randomly choosing non-matching pairs which were re-sampled every time we had iterated over the training set.
+Minibatches were constructed by randomly choosing matching and non-matching pairs of sequences and cropping them to the minimum length within the minibatch.
+Every 200 minibatches, we computed the mean loss on the held-out validation set; when it was less than .99 times the previous lowest validation loss, we trained for 1000 more minibatches.
+We implemented our model using \texttt{lasagne} \cite{dieleman2015lasagne}, which is built on \texttt{theano} \cite{bergstra2010theano, bastien2012theano}.
+A visualization of our model structure is shown in \cref{fig:model_schematic}.
 
-Mean/std
-Papapetrou technique
+\begin{figure}
+  \includegraphics[width=\textwidth]{figures/5-model_schematic.pdf}
+  \caption[Structure of our feed-forward attention network]{Visualization of the structure of our feed-forward network with attention.
+The network first processed the input with a convolutional and pooling layer, followed by our proposed feed-forward attention mechanism which integrates the entire sequence to a single fixed-length vector, followed by a series of fully-connected layers which produce the embedding.}
+  \label{fig:model_schematic}
+\end{figure}
+
+To choose hyperparameter settings, we once again used the Bayesian optimization framework proposed in \cite{snoek2012practical}.
+We optimized the the learning rate and RMSProp decay parameter, and the loss parameters $\alpha$ and $m$.
+As an objective, we computed the Bhattacharrya coefficient \cite{bhattacharyya1943measure} between the distributions of embedded distances between matching and non-matching pairs in the validation set.
+The best-performing network configuration achieved a Bhattacharrya coefficient of $0.393$ and used a learning rate of $5\cdot10^{-6}$, an RMSProp decay of $0.999$, $\alpha = 3.342$ and $m = 1.055$.
+
+Before arriving at this system design, we also tried:
+\begin{itemize}
+\item Using more or fewer convolutional/pooling layers at the input of the network, including using no convolutional and pooling layers at all, a $5 \times 12$ convolutional layer followed by a variable number of $2 \times 2$ max-pooling layers and $3 \times 3$ convolutional layers, or using the same front-end as in \cref{ch:dhs}.
+\item Using up to four ``parallel'' attention mechanisms, whose output was concatenated before being processed by the fully-connected layer; this produced no performance gains.
+\item The output $L^2$ penalty from \cref{ch:dhs} as well as the the hash entropy-encouraging loss term proposed in \cite[equation (3)]{yang2015supervised}, but neither were beneficial.
+\item Using dropout in the fully-connetcted layers, which hurt performance.
+\item Using more or fewer fully-connected layers of different sizes; two $2048$-unit layers produced the best results.
+\item For optimization, Nesterov's accelerated gradient \cite{nesterov1983method} and Adam \cite{kingma2015adam} (see \cref{sec:nesterov} and \cref{sec:adam}) but found that RMSProp was most effective.
+\end{itemize}
+
+\subsection{Baseline Method}
+\label{sec:embedding_baseline}
+
+As in \cref{ch:dhs}, we also evaluated a simple learning-free baseline method to make sure that our approach was beneficial.
+For our baseline, we followed the tradition of \cite{tzanetakis2002musical, deng2008study, mandel2005song, foster2014sequential} and others by summarizing spectrograms by their mean and standard deviation across feature dimensions and concatenating the resulting statistics into a fixed-length embedding.
+We compute this statistics-based embedding over the same log-magnitude, $L^2$ normalized spectrograms used throughout this thesis.
+This resulted in a 96-entry embedded vector for each spectrogram.
 
 \subsection{Results}
 
-Add similarity matrix
+\begin{figure}
+  \includegraphics[width=\textwidth]{figures/5-embeddings.pdf}
+  \caption[Example embeddings for two pairs of sequences]{Example embeddings for two pairs of matching sequences produced by our feedforward attention model after training.
+The first two rows display pairs of matching constant-Q spectrograms, with synthesized MIDI on the left and MSD entry on the right.
+For both pairs, the right sequence matches a subsequence of the left.
+The last two rows show their resulting embeddings.
+Dashed arrows denote which embedding corresponds to which sequence.}
+  \label{fig:embeddings}
+\end{figure}
+
+Some qualitative intuition about our system's behavior can be gained by inspecting the embeddings resulting from matching and non-matching pairs of sequences.
+Embeddings for two different matching sequence pairs from the validation set can be seen in \cref{fig:embeddings}.
+Among the four embeddings displayed, the pairs of matched embeddings resulted in squared Euclidean distances of $0.0189$ and $0.00738$, while non-matching pairs had distances of $0.300$ and $0.228$.
+While these distances indicate the appropriate behavior, i.e.\ matching pairs result in a much smaller embedded distance, a more complete picture can be obtain by looking at the distributions of distances between matching and non-matching pairs in our validation set.
+We visualize these distributions for our proposed feed-forward attention system and for the baseline feature statistics-based method in \cref{fig:embedding_distributions}.
+From this fiture, we can see that our proposed approach produces embeddings which better differentiate between matching and non-matching pairs.
+
+\begin{figure}
+  \includegraphics[width=\textwidth]{figures/5-distributions.pdf}
+  \caption[Distributions of matching and non-matching distances]{Distributions of embedded distances for matching (blue) and non-matching (green) sequences from our validation set.
+At the top are the distances produced by our proposed feed-forward attention model after training; at the bottom are distances based on the baseline proposed in \cref{sec:embedding_baseline}.}
+  \label{fig:embedding_distributions}
+\end{figure}
+
+For empirical evaluation, we follow the procedure of \cref{sec:matching_process} exactly, except that rather than comparing sequences using downsampled hash sequences, we will be embedding them and computing the distance between their embedded representations.
+More specifically, we first computed embeddings of constant-Q spectrograms for all of the short (30 to 60 second) preview recordings of each entry in the MSD provided by 7digital \cite{schindler2012facilitating}.
+Then, we computed a constant-Q spectrogram and its embedding for each MIDI file in the test set.
+To determine performance, we computed the Euclidean distance between the embedding of each MIDI file and the embeddings of every entry in the MSD and determined how many entries had a distance that was smaller than the correct match.
+We carried out this procedure both for our proposed attention-based embedding technique (referred to as ``PSE'', for \textbf{p}airwise \textbf{s}equence \textbf{e}mbedding) and for the feature statistics-based baseline approach described in \cref{sec:embedding_baseline}, referred to as ``statistics''.
+
+We plot the resulting proportion of MIDI files in the test set whose correct match ranked under a certain threshold in \cref{fig:embedding_ranks}.
+To borrow the evaluation from \cref{ch:dhs}, we also computed the threshold $N$ at which 95\% of the correct matches in the test set had a rank better than $N$.
+For PSE, $N$ can be set to $70,445$, while the baseline would require $242,573$.
+This means that we can used our proposed embedding method to prune over 90\% of the database with high confidence, whereas the simple learning-free baseline would only allow us to discard about 75\%. 
+
+\begin{figure}
+  \includegraphics[width=\textwidth]{figures/5-ranks.pdf}
+  \caption[Percentage of the test set below a given rank]{Percentage MIDI files in the test set whose correct match in the MSD fell below a given rank, using the attention-based pairwise sequence embedding (PSE) method and our baseline statistics-based method of \cref{sec:embedding_baseline}.}
+  \label{fig:embedding_ranks}
+\end{figure}
 
 \section{Discussion}
 \label{sec:pse_discussion}
+
+Comparing to \cref{fig:ranks}, our embedding approach is clearly much less precise than any of the downsampled hash sequence-based methods.
+This is to be expected due to the fact that we are representing sequences of potentially thousands of 48-dimensional vectors as a single 128-dimensional vector.
+Fortunately, it is also much faster: Computing the million embedding distance calculations required to compare a MIDI file to the entire MSD only takes about xxx milliseconds using an unoptimized Python implementation.
+This means that we can discard over 90\% of the MSD with high confidence with an operation which is xxx times faster than the downsampled hash sequence-based methods of \cref{ch:dhs} and is xxx times faster than a brute-force DTW search using the approach from \cref{ch:dtw}.
+
+
