@@ -143,7 +143,7 @@ However, we will solely use the matches as ground-truth, {\em not} the alignment
 We use the same feature representation, i.e.\ log-magnitude constant-Q spectrograms consisting of spectra with 12 bins per octave from MIDI note C2 (65.4 Hz) to B6 (987.8 Hz) computed every 46.4 milliseconds.
 We also use the same exact training, validation, development, and test splits, and utilize the statistics from the training split to standardize feature vectors.
 
-For our networks, we fed the sequences first into a convolutional layer with 64 $3 \times 3$ filters followed by a $2 \times 2$ max-pooling layer, followed by the attention mechanism of \cref{eq:ffattention} with the weighting function of \cref{eq:weighting_function}, followed by two fully-connected layers with 2048 units each, followed by a 128-dimensional output layer.
+For our networks, we fed the sequences first into a convolutional layer with 32 $3 \times 3$ filters followed by a $2 \times 2$ max-pooling layer, followed by the attention mechanism of \cref{eq:ffattention} with the weighting function of \cref{eq:weighting_function}, followed by two fully-connected layers with 2048 units each, followed by a 128-dimensional output layer.
 We utilized rectified linear nonlinearities throughout, except on the final output layer and the weighting function which both used $\tanh$.
 All weights were initialized using He et.\ al.'s method \cite{he2015delving} and all biases were initialized to zero.
 The networks were optimized with respect to \cref{eq:embedding_objective} using RMSProp with mini-batches of 20 similar and dissimilar pairs.
