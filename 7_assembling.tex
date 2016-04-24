@@ -9,6 +9,20 @@ Extracting ground truth.
 Distribution format - original MIDI files, for when different audio is available and/or a better alignment scheme is available.
 JAMS structure.
 
+\section{How Reliable is MIDI-Derived Ground Truth?}
+
+In order to utilize many of these sources of information, we need to align, using the system of 3dtw.
+How accurate is the result?
+Temporal information is effected most, so let's test beats.
+
+\subsection{Comparison to Hand-Annotated Data}
+
+Results, with description of failure modes.
+
+\subsection{Improving Alignment as a Proxy for Content-Based MIR}
+
+Ground truth is already valuable; we can make it more reliable by making alignment better.
+
 \section{Ideas and Improvements}
 
 Obvious: Train content-based MIR systems on derived ground-truth information.

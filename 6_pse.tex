@@ -1,5 +1,5 @@
 \chapter{Pruning Subsequence Search by Embedding Sequences}
-\label{ch:embedding}
+\label{ch:pse}
 
 The DTW-based approaches for computing sequence similarity we have discussed so far have quadratic complexity in the sequence length because they involve multiple pairwise operations between each element in the sequences being compared.
 While the downsampling and binary embedding approach proposed in \cref{ch:dhs} can make DTW much more efficient by lowering the number of sequence elements and making the pairwise comparisons faster, it is nevertheless still quadratic in complexity.
@@ -94,7 +94,7 @@ Clearly, this mechanism will produce a single fixed-length vector regardless of 
 A schematic of our feed-forward attention mechanism is shown in \cref{fig:attention_schematic}.
 
 \begin{figure}
-  \includegraphics[width=\textwidth]{figures/5-attention_schematic.pdf}
+  \includegraphics[width=\textwidth]{figures/6-attention_schematic.pdf}
   \caption[Feed-forward attention mechanism]{Diagram visualizing our feed-forward attention mechanism.
 Given a length-$T$ input sequence $h$, the learned nonlinear function $a$ computes a weighting $\alpha[t]$ for each sequence element $h[t]$.
 The resulting probability vector $\alpha \in \mathbb{R}^T$ is used to compute a weighted average $c$ of $h$.}
@@ -154,7 +154,7 @@ We implemented our model using \texttt{lasagne} \cite{dieleman2015lasagne}, whic
 A visualization of our model structure is shown in \cref{fig:model_schematic}.
 
 \begin{figure}
-  \includegraphics[width=\textwidth]{figures/5-model_schematic.pdf}
+  \includegraphics[width=\textwidth]{figures/6-model_schematic.pdf}
   \caption[Structure of our feed-forward attention network]{Visualization of the structure of our feed-forward network with attention.
 The network first processed the input with a convolutional and pooling layer, followed by our proposed feed-forward attention mechanism which integrates the entire sequence to a single fixed-length vector, followed by a series of fully-connected layers which produce the embedding.}
   \label{fig:model_schematic}
@@ -196,7 +196,7 @@ This resulted in a 96-entry embedded vector for each spectrogram.
 \subsection{Results}
 
 \begin{figure}
-  \includegraphics[width=\textwidth]{figures/5-embeddings.pdf}
+  \includegraphics[width=\textwidth]{figures/6-embeddings.pdf}
   \caption[Example embeddings for two pairs of sequences]{Example embeddings for two pairs of matching sequences produced by our feed-forward attention model after training.
 The first two rows display pairs of matching constant-Q spectrograms, with synthesized MIDI on the left and MSD entry on the right.
 For both pairs, the right sequence matches a subsequence of the left.
@@ -213,7 +213,7 @@ We visualize these distributions for our proposed feed-forward attention system 
 From this figure, we can see that our proposed approach produces embeddings which better differentiate between matching and non-matching pairs.
 
 \begin{figure}
-  \includegraphics[width=\textwidth]{figures/5-distributions.pdf}
+  \includegraphics[width=\textwidth]{figures/6-distributions.pdf}
   \caption[Distributions of matching and non-matching distances]{Distributions of embedded distances for matching (blue) and non-matching (green) sequences from our validation set.
 At the top are the distances produced by our proposed feed-forward attention model after training; at the bottom are distances based on the baseline proposed in \cref{sec:embedding_baseline}.
 Note that the x-axes are log-scaled.}
@@ -232,7 +232,7 @@ For PSE, $N$ can be set to 70,445, while the baseline would require 242,573.
 This means that we can used our proposed embedding method to prune over 90\% of the database with high confidence, whereas the simple learning-free baseline would only allow us to discard about 75\%.
 
 \begin{figure}
-  \includegraphics[width=\textwidth]{figures/5-ranks.pdf}
+  \includegraphics[width=\textwidth]{figures/6-ranks.pdf}
   \caption[Percentage of the test set below a given rank]{Percentage MIDI files in the test set whose correct match in the MSD fell below a given rank, using the attention-based pairwise sequence embedding (PSE) method and our baseline statistics-based method of \cref{sec:embedding_baseline}.}
   \label{fig:embedding_ranks}
 \end{figure}

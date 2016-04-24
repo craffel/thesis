@@ -5,7 +5,7 @@
 \label{sec:intro}
 
 The central application of this thesis is the problem of matching musical scores to corresponding audio recordings in a large database.
-This is motivated by our collection of 178,561 unique MIDI transcriptions which, as we will explore in \cref{ch:extracting}, can provide a bounty of ground-truth data for content-based music information retrieval tasks.
+This is motivated by our collection of 178,561 unique MIDI transcriptions which, as we explored in \cref{ch:midi}, can provide a bounty of ground-truth data for content-based music information retrieval tasks.
 To maximize its value, a given MIDI file must be both matched and aligned in time to a corresponding music audio file.
 In both scenarios, it is of great value to produce a confidence score which can communicate both how well the content in a MIDI file matches a given audio file and the quality of the transcription.
 
@@ -96,8 +96,8 @@ In addition, the timing offset curve which produced this corruption is shown in 
 
 \begin{figure}
   \centering
-  \includegraphics[width=\textwidth]{figures/3-original_cqt.pdf}
-  \includegraphics[width=\textwidth]{figures/3-corrupted_cqt.pdf}
+  \includegraphics[width=\textwidth]{figures/4-original_cqt.pdf}
+  \includegraphics[width=\textwidth]{figures/4-corrupted_cqt.pdf}
   \caption[Constant-Q spectrograms of a MIDI file before and after corruption]{Constant-Q spectrograms of a synthesized MIDI file before (top) and after (bottom) undergoing the corruption process described in \cref{sec:synthetic}.
 After synthesis, log-magnitude spectrograms with $L^2$-normalized spectra were computed every 46 milliseconds, with frequencies from MIDI note C2 (65.4 Hz) to B6 (987.8 Hz).
 This corruption was achieved using the parameters from the ``hard'' dataset, i.e. $\sigma_t = 20, p_r = .5, \sigma_v = 1$.}
@@ -106,7 +106,7 @@ This corruption was achieved using the parameters from the ``hard'' dataset, i.e
 
 \begin{figure}
   \centering
-  \includegraphics[width=\textwidth]{figures/3-warping.pdf}
+  \includegraphics[width=\textwidth]{figures/4-warping.pdf}
   \caption[Example synthetic warping offset]{Warping offset curve which produced the time distortion in the corrupted MIDI file visualized in \cref{fig:corruption}.
 The low-frequency variation is due to the random signal $r$ (\cref{eq:offset_signal}) while the sudden jump around 125 seconds is caused by 10\% of the MIDI file being cropped out.
 In our synthetic alignment task, the goal is to reverse this timing distortion over a large dataset of corrupted MIDI files.}
@@ -132,7 +132,7 @@ The resulting error $|t_X[p[i]] - \hat{t}_X[q[i]]|$ from aligning the spectrogra
 
 \begin{figure}
   \centering
-  \includegraphics[width=\textwidth]{figures/3-correction_error.pdf}
+  \includegraphics[width=\textwidth]{figures/4-correction_error.pdf}
   \caption[Absolute error from correcting synthetic warping]{Absolute error between the true warping (shown in \cref{fig:warping}) and the estimated warping found by aligning the spectrograms in \cref{fig:corruption} using the system described in \cref{sec:goldstandard}.
 The error is clipped at $.5$ seconds, above which point we consider all discrepancies equally bad.
 The spike of largest error around 125 seconds is caused by the estimated warping not perfectly correcting the missing 10\% of the corrupted MIDI which was randomly cropped out.}
@@ -228,7 +228,7 @@ We visualize the normalized DTW distances and mean errors for each alignment pro
 
 \begin{figure}
   \centering
-  \includegraphics[width=\textwidth]{figures/3-correlation.pdf}
+  \includegraphics[width=\textwidth]{figures/4-correlation.pdf}
   \caption[Alignment errors and normalized DTW distances for the best-performing system]{Scatter plot of alignment errors (x-axis, log-scaled) and normalized DTW distance (y-axis) produced by the highest-performing alignment system using the DTW distance normalization scheme which produced the highest correlation between the two axes.
 Ideally, alignments with a small normalized distance will have a small mean error, indicating that the score can reliably predict when alignment was successful.
 The group of points in the top right correspond to alignments which were globally wrong (resulting in a mean error of $.5$, the maximum value).}
@@ -315,7 +315,7 @@ Because remixes tend to have substantial differences in structure and instrument
 
 \begin{figure}[t]
   \centering
-  \includegraphics[width=\textwidth]{figures/3-violin.pdf}
+  \includegraphics[width=\textwidth]{figures/4-violin.pdf}
   \caption[Distributions of confidence scores for each rating]{Violin plot (box plot with rotated kernel density estimates) showing the distribution of confidence scores for each rating in our qualitative evaluation.
 A smaller confidence score indicates a more successful alignment.
 The area of each violin corresponds to the number of pairs which had a given rating.

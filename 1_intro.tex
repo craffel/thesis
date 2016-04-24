@@ -149,14 +149,14 @@ Throughout, we will focus on {\em learning-based methods}, i.e.\ algorithms whic
 
 The rest of this thesis is organized as follows.
 First, in \cref{ch:tools}, we present a collection of ``tools'' which will be used throughout this thesis, including machine learning and signal processing methods.
-In \cref{ch:dtw} we propose a synthetic task to measure the performance of audio-to-score alignment systems and uses Bayesian Optimization to choose a system design which has the best general performance.
+To motivate the central problem of this thesis, in \cref{ch:midi} we discuss the various sources of information available in MIDI files and provide a broad overview of the availability of this information in the 178,561 MIDI files we obtained through a large-scale web scrape.
+In \cref{ch:dtw} we propose a synthetic task to measure the performance of score-to-audio alignment systems and use Bayesian Optimization to choose a system design which has the best general performance.
 We also address the problem of reporting a reliable alignment confidence score and validate the resulting system on real-world data.
 \Cref{ch:dhs} describes our first technique for pruning large-scale sequence similarity search.
 This method learns a mapping from sequences of continuously-valued feature vectors to downsampled sequences of binary vectors, which can be compared efficiently using an exclusive-or operation.
 The resulting sequences are orders of magnitude faster to compare, resulting in an effective pruning method.
-We propose a second pruning method in \cref{ch:embedding} which maps sequences to fixed-length vectors in a Euclidean space where their distance approximates sequence similarity.
+We propose a second pruning method in \cref{ch:pse} which maps sequences to fixed-length vectors in a Euclidean space where their distance approximates sequence similarity.
 This provides an estimate of the similarity of two sequences by an inexpensive Euclidean distance calculation.
-In \cref{ch:extracting}, we address the practical question of whether we can expect to extract high-quality ground-truth information from MIDI files which have been matched and aligned to corresponding audio recordings.
-We gain qualitative insight for timing-agnostic and timing-sensitive tasks by comparing annotations extracted from MIDI files to human-annotated ground truth.
 Finally, \cref{ch:assembling} utilizes all of these methods to construct a large collection of MIDI files which have been matched and aligned to corresponding audio recordings.
-We describe some of the characteristics of the resulting dataset and wrap up by outlining some interesting applications for it.
+We also address the practical question of the quality of ground-truth information extracted from MIDI files.
+To wrap up, we describe some of the characteristics of our new dataset and outline some interesting applications for it.

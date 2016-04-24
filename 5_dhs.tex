@@ -82,7 +82,7 @@ This also allows us to experiment with multimodal data, i.e.\ cases where $x$ an
 A visualization of this process is shown in \cref{fig:hashing_schematic}.
 
 \begin{figure}
-  \includegraphics[width=\textwidth]{figures/4-hashing_schematic.pdf}
+  \includegraphics[width=\textwidth]{figures/5-hashing_schematic.pdf}
   \caption[Hashing groups of subsequent feature vectors]{Diagram visualizing how subsequent groups of feature vectors are mapped to binary vectors.
 Matching sequences of feature vectors which have been aligned in time are shown at the top and bottom.
 Co-occurring groups of feature vectors, highlighted in light boxes, are passed through two learned nonlinear functions $f$ and $g$ (visualized as neural network diagrams).
@@ -100,7 +100,7 @@ This process is visualized in \cref{fig:popcnt}.
 Ideally, utilizing DTW to compare sequences which have been mapped to this efficient representation will effectively recover matching and non-matching sequences.
 
 \begin{figure}
-  \includegraphics[width=\textwidth]{figures/4-popcnt.pdf}
+  \includegraphics[width=\textwidth]{figures/5-popcnt.pdf}
   \caption[Computing Hamming distance with XOR and POPCNT]{Computing the Hamming distance between two binary vectors via an exclusive-or followed by a POPCNT instruction.
 The exclusive-or of the top two vectors produces the bottom vector, which is $1$ where the input vectors differ and $0$ where they match.
 The result of the exclusive-or is passed to the POPCNT SSE4.2 instruction, which simply counts the number of non-zero bits in its input.
@@ -284,7 +284,7 @@ Similarly, we found that normalizing by the average distance value as defined in
 \subsubsection{Qualitative}
 
 \begin{figure}
-  \includegraphics[width=\textwidth]{figures/4-cqts_and_dhs.pdf}
+  \includegraphics[width=\textwidth]{figures/5-cqts_and_dhs.pdf}
   \caption[Spectrograms and downsampled hash sequences for a matching pair]{Example constant-Q spectrograms (top) and downsampled hash sequences (bottom) for a matched MSD entry (left) and MIDI transcription (right) of the song ``I Wanna Be Your Lover'' by Prince, which appeared in our development set.
 The downsampled hash sequences were created using the trained model described in \cref{sec:hashing_system}.
 As utilized in our experiments, the constant-Q spectrograms are log-magnitude and $L^2$-normalized.
@@ -303,7 +303,7 @@ The distance matrix produced by the ``multimodal'' system, shown in the second r
 At the bottom is the baseline TPAA distance matrix, which has less obvious structure than the other hash sequence representations.
 
 \begin{figure}
-  \includegraphics[width=\textwidth]{figures/4-distance_matrices.pdf}
+  \includegraphics[width=\textwidth]{figures/5-distance_matrices.pdf}
   \caption[Distance matrices utilizing different representations]{Distance matrices and DTW alignment paths (shown as dashed white lines) between the MSD entry and MIDI transcription shown in \cref{fig:cqts_and_dhs} utilizing different representations.
 At the top is the standard synthesized MIDI CQT-to-audio CQT distance matrix, as utilized in \cref{ch:dtw}.
 The second row shows the distance matrix for the downsampled hash sequences shown at the bottom of \cref{fig:cqts_and_dhs}.
@@ -313,7 +313,7 @@ Finally, the bottom distance matrix was computed using the TPAA method defined i
 \end{figure}
 
 \begin{figure}
-  \includegraphics[width=\textwidth]{figures/4-distributions.pdf}
+  \includegraphics[width=\textwidth]{figures/5-distributions.pdf}
   \caption[Distributions of matching and non-matching distances]{Distributions of distances for matching and non-matching sequence elements from our validation set for a variety of representations.
 Real-valued (squared Euclidean) distance distributions for matching and non-matching pairs are shown in red and orange respectively; Hamming distance distributions are shown in blue and green.
 From top left to bottom right: synthesized MIDI CQT-to-audio recording CQT, downsampled hash vectors using the method in \ref{sec:hashing_system}, MIDI piano roll-to-audio CQT, downsampled hash vectors using this ``multimodal'' data as described in \cref{sec:multimodal}, CQT-to-CQT hashing network output prior to thresholding, and the TPAA method described in \cref{sec:baseline}.}
@@ -366,7 +366,7 @@ A high-performance metric will yield a curve which approaches 100\% very quickly
 From a high level, then, we can see that our proposed method substantially outperforms the baseline, due to the fact a much larger proportion of the test set had high ranks.
 
 \begin{figure}
-  \includegraphics[width=\textwidth]{figures/4-ranks.pdf}
+  \includegraphics[width=\textwidth]{figures/5-ranks.pdf}
   \caption[Percentage of the test set below a given rank]{Percentage MIDI files in the test set whose correct match in the MSD fell below a given rank, using each of the methods we evaluated.}
   \label{fig:ranks}
 \end{figure}
