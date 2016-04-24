@@ -1,8 +1,8 @@
 \chapter{Pruning Subsequence Search by Embedding Sequences}
 \label{ch:embedding}
 
-The DTW-based approaches for computing sequence similarity we have discussed so far have quadratic complexity in the sequence length because they compute the pairwise distance between each element in the sequences being compared.
-While the downsampling and binary embedding approach proposed in \cref{ch:dhs} can make this operation much more efficient by lowering the number of sequence elements and making the pairwise comparisons faster, it is nevertheless still quadratic in complexity.
+The DTW-based approaches for computing sequence similarity we have discussed so far have quadratic complexity in the sequence length because they involve multiple pairwise operations between each element in the sequences being compared.
+While the downsampling and binary embedding approach proposed in \cref{ch:dhs} can make DTW much more efficient by lowering the number of sequence elements and making the pairwise comparisons faster, it is nevertheless still quadratic in complexity.
 When datapoints can be represented as single fixed-length vectors, rather than as sequences of vectors, comparing two datapoints is effectively linear-time in the vector dimensionality.
 This makes the task of matching a query to its most similar entry in a database extremely efficient.
 An obvious question, then, is whether we can avoid the operation of comparing sequences for the majority of the database by comparing fixed-length vector surrogates for the sequences whose distance approximates their similarity.
@@ -13,7 +13,7 @@ As a result, this operation does not become less efficient for longer or higher-
 Our approach utilizes a novel attention-based neural network model which can adapt to any problem setting according to the training data provided.
 
 In the next section we discuss embedding and attention-based neural networks, which we use to motivate our proposed model.
-In \cref{sec:pse_experiment}, we evaluate the effectiveness of our proposed model on our central task of matching MIDI files to entries in the Million Song Dataset.
+In \cref{sec:pse_experiment}, we evaluate the effectiveness of our approach on our exemplary task of matching MIDI files to entries in the Million Song Dataset.
 Finally, we discuss results and possibilities for improvement in \cref{sec:pse_discussion}.
 
 \section{Embedding Sequences with Attention}
@@ -21,16 +21,20 @@ Finally, we discuss results and possibilities for improvement in \cref{sec:pse_d
 
 \subsection{Embedding}
 
-The idea behind ``embedding'' is attractive: Given data in a representation which is either inefficient or does not readily reveal factors of interest, can we produce a mapping to fixed-length vectors that possesses these desired properties?
+The idea behind ``embedding'' is attractive: Given data in a representation which is either inefficient or does not readily reveal factors of interest, can we produce a mapping to fixed-length vectors that possess these desired properties?
 Because many simple machine learning methods are particularly effective given data where Euclidean distance corresponds to some notion of similarity, embedding can make data more amenable to learning and comparison.
 
 As a concrete example, in \cite{schroff2015facenet}, a neural network architecture is used to embed images of faces such that images of the same person have small pairwise distances in the embedded space and images of different people have large distances.
 The authors were able to achieve state-of-the-art results on the ``labeled faces the wild'' dataset by simply thresholding the resulting distances to denote ``same person'' or ``different person''.
 In addition, the embedded representation produced qualitatively useful results when performing unsupervised clustering using $k$-means.
-Alternatively, \cite{yang2015supervised} proposes a supervised method for learning embeddings for images in a Hamming space which reflect salient characteristics of the images being embedded.
+Alternatively, \cite{yang2015supervised} proposed a supervised method for learning Hamming-space embeddings for images which reflect salient characteristics of the images being embedded.
 This allows for rapid ``semantic'' nearest neighbor queries to be made over large image databases.
 
-Most relevant to this thesis, embedding has been applied to the task of large-scale DTW search: \cite{papapetrou2011embedding} proposes a technique which maps a variable-length sequence of feature vectors to a fixed-length embedded space where DTW distance is approximated by Euclidean distance.
+For text, a striking application is word2vec, which is a family of models for mapping words to a Euclidean space with desirable properties \cite{mikolov2013distributed}.
+For example, the difference between ``China'' and ``Beijing'' in the embedded space is roughly equivalent to the difference between ``Rome'' and ``Italy''.
+These embeddings are typically learned in a unsupervised manner based on a word's context.
+
+Most relevant to this thesis, embedding has been applied to the task of large-scale DTW search: \cite{papapetrou2011embedding} proposes a technique which maps variable-length sequences of feature vectors to a fixed-length embedded space where DTW distance is approximated by Euclidean distance.
 The embedding is constructed by pre-computing the DTW distance between each sequence in the database and a small collection of ``reference'' sequences that are chosen to optimize retrieval accuracy.
 Then, to match a query sequence to the database, its DTW distance is computed against the reference sequences, and the resulting vector of DTW distances is matched against the database of embeddings using a standard Euclidean distance-based nearest-neighbor search.
 The resulting algorithm is approximate, but provided state-of-the-art results both in terms of accuracy and speed.
@@ -38,17 +42,14 @@ This technique relies on the assumption that the query is a subsequence of its c
 These restrictions make it invalid in some cases, such as our MIDI-to-MSD matching problem where the correct database entry may be a subsequence of a given query and where it is computationally unreasonable to repeatedly align sequences to the entire database in the training process.
 
 The idea of embedding has also been utilized in other sequential data problems.
-For fixed-length sequences, the same type of feedforward model used for fixed-size input can be used.
+For fixed-length sequences, the same type of feed-forward model used for fixed-size input can be used.
 For example, \cite{kamper2016deep,bengio2014word} learn to embed spoken utterances of a fixed length in a Euclidean space where utterances of the same word are close together.
 
 For variable-length sequences, it is common to use a model with some form of temporal awareness.
 A natural example are recurrent networks (see \cref{sec:recurrent_networks}) whose hidden state can be treated as a learned embedding of the input sequence up to a given point in time.
 Notably, in \cite{sutskever2014sequence}, a recurrent network was trained to map a sequence of words in a source language to a fixed-length vector, which was then used to generate a sequence of words in a target language, resulting in a quality translation of the original sentence.
 The resulting source-sentence embeddings encoded high-level linguistic characteristics, such as invariance to word order in sentences with the same meaning.
-For text, a striking application is word2vec, which is a family of models for mapping words to a Euclidean space with desirable properties \cite{mikolov2013distributed}.
-For example, the difference between ``China'' and ``Beijing'' in the embedded space is roughly equivalent to the difference between ``Rome'' and ``Italy''.
-These embeddings are typically learned in a unsupervised manner based on a word's context.
-Finally, \cite{hershey2016deep} train a recurrent network to embed time-frequency ``pixels'' in spectrograms of acoustic mixtures so that sources can be separated using clustering techniques.
+In the audio domain, \cite{hershey2016deep} propose training a recurrent network to embed time-frequency ``pixels'' in spectrograms of acoustic mixtures so that sources can be separated using clustering techniques.
 
 \subsection{Attention}
 
@@ -59,7 +60,7 @@ Conceptually, an attention-based model includes a mechanism which learns to assi
 When used with recurrent networks, the addition of attention has proven effective in a wide variety of domains, including machine translation \citep{bahdanau2014neural}, image captioning \citep{xu2015show}, and speech recognition \cite{chan2015listen,bahdanau2015end}; see \cite{cho2015describing} for an overview.
 Attention can also be seen as analogous to the ``soft addressing'' mechanisms of the recently proposed Neural Turing Machine \cite{graves2014neural} and End-To-End Memory Network \cite{sukhbaatar2015end} models.
 
-More specifically, following the definition from \cite{bahdanau2014neural}, given a length-$T$ sequence $h$, attention-based models compute a ``context'' vector $c_t$ as the weighted mean of the sequence $h$ by
+More specifically, following the definition from \cite{bahdanau2014neural}, given a length-$T$ sequence $h$, attention-based models compute a series of ``context'' vectors $c_t$ as the weighted mean of the sequence $h$ by
 \begin{equation}
 c_t = \sum_{j = 1}^T \alpha_t[j] h[j]
 \end{equation}
@@ -124,7 +125,8 @@ For our loss function, we can actually re-use \cref{eq:hashing_objective} exactl
 \mathcal{L} = \frac{1}{|\mathcal{P}|} \sum_{(x, y) \in \mathcal{P}} \| f(x) - g(y) \|_2^2  + \frac{\alpha}{|\mathcal{N}|} \sum_{(a, b) \in \mathcal{N}} \max(0, m - \|f(a) - g(b) \|_2)^2
 \label{eq:embedding_objective}
 \end{equation}
-However, the learned embedding functions $f$ and $g$ will produce a single vector, and their input will be entire unaligned sequences rather than short groups of aligned feature vectors.
+where $\mathcal{P}$ and $\mathcal{N}$ are collections of matching and non-matching sequences respectively, $f$ and $g$ are learned functions, and $m$ and $\alpha$ are hyperparameters controlling the importance of non-matching pairs having a large embedded distance.
+In the present context, the learned embedding functions $f$ and $g$ will produce a single vector, and their input will be entire unaligned sequences rather than short groups of aligned feature vectors.
 In order to produce a single vector from an entire sequence, we will utilize the feed-forward attention mechanism described in the previous section.
 Specifically, we will utilize two different embedding networks for $f$ and $g$, each of which will include a feed-forward attention mechanism.
 For the attention mechanisms' learned adaptive weighting function $a$, we use the standard architecture of a small neural network with one hidden layer:
@@ -142,7 +144,7 @@ We use the same feature representation, i.e.\ log-magnitude constant-Q spectrogr
 We also use the same exact training, validation, development, and test splits, and utilize the statistics from the training split to standardize feature vectors.
 
 For our networks, we fed the sequences first into a convolutional layer with 64 $3 \times 3$ filters followed by a $2 \times 2$ max-pooling layer, followed by the attention mechanism of \cref{eq:ffattention} with the weighting function of \cref{eq:weighting_function}, followed by two fully-connected layers with 2048 units each, followed by a 128-dimensional output layer.
-We utilized rectified linear nonlinearities throughout, except on the final output layer and the weighting function which used $\tanh$.
+We utilized rectified linear nonlinearities throughout, except on the final output layer and the weighting function which both used $\tanh$.
 All weights were initialized using He et.\ al.'s method \cite{he2015delving} and all biases were initialized to zero.
 The networks were optimized with respect to \cref{eq:embedding_objective} using RMSProp with mini-batches of 20 similar and dissimilar pairs.
 As in \cref{ch:dhs}, we assembled $\mathcal{N}$ by randomly choosing non-matching pairs which were re-sampled every time we had iterated over the training set.
@@ -159,7 +161,7 @@ The network first processed the input with a convolutional and pooling layer, fo
 \end{figure}
 
 To choose hyperparameter settings, we once again used the Bayesian optimization framework proposed in \cite{snoek2012practical}.
-We optimized the the learning rate and RMSProp decay parameter, and the loss parameters $\alpha$ and $m$.
+We optimized the learning rate and RMSProp decay parameter, and the loss parameters $\alpha$ and $m$.
 As an objective, we computed the Bhattacharrya coefficient \cite{bhattacharyya1943measure} between the distributions of embedded distances between matching and non-matching pairs in the validation set.
 The best-performing network configuration achieved a Bhattacharrya coefficient of $0.393$ and used a learning rate of $5\cdot10^{-6}$, an RMSProp decay of $0.999$, $\alpha = 3.342$ and $m = 1.055$.
 
@@ -167,8 +169,8 @@ Before arriving at this system design, we also tried:
 \begin{itemize}
 \item Using more or fewer convolutional/pooling layers at the input of the network, including using no convolutional and pooling layers at all, a $5 \times 12$ convolutional layer followed by a variable number of $2 \times 2$ max-pooling layers and $3 \times 3$ convolutional layers, or using the same front-end as in \cref{ch:dhs}.
 \item Using up to four ``parallel'' attention mechanisms, whose output was concatenated before being processed by the fully-connected layer; this produced no performance gains.
-\item The output $L^2$ penalty from \cref{ch:dhs} as well as the the hash entropy-encouraging loss term proposed in \cite[equation (3)]{yang2015supervised}, but neither were beneficial.
-\item Using dropout in the fully-connetcted layers, which hurt performance.
+\item The output $L^2$ penalty from \cref{ch:dhs} as well as the hash entropy-encouraging loss term proposed in \cite[equation (3)]{yang2015supervised}, but neither were beneficial.
+\item Using dropout in the fully-connected layers, which hurt performance.
 \item Using more or fewer fully-connected layers of different sizes; two $2048$-unit layers produced the best results.
 \item For optimization, Nesterov's accelerated gradient \cite{nesterov1983method} and Adam \cite{kingma2015adam} (see \cref{sec:nesterov} and \cref{sec:adam}) but found that RMSProp was most effective.
 \end{itemize}
@@ -178,6 +180,16 @@ Before arriving at this system design, we also tried:
 
 As in \cref{ch:dhs}, we also evaluated a simple learning-free baseline method to make sure that our approach was beneficial.
 For our baseline, we followed the tradition of \cite{tzanetakis2002musical, deng2008study, mandel2005song, foster2014sequential} and others by summarizing spectrograms by their mean and standard deviation across feature dimensions and concatenating the resulting statistics into a fixed-length embedding.
+Specifically, given a sequence $X \in \mathbb{R}^{M \times D}$ which consists of $M$ $D$-dimensional feature vectors, we compute
+\begin{align}
+\mu_X[d] &= \frac{1}{M} \sum_{m = 1}^M X[m, d]\\
+\sigma_X[d] &= \sqrt{\frac{1}{M} \sum_{m = 1}^M (X[m, d] - \mu_X[d])^2}\\
+e &= \begin{bmatrix}
+\mu_X\\
+\sigma_X
+\end{bmatrix}
+\end{align}
+where $e \in \mathbb{R}^{2D}$ is the resulting embedding.
 We compute this statistics-based embedding over the same log-magnitude, $L^2$ normalized spectrograms used throughout this thesis.
 This resulted in a 96-entry embedded vector for each spectrogram.
 
@@ -185,7 +197,7 @@ This resulted in a 96-entry embedded vector for each spectrogram.
 
 \begin{figure}
   \includegraphics[width=\textwidth]{figures/5-embeddings.pdf}
-  \caption[Example embeddings for two pairs of sequences]{Example embeddings for two pairs of matching sequences produced by our feedforward attention model after training.
+  \caption[Example embeddings for two pairs of sequences]{Example embeddings for two pairs of matching sequences produced by our feed-forward attention model after training.
 The first two rows display pairs of matching constant-Q spectrograms, with synthesized MIDI on the left and MSD entry on the right.
 For both pairs, the right sequence matches a subsequence of the left.
 The last two rows show their resulting embeddings.
@@ -203,7 +215,8 @@ From this figure, we can see that our proposed approach produces embeddings whic
 \begin{figure}
   \includegraphics[width=\textwidth]{figures/5-distributions.pdf}
   \caption[Distributions of matching and non-matching distances]{Distributions of embedded distances for matching (blue) and non-matching (green) sequences from our validation set.
-At the top are the distances produced by our proposed feed-forward attention model after training; at the bottom are distances based on the baseline proposed in \cref{sec:embedding_baseline}.}
+At the top are the distances produced by our proposed feed-forward attention model after training; at the bottom are distances based on the baseline proposed in \cref{sec:embedding_baseline}.
+Note that the x-axes are log-scaled.}
   \label{fig:embedding_distributions}
 \end{figure}
 
@@ -216,7 +229,7 @@ We carried out this procedure both for our proposed attention-based embedding te
 We plot the resulting proportion of MIDI files in the test set whose correct match ranked under a certain threshold in \cref{fig:embedding_ranks}.
 To borrow the evaluation from \cref{ch:dhs}, we also computed the threshold $N$ at which 95\% of the correct matches in the test set had a rank better than $N$.
 For PSE, $N$ can be set to 70,445, while the baseline would require 242,573.
-This means that we can used our proposed embedding method to prune over 90\% of the database with high confidence, whereas the simple learning-free baseline would only allow us to discard about 75\%. 
+This means that we can used our proposed embedding method to prune over 90\% of the database with high confidence, whereas the simple learning-free baseline would only allow us to discard about 75\%.
 
 \begin{figure}
   \includegraphics[width=\textwidth]{figures/5-ranks.pdf}
@@ -233,7 +246,7 @@ Fortunately, it is also much faster: Computing the million embedding distance ca
 This means that we can discard over 90\% of the MSD with high confidence with an operation which is xxx times faster than the downsampled hash sequence-based methods of \cref{ch:dhs} and is xxx times faster than a brute-force DTW search approach from \cref{ch:dtw}.
 
 To improve performance of our proposed method we are interested in investigating the same ideas discussed in \cref{sec:dhs_discussion}, i.e.\ different loss functions and methods of sampling negative examples.
-In addition, as more and more methods are developed for making recurrent networks able to handle very long-term dependencies (some of which are mentioned in \cref{sec:recurrent_networks}), we are interested in testing whether recurrence could become applictable to our approach.
+In addition, as more and more methods are developed for making recurrent networks able to handle very long-term dependencies (some of which are mentioned in \cref{sec:recurrent_networks}), we are interested in testing whether recurrence could become applicable to our problem.
 
 In summary, we have proposed a novel feed-forward attention mechanism which is capable of integrating arbitrary-length sequences to individual vectors in a fixed-dimensional embedded space where sequence similarity is approximated as Euclidean distance.
 We showed that using this model for pruning large-scale similarity search produces a system which can extremely efficiently rule out a large proportion of the database.
