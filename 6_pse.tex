@@ -138,6 +138,7 @@ a(x) = v^\top\tanh(Wx + b)
 where $x \in \mathbb{R}^D$ is a single feature vector from the input sequence and $W \in \mathbb{R}^{D \times D}$, $b \in \mathbb{R}^D$, and $v \in \mathbb{R}^D$ are parameters.
 
 \subsection{Experiment Specifics}
+\label{sec:pse_specifics}
 
 As training data, we use the same collection assembled in \cref{sec:training_data}.
 However, we will solely use the matches as ground-truth, {\em not} the alignments, because our system needs to be able to produce similarity-preserving embeddings regardless of whether the input sequences are aligned.

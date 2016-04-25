@@ -1,26 +1,43 @@
 \chapter{Relevant Publications}
 
-
-
-List of the papers which comprise this thesis, and how the experiments in the thesis differ/improve.
-
-\section{Optimizing DTW-Based Audio-to-MIDI Alignment and Matching}
-
-Pretty much the same.
-
-\section{Large-Scale Content-Based Matching of MIDI and Audio FIles}
-
-32-bit hashes (using popcount)
-No beats
-Added baselines
-Added entropy-encouraging regularizer
-Also included results from nips2015accelerating
-
-\section{Pruning Subsequence Search with Attention-Based Embedding}
-
-No beats
-Added baselines
+Much of the work presented in this thesis has been previously published in peer-reviewed venues.
+However, in various places the experiments have been improved and results have been subsequently updated.
+In this appendix, we reference these publications in approximate order of appearance in this thesis and outline how the work presented here differs.
 
 \section{Extracting Ground-Truth Information from MIDI Files}
 
-Pretty much the same.
+\Cref{ch:midi} and \cref{sec:reliability} appear together in a submission to the 17th International Society for Music Information Retrieval conference.
+They are presented in this thesis largely unchanged, except for some editing to make them better fit into the storyline.
+
+\section{Optimizing DTW-Based Audio-to-MIDI Alignment and Matching \cite{raffel2016optimizing}}
+
+Much of \cref{ch:dtw} was published in a paper at the 41st International Conference on Acoustics, Speech, and Signal Processing.
+For better explanation of the results, we added \cref{fig:corruption,fig:warping,fig:correction_error,fig:correlation} and \cref{tab:best_systems,tab:ratings}.
+We also added the normalized DTW distance re-scaling step defined in \cref{eq:score_normalization}, which makes it more readily interpretable as a confidence score.
+
+\section{Large-Scale Content-Based Matching of MIDI and Audio Files \cite{raffel2015large}}
+
+The approach of \cref{ch:dhs} was originally proposed in a paper at the 16th International Society for Music Information Retrieval Conference.
+However, it is presented in this thesis with many improvements.
+First, in \cite{raffel2015large}, beat-synchronous spectrograms are used (i.e.\ the beats of the music signal are estimated and frames in the spectrogram within each beat are aggregated).
+This caused issues when the beats of a given MIDI file were estimated differently than its correct match.
+We therefore forewent beat synchronization and instead used a finer, fixed timescale.
+This prompted the use of three maxpooling-by-2 layers, resulting in downsampling in time by 8, rather than the two maxpooling layers used in \cite{raffel2015large}.
+Second, we utilized the ``gold standard` system of \cref{sec:goldstandard} to create the training data rather than the alignment scheme proposed in \cite{raffel2015large} for consistency and due to its better performance.
+Third, we used 32-bit binary vectors rather than 16-bit, which potentially gives them more expressive power.
+It also resulted in the use of the POPCNT instruction being more efficient than the pre-computed table look-up used in \cite{raffel2015large}.
+Finally, we experimented with a wider variety of system designs, all of which are documented in \cref{sec:hashing_system}.
+This included the output $L^2$ penalty and the larger number of small $3 \times 3$ convolutional layers, rather than the $5 \times 12$ input filter size.
+Taken together, these changes resulted in dramatic increases in precision; specifically, we were improved our high-confidence pruning threshold from 10,000 to 250.
+In addition, for better framing of our results, we added the baseline learning-free approach described in \cref{sec:baseline}.
+
+\section{Accelerating Multimodal Sequence Retrieval with Convolutional Networks \cite{raffel2015accelerating}}
+
+In \cref{ch:dhs}, we also include the ``multimodal'' variant of the experiment which was first explored in a paper at the 2015 Workshop on Multi-Modal Machine Learning.
+We improved upon this approach in the same way as that of \cite{raffel2015large}, which also resulted in substantial performance gains.
+
+\section{Pruning Subsequence Search with Attention-Based Embedding \cite{raffel2016pruning}}
+
+Our feed-forward attention-based sequence embedding model was first proposed in a paper at the 41st International Conference on Acoustics, Speech, and Signal Processing.
+As presented in \cref{ch:pse}, it is largely unchanged, except that we present a broader overview of previous work on attention and embedding and remove sections which are redundant with \cref{ch:dhs}.
+We also re-performed the hyperparameter optimization and experimented with various other system design choices outlined in \cref{sec:pse_specifics}.

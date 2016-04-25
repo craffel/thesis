@@ -259,6 +259,7 @@ Conveniently, the vast majority of the normalized DTW distances for our real-wor
 In order to more intuitively report this measure as a ``confidence score'', we decided to re-scale it as follows:
 \begin{equation}
         c = \max(0, \min(2(1 - s), 1))
+        \label{eq:score_normalization}
 \end{equation}
 where $s$ is the normalized DTW distance and $c$ is the resulting confidence score.
 This maps the range to $[0, 1]$ where, ideally, $0$ indicates a failure and $1$ indicates a potential perfect alignment.
