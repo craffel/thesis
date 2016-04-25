@@ -1,9 +1,6 @@
 \chapter{Optimizing Dynamic Time Warping}
 \label{ch:dtw}
 
-\section{Introduction}
-\label{sec:intro}
-
 The central application of this thesis is the problem of matching musical scores to corresponding audio recordings in a large database.
 This is motivated by our collection of 178,561 unique MIDI transcriptions which, as we explored in \cref{ch:midi}, can provide a bounty of ground-truth data for content-based music information retrieval tasks.
 To maximize its value, a given MIDI file must be both matched and aligned in time to a corresponding music audio file.
@@ -113,7 +110,7 @@ In our synthetic alignment task, the goal is to reverse this timing distortion o
   \label{fig:warping}
 \end{figure}
 
-As described in \cref{sec:intro}, a DTW-based alignment system can serve two purposes: First, to align a MIDI transcription in time to an audio recording, and second, to produce a confidence score denoting the quality of the transcription or whether the MIDI file is a transcription of the recording at all.
+As described above, a DTW-based alignment system can serve two purposes: First, to align a MIDI transcription in time to an audio recording, and second, to produce a confidence score denoting the quality of the transcription or whether the MIDI file is a transcription of the recording at all.
 We therefore produced two sets of corrupted versions of the 1,000 MIDI files we collected, one to measure alignment performance, and one to evaluate confidence reporting.
 For the first (``easy'') set, we focused on corruption parameters corresponding to real-world conditions for a high-quality transcription, setting $\sigma_t = 5, p_r = .1, \sigma_v = .2$.
 For the second (``hard''), we set $\sigma_t = 20, p_r = .5, \sigma_v = 1$ so that the alignment task is sufficiently difficult to result in a significant number of incorrect alignments, which allows us to test whether an alignment system can automatically report failure.
