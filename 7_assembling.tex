@@ -1,30 +1,38 @@
 \chapter{Assembling a Collection of MIDI Files Matched to the Million Song Dataset}
 \label{ch:assembling}
 
-We have all the ingredients.
-Choosing thresholds - plot of time-to-reach pruning thresholds.
-Total time taken.
-Statistics of resulting MIDI files.
-Extracting ground truth.
+Combining the results of \cref{ch:dtw,ch:dhs,ch:pse}, we now have all the ingredients required to efficiently match MIDI files to the Million Song Dataset.
+Taken together, these three techniques present a cascade of matching methods, each of which achieves more precision at higher computational cost than the last.
+This allows us to quickly discard the vast majority of the dataset before utilizing the expensive, but accurate, DTW operation of \cref{ch:dtw}.
+While our main application in this thesis is MIDI-to-audio matching, all of these techniques are learning-based and data-adaptive, so we are optimistic they will be effective in other domains.
+
+In this chapter, we finally utilize these techniques to match our collection of 178,561 MIDI files to the MSD.
+In the following section, we discuss the practical implementation of this process, perform a small experiment to verify its performance, and give an overview of the results.
+In \cref{sec:deriving}, we quantify the reliability of ground-truth annotations for content-based MIR extracted from this data and discuss further potential applications.
+Finally, in \cref{sec:ideas} we wrap up with ideas for additional applications and improvements for our approach.
+
+\section{Matching MIDI Files}
+
+1 - Utilize pre-trained models from previous chapters
+2 - Remove $N$ entries using pse
+3 - Remove $N$ entries using dhs
+4 - Compute the confidence score for the remaining $N$
+
+\subsection{Measuring Performance}
+
+Exact same approach as in DHS and PSE chapters
+Used mean for additive penalty
+Based on the pruning thresholds chosen, we expect a performance of xxx.
+We don't expect top-match all the time.
+
+\subsection{The MIDI Dataset}
+
+How many matches?  Plot of proportion of min score per MIDI file.
+Benchmarking speed - steps required (synthesize, spectrogram, DHS, PSE, match, match, match)  Total time taken.
 Distribution format - original MIDI files, for when different audio is available and/or a better alignment scheme is available.
-JAMS structure.
 
-\section{How Reliable is MIDI-Derived Ground Truth?}
-\label{sec:reliability}
-
-In order to utilize many of these sources of information, we need to align, using the system of 3dtw.
-How accurate is the result?
-Temporal information is effected most, so let's test beats.
-
-\subsection{Comparison to Hand-Annotated Data}
-
-Results, with description of failure modes.
-
-\subsection{Improving Alignment as a Proxy for Content-Based MIR}
-
-Ground truth is already valuable; we can make it more reliable by making alignment better.
-
-\section{Ideas and Improvements}
+\section{Deriving Ground-Truth Information}
+\label{sec:deriving}
 
 Obvious: Train content-based MIR systems on derived ground-truth information.
 We also have a very large of richly annotated MIDI files.
@@ -32,8 +40,28 @@ We can do things like look at transcription statistics for different genres; bas
 We can also query by riff more accurately.
 Use multiple MIDI transcriptions as different ground truth data views.
 Learn to invert MIDI piano rolls.
+Musical language model.
+
+\subsection{Comparison to Hand-Annotated Data}
+\label{sec:reliability}
+
+In order to utilize many of these sources of information, we need to align, using the system of 3dtw.
+How accurate is the result?
+Test beats and key
+
+\subsubsection{Key Experiment}
+
+\subsubsection{Beat Experiment}
+
+\subsubsection{Improving Alignment as a Proxy for Content-Based MIR}
+
+Ground truth is already valuable; we can make it more reliable by making alignment better.
+
+\section{Ideas and Improvements}
+\label{sec:ideas}
 
 Try improving DTW by using the same representation learning approach.
 Try learning DTW end-to-end.
 Better recurrent network learning for embedding.
-Problems with content-based MIR tasks (evaluation).
+Hierarchy of approaches.
+Applying to other areas: Cover song ID.  Speaker ID.  Plagiarism detection.
