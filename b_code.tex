@@ -1,16 +1,115 @@
 \chapter{Software Prepared}
 
-\section{midi-dataset}
+Over the course of my PhD, I wrote over 50,000 lines of Python code, all of which are open-source and publicly available online.\footnote{\url{http://github.com/craffel}}
+This includes the requisite code for running the experiments in this thesis and my other research projects, in addition to contributions to more generally-applicable software libraries.
+This is arguably the main product of my PhD work, so in this appendix I give an overview of the software utilized in this thesis which I developed or helped develop.
 
-\section{dhs}
+\section{\texttt{midi-dataset}}
 
-\section{pretty\_midi}
+The repository \texttt{midi-dataset}\footnote{\url{http://github.com/craffel/midi-dataset}} is a collection of code which implements all of the experiments in \cref{ch:dhs,ch:pse,ch:assembling}.
+Specifically, it includes the following scripts, in order of their intended use:
+
+\begin{description}
+\item[\texttt{create\char`_msd\char`_cqts.py}] Pre-computes constant-Q spectrograms for all of the 7digital preview clips \cite{schindler2012facilitating} from the entire Million Song Dataset \cite{bertin2011million} in the format described in \cref{sec:hashing_system} and used throughout this thesis.
+\item[\texttt{create\char`_whoosh\char`_indices.py}] Builds search indices for the Python library \texttt{whoosh} of all datasets used in these experiments (the MSD, the ``clean MIDI subset'', uspop2002, cal10k, and cal500) to allow for the fuzzy text-based matching utilized in \cref{sec:training_data}.
+\item[\texttt{text\char`_match\char`_datasets.py}] Runs fuzzy text matching of the clean MIDI subset against each of the aforementioned audio datasets using \texttt{whoosh} in order to obtain candidate matches.
+\item[\texttt{align\char`_text\char`_matches.py}] Runs the audio-to-MIDI alignment process described in \cref{sec:goldstandard} on all of the text matches to find true ground-truth MIDI-audio matches as described in \cref{sec:training_data}.
+\item[\texttt{split\char`_training\char`_data.py}] Creates the fixed train/validation/development/test split {\em by song} of the ground-truth MIDI-audio matches described in \cref{sec:training_data}.
+\item[\texttt{experiments}] A collection of experiments for evaluating all of the matching techniques we proposed and described.
+Each experiment optionally includes a script \texttt{parameter\char`_search.py} which optimizes the parameters of the system using the training and validation sets.
+All experiments include scripts \texttt{precompute.py} and \texttt{match\char`_msd.py} which respectively pre-compute all necessary data for the experiment (for example, fixed-length embeddings of the entire MSD and clean MIDI test set) and evaluate the matching on the test set.
+Experiments included are:
+\begin{description}
+\item[\texttt{dhs}] for the learning-based method for creating downsampled hash sequences described in \cref{sec:hashing_system}.
+\item[\texttt{dhs\char`_piano}] for the corresponding experiment using piano rolls as a MIDI representation rather than synthesized spectrograms, described in \cref{sec:multimodal}.
+\item[\texttt{tpaa}] for the ``thresholded piecewise aggregate approximation'' baseline described in \cref{sec:baseline}.
+\item[\texttt{pse}] for the learning-based method for producing similarity-preserving embeddings of variable-length sequences using a feed-forward network with attention described in \cref{sec:pse_experiment}.
+\item[\texttt{stats}] for the feature statistics-based embedding baseline described in \cref{sec:embedding_baseline}.
+\item[\texttt{combined}] for the experiment from \cref{ch:assembling} evaluating the performance of the combination of the above learning-based methods and the DTW-based matching system described in \cref{sec:goldstandard}.
+\end{description}
+\item[\texttt{match.py}] Matches one or more MIDI files to the million song dataset quickly and accurately using the cascade of methods proposed in this thesis, as described in \cref{ch:assembling}.
+\end{description}
+
+Also included are \texttt{experiment\char`_utils.py}, \texttt{feature\char`_extraction.py}, and \texttt{whoosh\char`_search.py} which contain shared helper functions for the experiments, extracting features, and text-based matching respectively.
+
+\subsection{\texttt{dhs}}
+
+To facilitate its usage in contexts outside of the experiments in this thesis, the code for the learning-based downsampled hash sequence technique proposed in \cref{ch:dhs} is factored out in a separate library called \texttt{dhs}.\footnote{\url{http://github.com/craffel/dhs}}
+\texttt{dhs} includes the following functionality:
+\begin{description}
+\item[\texttt{train.py}] Given a dataset of sequential data with known-matching pairs and an un-trained pair of neural network models, train the networks by optimizing the similarity-preserving loss \cref{eq:hashing_objective}.
+\item[\texttt{match.py}] Given hash sequences represented as lists of integers, rapidly compute the pairwise distance matrix using exclusive-or and POPCNT operations and the DTW distance corresponding to the lowest-cost path through this matrix.
+\item[\texttt{utils.py}] Tools for iterating over sequential data and constructing ``dissimilar'' pairs by randomly swapping matching pairs.
+\end{description}
+This library makes use of \texttt{theano} \cite{bergstra2010theano,bastien2012theano} and \texttt{lasagne} \cite{dieleman2015lasagne} to construct the loss function, automatically compute its derivative, and optimize the networks' parameters with respect to it.
+It also utilizes \texttt{numba}\footnote{\url{http://numba.pydata.org}} to rapidly compute the DTW distance and \texttt{cython}\footnote{\url{http://cython.org/}} to access the SSE 4.2 POPCNT instruction directly from Python code.
+While thus far this library has only been used for the experiments in this thesis, we hope it will be facilitate research into other problem settings.
+
+\subsection{\texttt{pse}}
+
+In the same vein as \texttt{dhs}, \texttt{pse}\footnote{\url{http://github.com/craffel/pse}} is a library which covers the pairwise sequence embedding approach of \cref{ch:pse}.
+In general, it has very similar functionality to the \texttt{dhs} library except that it utilizes non-aligned pairs of sequences, it expects the networks to produce a single vector for each input sequence, and it does not contain functionality for matching the resulting embeddings because this can be achieved by a simple Euclidean distance calculation.
+It also includes an implementation of the feed-forward attention mechanism described in \cref{sec:ffattention}.
+
+\section{\texttt{alignment-search}}
+
+Our code is also available online for the experiments in \cref{ch:dtw}.\footnote{\url{http://github.com/craffel/alignment-search}}
+This includes the following scripts, in order of their intended usage:
+\begin{description}
+\item[\texttt{create\char`_data.py}] Given a collection of MIDI files, creates ``easy'' and ``hard'' artificial synthetic corrupted versions as described in \cref{sec:synthetic}.
+\item[\texttt{parameter\char`_experiment\char`_random.py} and \texttt{parameter\char`_experiment\char`_gp.py}] Optimize DTW system hyperparameters over the ``easy'' synthetic dataset, first randomly and then using Bayesian optimization, as described in \cref{sec:optimizing}.
+\item[\texttt{find\char`_best\char`_aligners.py}] Finds the best-performing alignment system produced by hyperparameter optimization and all of the systems which were not significantly worse.
+\item[\texttt{confidence\char`_experiment.py}] Given these high-performing systems, determine which of the confidence score reporting schemes discussed in \cref{sec:confidence} best correlates with alignment error over both the ``easy'' and ``hard' datasets.
+\item[\texttt{align\char`_real\char`_world.py}] Aligns a collection of real-world data using the ``gold standard'' system of \cref{sec:goldstandard} for the qualitative evaluation in \cref{sec:qualitative}.
+\end{description}
+
+It also includes the collections of utility functions \texttt{corrupt\char`_midi.py}, \texttt{align\char`_dataset.py}, and \texttt{db\char`_utils.py} respectively for applying synthetic corruptions to MIDI files, aligning a collection of MIDI files given DTW system parameters, and for storing and loading results.
+
+\section{\prettymidi{}}
 \label{sec:pretty_midi}
 
-\section{librosa}
+Because MIDI files utilize a low-level binary protocol to represent musical scores, manipulating MIDI data directly can be cumbersome.
+In addition, the timing of an event in MIDI is represented by tempo-dependent ``ticks'' relative to the previous event, making direct interpretation in terms of absolute time (in seconds) difficult.
+We believe that the most intuitive representation is a hierarchical one, consisting of a list of instruments, each of which contains a sequence of events (notes, pitch bends, etc.).
+This is analogous to a per-instrument piano roll, the visualization commonly used for manipulating MIDI data in digital audio workstations.
 
-If djitw is merged into librosa, include that here.
+Most software libraries for dealing with MIDI files either represent MIDI data in a lower-level (directly corresponding to the bit-level representation) or a higher-level manner (only as musical features).
+This can make simple manipulations and analysis either require a great deal of source code and expertise or, in the case of modifications to aspects not supported by an abstract library, impossible.
+For example, in the python-midi module,\footnote{\url{http://github.com/vishnubob/python-midi}} shifting up the pitch of all notes in a MIDI file by 2 semitones takes only a few lines of code.
+However, constructing a piano roll representation can take a few hundred lines of code because MIDI ticks must be converted to time in seconds, note-on events must be paired with note-offs, drum events must be ignored, and so on.
 
-\section{lasagne}
+Based on these issues, we created the Python module \prettymidi{}\footnote{\url{http://github.com/craffel/pretty-midi}} for creating, manipulating and analyzing MIDI files.
+It is intended to make the most common operations applied to MIDI data as straightforward and simple as possible.
+The module includes functionality for parsing and writing MIDI files, creating and manipulating MIDI data, synthesis, and information extraction.
 
-\section{mir\_eval}
+\prettymidi{} represents MIDI data as a hierarchy of classes.
+At the top is the \texttt{PrettyMIDI} class, which contains global information such as tempo changes and the MIDI resolution.
+It also contains a list of \texttt{Instrument} class instances.
+Each \texttt{Instrument} is specified by a program number and a flag denoting whether it is a drum instrument.
+\texttt{Instrument} class instances also contain three lists, one each for \texttt{Note}, \texttt{PitchBend}, and \texttt{ControlChange} class instances.
+The \texttt{Note} class is a container for MIDI notes, with velocity, pitch, and start and end time attributes.
+Similarly, the \texttt{PitchBend} and \texttt{ControlChange} classes simply have attributes for the bend or control change's time and value.
+
+The top-level \texttt{PrettyMIDI} class can be instantiated with a path to an existing MIDI file, in which case the class will be populated by parsing the file.
+It can also be instantiated without a pre-existing file for creating MIDI data from scratch.
+For output, the \texttt{PrettyMIDI} class has a \texttt{write} function which exports its data to a valid MIDI file.
+
+\texttt{PrettyMIDI} class instances have functions for performing analysis on the data they contain, some of which have a corresponding function in the \texttt{Instrument} class.
+Some of the implemented functions include:
+
+\begin{description}
+  \item[\texttt{get\char`_tempo\char`_changes}] Returns a list of the times and tempo (in BPM) of all MIDI tempo change events
+  \item[\texttt{estimate\char`_tempo}] Returns an empirical tempo estimate according to inner-onset intervals, as described in \cite{dixon2001automatic}.
+  \item[\texttt{get\char`_beats}] Returns a list of beat locations by using the MIDI tempo change events for tempo and estimating the first beat as described in~\cite{dixon2001automatic}.
+  \item[\texttt{get\char`_onsets}] Returns a list of all of the onsets (start times) of each MIDI note.
+  \item[\texttt{get\char`_piano\char`_roll}] Returns a piano roll matrix representation of MIDI notes, as used in \cref{sec:multimodal}.
+  \item[\texttt{get\char`_chroma}] Computes chroma features (also known as pitch class profile)~\cite{fujishima1999realtime} of the MIDI data based on the piano roll representation.
+\end{description}
+
+In \prettymidi{}, MIDI data can be synthesized as audio using either the \texttt{synthesize} or \texttt{fluidsynth} methods.
+\texttt{synthesize} uses a periodic function (e.g. sin) to synthesize the each note, while \texttt{fluidsynth} utilizes the \texttt{fluidsynth} program\footnote{\url{www.fluidsynth.org}} which performs General MIDI synthesis using a SoundFont file.
+Both methods return arrays of audio samples at some specified sampling rate.
+
+\prettymidi{} also has utility functions for converting between representations of MIDI notes (name, note number, frequency in Hz, and drum name for percussion instruments), program number and instrument name/class (according to the General MIDI standard) and pitch bend value and semitones.
+Each \texttt{PrettyMIDI} class instance can also readily convert between MIDI ticks and absolute seconds.
+These functions allow for semantically meaningful creation and representation of MIDI data.
