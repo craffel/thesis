@@ -335,6 +335,7 @@ Finally, in the bottom right, we show the distributions for our baseline TPAA me
 Clearly, there is substantially move overlap between matching and non-matching embeddings in this representation.
 
 \subsubsection{Ranking Metrics}
+\label{sec:ranking}
 
 To evaluate our system using the known MIDI-audio pairs of our test set, we ranked MSD entries according to their hash sequence DTW distance to a given MIDI file, and determined the rank of the correct match.
 Because some MIDI files were matched to multiple MSD entries due to duplicates in the MSD, we made the forgiving choice of utilizing the best rank among all correct matches for a given MIDI file.

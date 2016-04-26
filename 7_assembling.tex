@@ -13,10 +13,35 @@ Finally, in \cref{sec:ideas} we wrap up with ideas for additional applications a
 
 \section{Matching MIDI Files}
 
-1 - Utilize pre-trained models from previous chapters
-2 - Remove $N$ entries using pse
-3 - Remove $N$ entries using dhs
-4 - Compute the confidence score for the remaining $N$
+As an overview, our method for matching MIDI files to the MSD will proceed as follows:
+Given a query MIDI file, we first synthesize it using \prettymidi{}'s \texttt{fluidsynth} method.
+Then, we compute the log-magnitude, $L^2$-normalized, constant-Q spectrogram representation utilized throughout this thesis.
+Using the pre-trained models from \cref{ch:dtw,ch:pse}, we compute the MIDI file's downsampled hash sequence and embedding.
+We then compute the pairwise distance between the resulting embedding and all pre-computed embeddings of entries in the MSD, rank the entries according to their distance, and discard all but the top $N_{PSE}$.
+We perform a similar pruning with the downsampled hash sequences, computing the DTW distance between the query and top $N_{PSE}$ MSD entries, ranking by distance, and discarding all but the top $N_{DHS}$.
+Finally, we align the MIDI file to the remaining $N_{DHS}$ entries utilizing the system of \cref{sec:goldstandard}.
+
+Before proceeding, we must first decide the pruning thresholds $N_{PSE}$ and $N_{DHS}$.
+Choosing these thresholds directly trades off precision and computation, because setting larger thresholds will decrease the likelihood of discarding a valid match but will result in more comparisons being made downstream.
+Based on the results of \cref{sec:ranking,sec:pse_results}, we chose $N_{PSE} = 100,000$ and $N_{DHS} = 250$.
+This corresponds to pruning 90\% of the MSD in the first step, then pruning 99.75\% of the remaining entries, so that in the end the expensive DTW comparison is only performed on 0.025\% of the MSD.
+According to our test-set results, this results in a false-reject rate of approximately 3.5\% for the embedded distance pruning and xxx\% for the downsampled hash sequences.
+Assuming false rejects occur in each step independently, we can expect a combined false reject rate of up to xxx\%.
+
+\subsection{Shortcuts}
+
+Overall, we will follow the matching processes of \cref{sec:goldstandard,sec:hashing_system,sec:pse_specifics}, except for the following two changes made for efficiency:
+
+First, we utilize an exact pruning method in the downsampled hash sequence-based pruning step.
+Assuming we are computing the DTW distance as defined in \cref{sec:dtw} between two sequences, one of length $M$ and one of length $N$ with $M \le N$, then the normalized DTW distance will never be smaller than $T$ if there are not at least $M$ pairwise distances less than $T$.
+Given this, while computing the pairwise distance matrix for downsampled hash sequences, we can (with a minor performance penalty) keep track of the number of entries which are smaller than $T$, where $T$ is set to the smallest normalized DTW distance which has been encountered so far.
+If fewer than $M$ entries are less than $T$, we can skip computing the DTW alignment path because we can guarantee that the resulting normalized DTW distance will not be smaller than $T$.
+In practice, this avoids the expensive operation of computing the DTW distance for many candidates whose distance matrices dictate that they cannot be the correct match.
+
+Second, instead of utilizing the median pairwise distance for the CQT-to-CQT DTW additive penalty as suggested in \cref{sec:goldstandard}, we will use the mean distance.
+This choice is largely made for performance reasons; computing the median of the $MN$ distances is at least $\mathcal{O}( NM\log(NM) )$ complexity whereas computing the mean is always $\mathcal{O}(NM)$.
+We justify this decision based on the discussion in \cref{sec:optimizing} which suggests that small changes to the additive penalty will not affect alignment quality.
+In practice, we found the mean and median pairwise distance to be extremely close, so this change likely has a negligible effect on the results aside from a small speed-up.
 
 \subsection{Measuring Performance}
 
