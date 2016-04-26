@@ -72,10 +72,38 @@ The remaining xxx is the time required to compute all of the necessary represent
 Compared to the approximately 1.5 days it would take to match a single MIDI file to the MSD using the approach from \cref{sec:goldstandard} on its own, we consider the 5.4\% false reject rate a small price to pay for this increase in efficiency.
 Of course, we could increase precision substantially by raising the pruning thresholds in exchange for a drop in efficiency, but we consider this to be a good trade-off.
 
-\subsection{The MIDI Dataset}
+\subsection{The Lakh MIDI Dataset}
 
-How many matches?  Plot of proportion of min score per MIDI file.
-Distribution format - original MIDI files, for when different audio is available and/or a better alignment scheme is available.
+Now that we have empirically validated our approach, we proceed to matching our collection of 178,561 MIDI files to the MSD.
+To do so, we simply followed the approach of the previous section exactly, except that we matched our entire collection against the MSD instead of just our test set.
+Based on the fact that matching a single file takes about xxx on average, performing this matching for all 178,561 MIDI files takes about xxx of compute time.
+To speed things up, we ran this process in parallel across 32 processors, resulting in a total run time of about xxx.
+While performing the match, we discovered xxx MIDI files which were corrupt or otherwise unparsable by \prettymidi{}.
+In addition, in order to avoid spurious matches and incomplete transcriptions, we discarded all MIDI files which were less than 30s in length.
+In the end, we therefore matched a total of xxx MIDI files to the MSD.
+
+\begin{figure}
+  \includegraphics[width=\textwidth]{figures/7-matches.pdf}
+  \caption[Number of MIDI files with matches above a given confidence]{Number of MIDI files which had at least one entry in the MSD whose DTW confidence score was above a given threshold.
+ For example, about 50,000 MIDI files had at least one MSD entry whose match confidence score was above 0.5.}
+  \label{fig:match_confidences}
+\end{figure}
+
+An informative way to report the extent to which we successfully found matches in the MSD is to plot the number of MIDI files in our collection which had at least one MSD entry against which the DTW confidecne score was below a threshold.
+We plot this curve in \cref{fig:match_confidences}.
+Choosing 0.5 as the threshold above which a confidence score denotes a match (as we did in \cref{sec:training_data} based on the results of \cref{sec:qualitative}), we found 50,513 MIDI files which had at least one match in the MSD, and a total of 138,026 MIDI-to-MSD pairings.
+Many MIDI files were matched to multiple MSD entries due to duplicates, covers, and alternate versions; for example, one MIDI transcription of ``Imagine'' by John Lennon was matched to six original renditions, ten covers, one hip-hop song which sampled it (``Image'' by Nas), and one song which used an identical chord progression (``Bringin' Down Dinner'' by Neil Young).
+On the other hand, many MSD entries were matched to multiple MIDI files; the most commonly-matched MSD entry was xxx which xxx MIDI files matched to.
+
+% TODO: Note about decoys?
+
+Of course, the main purpose of creating this dataset is to facilitate MIR research by sharing it.
+Following the example of the Million Song Dataset, we name this collection the ``lakh MIDI dataset'' (LMD), because depending on how you count we are providing about 100,000 MIDI files.
+Towards this end, we make it available in the following formats:
+First, the entire collection of 178,561 unique MIDI files, unmodified, along with all potential metadata available from their filenames (referred to as ``LMD-full'').
+Second, a mapping between each of these MIDI files to MSD entries they were successfully matched to, along with the resulting DTW confidence score (referred to as ``LMD-matched'').
+Third, for each successful MIDI-MSD pair, a pre-aligned MIDI file utilizing our ``gold standard'' system from \cref{sec:goldstandard} (referred to as ``LMD-aligned'').
+By distributing it in these varying levels of granularity, we also allow future researchers to improve upon our matching and alignment processes.
 
 \section{Deriving Ground-Truth Information}
 \label{sec:deriving}
@@ -92,6 +120,7 @@ Musical language model.
 \label{sec:reliability}
 
 In order to utilize many of these sources of information, we need to align, using the system of 3dtw.
+Also good to evaluate how reliable the confidence score.
 How accurate is the result?
 Test beats and key
 
