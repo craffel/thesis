@@ -107,6 +107,8 @@ First, the entire collection of 178,561 unique MIDI files, unmodified, along wit
 Second, a mapping between each of these MIDI files to MSD entries they were successfully matched to, along with the resulting DTW confidence score (referred to as ``LMD-matched'').
 Third, for each successful MIDI-MSD pair, a pre-aligned MIDI file utilizing our ``gold standard'' system from \cref{sec:goldstandard} (referred to as ``LMD-aligned'').
 By distributing it in these varying levels of granularity, we also allow future researchers to improve upon our matching and alignment processes.
+In addition, we note that should a new collection of MIDI files become available, our process could easily be re-run and the resulting datasets expanded.
+Alternatively, we could also easily leverage other digital score formats for which many transcriptions are available such as MusicXML \cite{good2001musicxml} or GuitarPro.\footnote{\url{http://www.guitar-pro.com}}
 
 \section{Deriving Ground-Truth Information}
 \label{sec:deriving}
@@ -211,7 +213,7 @@ If MIDI-derived beat annotations are to be taken as ground truth, they must achi
 \begin{figure}
     \centering
     \includegraphics[width=\textwidth]{figures/7-beat_scores.pdf}
-    \caption{Beat evaluation metric scores (compared to Isophonics beat annotations) and alignment confidence scores achieved by different audio-to-MIDI alignments of Beatles MIDI files, with each shown as a blue dot.
+    \caption[Beat evaluation and alignment confidence scores]{Beat evaluation metric scores (compared to Isophonics beat annotations) and alignment confidence scores achieved by different audio-to-MIDI alignments of Beatles MIDI files, with each shown as a blue dot.
 Mean scores for each metric achieved by the \texttt{DBNBeatTracker} \cite{bock2014multi} are shown as dashed lines.}
     \label{fig:beat}
 \end{figure}
@@ -244,9 +246,24 @@ We hope that the release of the Lakh MIDI Dataset prompts further research into 
 \section{Ideas and Improvements}
 \label{sec:ideas}
 
-Try improving DTW by using the same representation learning approach.
-Try learning DTW end-to-end.
-Better recurrent network learning for embedding.
-Hierarchy of approaches.
-Applying to other areas: Cover song ID.  Speaker ID.  Plagiarism detection.
-Other sources of data: MusicXML, Guitar Pro.
+Beyond the potential uses for our new dataset outlined above, we also are interested in extending the techniques and applications we proposed in this thesis.
+We are most interested in fusing the different approaches we explored.
+For example, we believe a representation learning approach like the one used in \cref{ch:dhs} could make DTW more effective in the final audio-to-MIDI alignment step.
+This is prompted by our observation in \cref{sec:discussion} that the best representation for alignment is not necessarily the best for confidence reporting.
+The success of representation learning in \cref{ch:dhs} in creating a more efficient and similarity-preserving representation for DTW suggests this approach may also be beneficial in the final high-precision alignment.
+
+An issue with the training process utilized in \cref{ch:dhs} is that it requires training data in the form of pre-aligned sequences.
+More broadly, this method of training does not optimize DTW performance directly, but instead optimizes the representation without considering the effect on the DTW alignment or distance.
+A more principled approach, then, would be to learn both the representation and the alignment procedure together as part of a larger system.
+Recently, a variety of approaches have been proposed to learn alignment as part of either the model's loss function (e.g.\ the Connectionist Temporal Classification loss \cite{graves2006connectionist}) or model architecture (e.g.\ attention models \cite{bahdanau2014neural} or pointer networks \cite{vinyals2015pointer}).
+We are interested in applying these methods to jointly learning a representation and a procedure for alignment.
+
+In this thesis we developed a cascade of methods of varying precision and efficiency for large-scale sequence similarity searches.
+Each step was developed independently, which may be suboptimal.
+A better approach may be to simultaneously learn more and more efficient representations by repeatedly downsampling to coarser timescales, as is done in FastDTW \cite{salvador2007toward}.
+However, rather than downsampling by simply computing the average of non-overlapping groups of subsequent feature elements as in \cite{salvador2007toward}, we could utilize the same learning procedure of \cref{ch:dhs} to produce efficient data-driven approximations at each timescale.
+We expect that this hierarchical approach would allow for even more efficient pruning.
+
+Finally, we are interested in testing these techniques in domains outside of music.
+We suspect they will be beneficial in large-scale sequence comparison problems where sequences are oversampled, consist of high-dimensional feature vectors, and/or have elements which are not directly comparable by Euclidean distance.
+We hope the results and methods proposed in this thesis prompt novel research into learning-based methods for efficiently and effectively comparing sequences.
