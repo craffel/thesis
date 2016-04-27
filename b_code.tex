@@ -42,7 +42,7 @@ To facilitate its usage in contexts outside of the experiments in this thesis, t
 \item[\texttt{utils.py}] Tools for iterating over sequential data and constructing ``dissimilar'' pairs by randomly swapping matching pairs.
 \end{description}
 This library makes use of \texttt{theano} \cite{bergstra2010theano,bastien2012theano} and \texttt{lasagne} \cite{dieleman2015lasagne} to construct the loss function, automatically compute its derivative, and optimize the networks' parameters with respect to it.
-It also utilizes \texttt{numba}\footnote{\url{http://numba.pydata.org}} to rapidly compute the DTW distance and \texttt{cython}\footnote{\url{http://cython.org/}} to access the SSE 4.2 POPCNT instruction directly from Python code.
+It also utilizes \texttt{numba}\footnote{\url{http://numba.pydata.org}} to rapidly compute the DTW distance and \texttt{cython}\footnote{\url{http://cython.org}} to access the SSE 4.2 POPCNT instruction directly from Python code.
 While thus far this library has only been used for the experiments in this thesis, we hope it will be facilitate research into other problem settings.
 
 \subsection{\texttt{pse}}
@@ -107,7 +107,7 @@ Some of the implemented functions include:
 \end{description}
 
 In \prettymidi{}, MIDI data can be synthesized as audio using either the \texttt{synthesize} or \texttt{fluidsynth} methods.
-\texttt{synthesize} uses a periodic function (e.g. sin) to synthesize the each note, while \texttt{fluidsynth} utilizes the \texttt{fluidsynth} program\footnote{\url{www.fluidsynth.org}} which performs General MIDI synthesis using a SoundFont file.
+\texttt{synthesize} uses a periodic function (e.g. sin) to synthesize the each note, while \texttt{fluidsynth} utilizes the \texttt{fluidsynth} program\footnote{\url{http://www.fluidsynth.org}} which performs General MIDI synthesis using a SoundFont file.
 Both methods return arrays of audio samples at some specified sampling rate.
 
 \prettymidi{} also has utility functions for converting between representations of MIDI notes (name, note number, frequency in Hz, and drum name for percussion instruments), program number and instrument name/class (according to the General MIDI standard) and pitch bend value and semitones.
