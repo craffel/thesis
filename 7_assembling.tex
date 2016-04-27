@@ -63,7 +63,9 @@ For comparison, we also plot the curves obtained using the approaches of \cref{c
 Using the combined method, the correct match in the MSD had the highest confidence score 78.2\% of the time, and for 94.6\% of the test set the correct match ranked in the top 5.
 Beyond this point, the performance is effectively constant - this is because for 94.7\% of the test set, the pruning steps discarded the correct match.
 This is within our expected upper limit for the false reject rate of xxx\%.
-That our high-precision approach only ranked the correct match first 78.2\% of the time is also expected, due to the fact that the MSD contains many duplicates and alternate versions of the songs \cite{bertin2012large}.
+That our high-precision approach only ranked the correct match first 78.2\% of the time is also expected because the MSD contains many duplicates and alternate versions of songs \cite{bertin2012large}.
+It's also important to note that these figures do not necessarily reflect real-world performance because, due to the way it was constructed, our test set consists only of ground-truth matches which could successfully be recovered by our DTW-based system of \cref{sec:goldstandard}.
+Nevertheless, it does demonstrate the extent to which our combination of pruning approaches causes false rejects.
 
 Of course, our approach's precision is only beneficial if it is also efficient.
 On average, matching a MIDI file to the MSD using this cascade of techniques takes xxx.
@@ -108,29 +110,135 @@ By distributing it in these varying levels of granularity, we also allow future 
 \section{Deriving Ground-Truth Information}
 \label{sec:deriving}
 
-Obvious: Train content-based MIR systems on derived ground-truth information.
-We also have a very large of richly annotated MIDI files.
-We can do things like look at transcription statistics for different genres; basically improve on the Serra paper.
-We can also query by riff more accurately.
-Use multiple MIDI transcriptions as different ground truth data views.
-Learn to invert MIDI piano rolls.
-Musical language model.
+Prompted by the availability of this new dataset, in this section we will investigate its applicability to different tasks.
+On its own, the ``full'' dataset itself is most applicable to corpus studies of music structure and patterns which are ``metadata-agnostic''.
+For example, \cite{mauch2012corpus} analyzed a smaller corpus of MIDI files to determine common drum patterns.
+Similar analyses could be performed on other aspects of the transcriptions, such as common chord progressions and melodic patterns.
+While LMD-full cannot be used on its own to obtain ground truth for audio content-based MIR tasks, MIDI files themselves provide a useful mechanism of obtaining synthetic data, as demonstrated in \cref{ch:dtw} and utilized for onset detection in \cite{bello2005tutorial}.
+In addition, there are ways in which non-matched, non-aligned transcriptions can be used to benefit content-based MIR tasks.
+For example, in automatic transcription systems it is common to smooth predictions with a ``musical language model'' which can predict the probability of a given candidate transcription \cite{poliner2007discriminative,sigtia2015end}.
+Such language models only require a large amount of transcriptions, not transcriptions matched to corresponding audio recordings.
+Of course, there is no guarantee that all of the MIDI files in LMD-full are actually full transcriptions because MIDI files are also sometimes used to store short snippets of music or even example riffs and drum beats for composition.
+
+In contrast, we can say with high confidence that files in LMD-matched are transcriptions of songs.
+This greatly augments the information available for those MSD entries which have been matched to transcriptions.
+For example, in the past large-scale musicological studies have been undertaken using estimated pitch features \cite{serra2012measuring,bertin2010clustering}.
+These results are potentially confounded by the fact that these features only represent a high-level, noisy, and potentially error-prone approximation of the actual transcription.
+We expect that similar corpus studies utilizing the matched transcriptions will produce more reliable results.
+The transcriptions can also provide a stronger signal for query-by-humming retrieval systems.
+On the other hand, by being matched to the MSD, the MIDI files themselves are augmented with a great deal of additional metadata, including the song's release year, lyrics, user listening preferencs \cite{jansson2015this}, and human-annotated tags and genre labels \cite{schreiber2015improving}.
+
+Finally, based on the discussion in \cref{sec:information}, the LMD-aligned dataset can potentially be used to produce ground-truth annotations for audio content-based MIR.
+For example, beat annotations for a given 7digital preview recording could be obtained by utilizing the time signature and tempo change events in the corresponding aligned MIDI file.
+However, the validity of a given annotation will depend on both the transcription quality as well as the success of the alignment process.
+Ideally, our alignment confidence score will reflect whether or not a given annotation is to be trusted.
+To investigate further, we now focus on measuring the reliability of ground-truth data extracted from aligned MIDI transcriptions.
 
 \subsection{Comparison to Hand-Annotated Data}
 \label{sec:reliability}
 
-In order to utilize many of these sources of information, we need to align, using the system of 3dtw.
-Also good to evaluate how reliable the confidence score.
-How accurate is the result?
-Test beats and key
+A straightforward way to evaluate the quality of MIDI-derived annotations is to compare them with hand-made annotations for the same songs.
+Given a MIDI transcription and human-generated ground truth data, we can extract corresponding information from the MIDI file and compare using the evaluation metrics employed in the Music Information Retrieval Evaluation eXchange (MIREX) \cite{downie2008music}.
+We therefore leveraged the Isophonics Beatles annotations \cite{mauch2009omras2} as a source of ground truth to compare against MIDI-derived information.  MIDI transcriptions of these songs are readily available due to The Beatles' popularity.
 
-\subsubsection{Key Experiment}
+Our choice in tasks depends on the overlap in sources of information in the Isophonics annotations and MIDI files.
+Isophonics includes beat times, song-level key information, chord changes, and structural segmentation.
+As noted in Section \ref{sec:information}, beat times and key changes may be included in MIDI files but there is no standard way to include chord change or structural segmentation information.
+We therefore performed experiments to evaluate the quality of key labels and beat times available in MIDI files.
+Fortuitously, these two experiments give us an insight into both song-level timing-agnostic information (key) and alignment-dependent timing-critical information (beat).
+To carry out these experiments, we first manually identified 545 MIDI files from LMD-full\footnote{The Million Song Dataset does not contain any Beatles songs, so we were unable to source these files from LMD-matched or LMD-aligned.} which had filenames indicating that they were transcriptions of one of the 179 songs in the Isophonics Beatles collection; we found MIDI transcriptions for all but 11.
+The median number of MIDI transcriptions per song was 2; the song ``Eleanor Rigby'' had the most, with 14 unique transcriptions.
 
-\subsubsection{Beat Experiment}
+\subsection{Key Experiment}
 
-\subsubsection{Improving Alignment as a Proxy for Content-Based MIR}
+In our first experiment, we evaluated the reliability of key change events in MIDI files.
+We followed the MIREX methodology for comparing keys \cite{ehmann2016mirex}, which proceeds as follows:
+Each song may only have a single key.
+All keys must be either major or minor, e.g.\ ``C\# Major'' and ``E minor'' are allowed but ``D Mixolydian'' is not.
+An estimated key is given a score of 1.0 when it exactly matches a ground truth key, 0.5 when it is a perfect fifth above the ground truth key, 0.3 when it is a relative major or minor, 0.2 when it is a parallel major or minor, and 0.0 otherwise.
+We utilized the evaluation library \texttt{mir\char`_eval} \cite{raffel2014mir_eval} to compute this score.
 
-Ground truth is already valuable; we can make it more reliable by making alignment better.
+The Isophonics annotations mostly follow this format, except that 21 songs contained multiple key annotations and 7 others contained non-major/minor keys.
+To simplify evaluation, we discarded these songs, leaving 151 ground truth key annotations.
+Of our 545 Beatles MIDIs, 221 had no key change event and 5 had more than one, which we also omitted from evaluation.
+This left 223 MIDI files for which we extracted key annotations and compared them to valid Isophonics annotations.
+Because of the preponderance of C major key change events noted in Section \ref{sec:key}, we also evaluated MIDI-derived C Major and non-C major instances separately to see whether they were less reliable.
+
+As a baseline, we also extracted keys using the QM Vamp Key Detector plugin \cite{cannam2015mirex} whose underlying algorithm is based on \cite{noland2007signal} which finds the key profile best correlated with the chromagram of a given song.
+This plugin achieved the highest score in MIREX 2013, and has been the only key detection algorithm submitted in 2014 and 2015.
+This gives us a reasonable expectation for a good audio content-based key estimator; to determine the extent to which human annotators agree on ground truth key labels, we also collected key labels for Beatles' songs from \texttt{whatkeyisitin.com}.
+As with the Isophonics key annotations, some songs had multiple and/or modal key labels; we discarded these and ended up with 145 labels for songs in the Isophonics dataset.
+
+\begin{table}
+\begin{center}
+\begin{tabular}{lrr}
+  \toprule
+  Source                     & Score & Comparisons \\
+  \midrule
+  MIDI, all keys             & 0.400 &         223 \\
+  MIDI, C major only         & 0.167 &         146 \\
+  MIDI, non-C major          & 0.842 &          77 \\
+  QM Key Detector            & 0.687 &         151 \\
+  \texttt{whatkeyisitin.com} & 0.857 &         145 \\
+  \bottomrule
+\end{tabular}
+\end{center}
+  \caption{Mean scores achieved, and the number of comparisons made, by different datasets compared to Isophonics Beatles key annotations.}
+  \label{tab:key}
+\end{table}
+
+The mean scores resulting from comparing each dataset to the Isophonics annotations can be seen in Table \ref{tab:key}.
+At first glance, the mean score of $0.4$ achieved by MIDI key change messages is discouraging.
+However, by omitting all MIDI files with C major key events (which achieved a mean score of $0.167$), the mean score jumps to $0.842$.
+This is comparable to the human baseline, and is substantially higher than the algorithmically estimated score.
+We therefore propose that \textit{non-C major} MIDI key change events are as reliable as hand-annotated labels, but that C major key annotations in MIDI files are effectively useless.
+
+\subsection{Beat Experiment}
+
+Utilizing many of the sources of information in MIDI files in audio content-based MIR tasks depends on the precise alignment of a given MIDI file to an audio recording of a performance of the same song.
+We therefore performed an additional experiment to evaluate the quality of MIDI-derived beat annotations, which are evaluated on the scale of tens of milliseconds.
+Producing valid beat annotations from a MIDI file requires not only that the file's timing information is correct, but also that it has been aligned with high precision.
+To align our Beatles MIDI files to corresponding audio recordings, we used the scheme from \cref{sec:goldstandard} exactly, except that we computed spectrograms with a hop size of 23 milliseconds rather than 46 milliseconds.
+This finer timescale is more appropriate for the beat evaluation metrics we will use, which have tolerances measured in tens of milliseconds.
+
+We used \prettymidi{}'s \texttt{get\char`_beats} method to extract beat times from our 545 Beatles MIDI files, and adjusted each beat's timing according to the MIDI file's alignment to corresponding audio recordings.
+For evaluation, we used the {\em F-measure}, {\em Any Metric Level Total}, and {\em Information Gain} metrics described in \cite{davies2009evaluation}, as implemented in \texttt{mir\char`_eval}.
+As a baseline, we also computed beat locations using the \texttt{DBNBeatTracker} from the \texttt{madmom} software library,\footnote{\texttt{https://github.com/CPJKU/madmom}} which is based on the algorithm from \cite{bock2014multi}.
+This represents a state-of-the-art general-purpose beat tracker which, on the Beatles data, can reliably produce high-quality annotations.
+If MIDI-derived beat annotations are to be taken as ground truth, they must achieve scores similar to or higher than the \texttt{DBNBeatTracker}.
+
+\begin{figure}
+    \centering
+    \includegraphics[width=\textwidth]{figures/7-beat_scores.pdf}
+    \caption{Beat evaluation metric scores (compared to Isophonics beat annotations) and alignment confidence scores achieved by different audio-to-MIDI alignments of Beatles MIDI files, with each shown as a blue dot.
+Mean scores for each metric achieved by the \texttt{DBNBeatTracker} \cite{bock2014multi} are shown as dashed lines.}
+    \label{fig:beat}
+\end{figure}
+
+We visualize the resulting scores in Figure \ref{fig:beat}.
+Because we don't expect beats to be extracted accurately from MIDI files that are poor transcriptions or when alignment failed, we plotted each MIDI file as a single point whose x coordinate corresponds to the MIDI alignment confidence score and whose y coordinate is the resulting evaluation metric score achieved.
+Ideally, all points in these plots would be clustered in the bottom left (corresponding to failed alignments with low confidence scores) or top right (corresponding to a successful alignment and beat annotation extraction with a high confidence score).
+For reference, we plot the mean score achieved by the \texttt{DBNBeatTracker} as dotted lines for each metric.
+From these plots, we can see that in many cases, MIDI-derived annotations achieve near-perfect scores, particularly for the {\em F-Measure} and {\em Any Metric Level Total} metrics.
+However, there is no reliable correspondence between high confidence scores and high evaluation metric scores.
+For example, while it appears that a prerequisite for an accurate MIDI-derived beat annotation is a confidence score above $.5$, there are many MIDI files which had high confidence scores but low metric scores (appearing in the bottom-right corner of the plots in Figure \ref{fig:beat}).
+
+We found that this undesirable behavior was primarily caused by a few issues:
+First, it is common that the alignment system would produce alignments which were slightly ``sloppy'', i.e.\ were off by one or two frames (corresponding to 23 milliseconds each) in places.
+This had less of an effect on the {\em F-measure} and {\em Any Metric Level Total} metrics, which are invariant to small temporal errors up to a certain threshold, but deflated the {\em Information Gain} scores because this metric rewards consistency even for fine-timing errors.
+Second, many MIDI files had tempos which were at a different metric level than the annotations (e.g.\ double, half, or a third of the tempo).
+This affected the {\em Any Metric Level Total} scores the least because it is invariant to these issues, except for the handful of files which were transcribed at a third of the tempo.
+Finally, we found that the confidence score produced by the alignment system is most reliable at producing a low score in the event of a total failure (indicated by points in the bottom left of the plots in Figure \ref{fig:beat}), but was otherwise insensitive to the more minor issues that can cause beat evaluation metrics to produce low scores.
+
+\subsection{Motivating Future Work}
+
+These results suggest that while MIDI files have the potential to be valuable sources of ground truth information, their usage may come with a variety of caveats.
+While in many cases (discussed above in \cref{sec:deriving}) MIDI files are useful on their own, we believe that developing better methods to leverage all of the information present in them is a tantalizing avenue for obtaining reliable ground truth data for music information retrieval.
+For example, while C-major key annotations cannot be trusted, developing a highly reliable C-major vs. non-C-major classification algorithm for symbolic data (which would ostensibly be much more tractable than creating a perfect general-purpose audio content-based key estimation algorithm) would enable the reliable usage of all key change messages in MIDI files.
+Further work into robust audio-to-MIDI alignment is also warranted in order to leverage timing-critical information, as is the neglected problem of alignment confidence score reporting.
+Novel questions such as determining which MIDI instrument corresponds to the vocal or melody instrument in a given transcription, or determining whether all instruments have been transcribed, would also facilitate the use of MIDI files as ground truth transcriptions.
+Fortunately, all of these tasks are made easier by the fact that MIDI files are specified in a format from which it is straightforward to extract pitch information.
+We hope that the release of the Lakh MIDI Dataset prompts further research into these problems, so that all of the information sources in MIDI files may be fully utilized.
 
 \section{Ideas and Improvements}
 \label{sec:ideas}
@@ -140,3 +248,4 @@ Try learning DTW end-to-end.
 Better recurrent network learning for embedding.
 Hierarchy of approaches.
 Applying to other areas: Cover song ID.  Speaker ID.  Plagiarism detection.
+Other sources of data: MusicXML, Guitar Pro.
