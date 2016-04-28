@@ -164,8 +164,8 @@ The network first processed the input with a convolutional and pooling layer, fo
 
 To choose hyperparameter settings, we once again used the Bayesian optimization framework proposed in \cite{snoek2012practical}.
 We optimized the learning rate and RMSProp decay parameter, and the loss parameters $\alpha$ and $m$.
-As an objective, we computed the Bhattacharrya coefficient \cite{bhattacharyya1943measure} between the distributions of embedded distances between matching and non-matching pairs in the validation set.
-The best-performing network configuration achieved a Bhattacharrya coefficient of $0.393$ and used a learning rate of $5\cdot10^{-6}$, an RMSProp decay of $0.999$, $\alpha = 3.342$ and $m = 1.055$.
+As an objective, we computed the Bhattacharyya coefficient \cite{bhattacharyya1943measure} between the distributions of embedded distances between matching and non-matching pairs in the validation set.
+The best-performing network configuration achieved a Bhattacharyya coefficient of $0.393$ and used a learning rate of $5\cdot10^{-6}$, an RMSProp decay of $0.999$, $\alpha = 3.342$ and $m = 1.055$.
 
 Before arriving at this system design, we also tried:
 \begin{itemize}

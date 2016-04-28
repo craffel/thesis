@@ -176,7 +176,7 @@ If the validation loss was less than $99\%$ of the previous lowest, we trained f
 
 While the loss computed over the validation set is a reasonable indicator of network performance, its scale will vary depending on the $\alpha$ and $m$ regularization hyperparameters.
 To obtain a more consistent metric, we also computed the distribution of distances between the hash vectors produced by the network for the pairs in $\mathcal{P}$ and those in $\mathcal{N}$.
-We then used the Bhattacharya distance \cite{bhattacharyya1943measure} to compute the separation of these distributions to obtain a more direct measure of network performance.
+We then used the Bhattacharyya coefficient \cite{bhattacharyya1943measure} to compute the separation of these distributions to obtain a more direct measure of network performance.
 
 In each modality, the hashing networks have the same architecture: A series of alternating convolutional and pooling layers followed by a series of fully-connected layers.
 While the exact specification of this architecture will effect performance, the most impactful design choice for our problem setting is the extent to which the temporal axis is downsampled by pooling layers.
@@ -208,9 +208,9 @@ To control the amount of regularization, we multiplied this $L^2$ penalty by a s
 
 To ensure good performance, we optimized all model hyperparameters using the Bayesian optimization framework proposed in \cite{snoek2012practical}.
 We optimized over the convolutional/pooling layer architecture, the RMSProp learning rate and decay parameters, and the $\alpha$, $\beta$ and $m$ regularization parameters of the loss function and the output $L^2$ penalty.
-As a hyperparameter optimization objective, we used the Bhattacharyya distance as described above.
+As a hyperparameter optimization objective, we used the Bhattacharyya coefficient as described above.
 The best performing network had the structure we described above, a learning rate of $0.001$ with an RMSProp decay parameter of $0.67$, $\alpha = 4.76$, and $m = 3$, and $\beta = 0.01$.
-This hyperparameter configuration achieved a Bhattacharyya separation of $0.359$.
+This hyperparameter configuration achieved a Bhattacharyya coefficient of $0.359$.
 
 Beyond those described above, we also experimented with a number of other regularizers, model architectures, and optimization schemes.
 For posterity, we report those here:
@@ -239,7 +239,7 @@ For ease of comparison, we utilized the exact same system as outlined in \cref{s
 Specifically, after matching and aligning entries from the clean MIDI subset, we computed piano roll matrices using the \texttt{get\char`_piano\char`_roll} method of the \texttt{pretty\char`_midi} library \cite{raffel2014pretty_midi}.
 As with the constant-Q spectrograms, we also $L^2$ normalized each feature vector in the piano roll matrices and standardized the feature dimensions using statistics from the training set.
 We then carried out a separate hyperparameter optimization, because we don't necessarily expect the same system design to perform best using both feature representations.
-The best performance was attained with a learning rate of $0.00011$, an RMSProp decay parameter of $0.90$, $\alpha = 5.72$, and $m = 5$, and $\beta = 0.036$, producing a Bhattacharyya distance of $0.428$.
+The best performance was attained with a learning rate of $0.00011$, an RMSProp decay parameter of $0.90$, $\alpha = 5.72$, and $m = 5$, and $\beta = 0.036$, producing a Bhattacharyya coefficient of $0.428$.
 
 \subsection{Baseline}
 \label{sec:baseline}
