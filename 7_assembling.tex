@@ -26,8 +26,8 @@ Before proceeding, we must first decide the pruning thresholds $N_{PSE}$ and $N_
 Choosing these thresholds directly trades off precision and computation, because setting larger thresholds will decrease the likelihood of discarding a valid match but will result in more comparisons being made downstream.
 Based on the results of \cref{sec:ranking,sec:pse_results}, we chose $N_{PSE} = 100,000$ and $N_{DHS} = 250$.
 This corresponds to pruning 90\% of the MSD in the first step, then pruning 99.75\% of the remaining entries, so that in the end the expensive DTW comparison is only performed on 0.025\% of the MSD.
-According to our test-set results, this results in a false-reject rate of approximately 3.5\% for the embedded distance pruning and xxx\% for the downsampled hash sequences.
-Assuming false rejects occur in each step independently, we can expect a combined false reject rate of up to xxx\%.
+According to our test-set results, this results in a false-reject rate of approximately 3.5\% for the embedded distance pruning and 3.2\% for the downsampled hash sequences.
+If false rejects occur in each step independently, we can expect a combined false reject rate of up to 6.6\%.
 
 \subsection{Shortcuts}
 
@@ -63,7 +63,7 @@ The proportion of pairs for which the correct entry matched above a given rank t
 For comparison, we also plot the curves obtained using the approaches of \cref{ch:dhs,ch:pse}.
 Using the combined method, the correct match in the MSD had the highest confidence score 78.2\% of the time, and for 94.6\% of the test set the correct match ranked in the top 5.
 Beyond this point, the performance is effectively constant - this is because for 94.7\% of the test set, the pruning steps discarded the correct match.
-This is within our expected upper limit for the false reject rate of xxx\%.
+This is within our expected upper limit for the false reject rate of 6.6\%.
 That our high-precision approach only ranked the correct match first 78.2\% of the time is also expected because the MSD contains many duplicates and alternate versions of songs \cite{bertin2012large}.
 It's also important to note that these figures do not necessarily reflect real-world performance because, due to the way it was constructed, our test set consists only of ground-truth matches which could successfully be recovered by our DTW-based system of \cref{sec:goldstandard}.
 Nevertheless, it does demonstrate the extent to which our combination of pruning approaches causes false rejects.

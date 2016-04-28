@@ -209,8 +209,8 @@ To control the amount of regularization, we multiplied this $L^2$ penalty by a s
 To ensure good performance, we optimized all model hyperparameters using the Bayesian optimization framework proposed in \cite{snoek2012practical}.
 We optimized over the convolutional/pooling layer architecture, the RMSProp learning rate and decay parameters, and the $\alpha$, $\beta$ and $m$ regularization parameters of the loss function and the output $L^2$ penalty.
 As a hyperparameter optimization objective, we used the Bhattacharyya coefficient as described above.
-The best performing network had the structure we described above, a learning rate of $0.001$ with an RMSProp decay parameter of $0.67$, $\alpha = 4.76$, and $m = 3$, and $\beta = 0.01$.
-This hyperparameter configuration achieved a Bhattacharyya coefficient of $0.359$.
+The best performing network had the structure we described above, a learning rate of $10^{-5}$ with an RMSProp decay parameter of $0.26$, $\alpha = 5.33$, $m = 4$, and $\beta = 0.05$.
+This hyperparameter configuration achieved a Bhattacharyya coefficient of $0.385$.
 
 Beyond those described above, we also experimented with a number of other regularizers, model architectures, and optimization schemes.
 For posterity, we report those here:
@@ -341,7 +341,7 @@ To evaluate our system using the known MIDI-audio pairs of our test set, we rank
 Because some MIDI files were matched to multiple MSD entries due to duplicates in the MSD, we made the forgiving choice of utilizing the best rank among all correct matches for a given MIDI file.
 We also ignored all resulting hash sequences with less than 30 sequence elements; these generally corresponded to corrupt MP3 files and occasionally confounded the results.
 The mean reciprocal rank (MRR) across the test set for the three methods we evaluated is shown in the first row of \cref{tab:ranking_metrics}.
-This metric makes it clear that our learning-based system outperforms our baseline, producing a MRR of $0.722$ compared to $0.270$.
+This metric makes it clear that our learning-based system outperforms our baseline, producing a MRR of $0.704$ compared to $0.270$.
 We also observe a modest, but significant, drop in performance to an MRR of $0.580$ when using piano rolls instead of constant-Q spectrograms of MIDI syntheses.
 
 \begin{table}
@@ -350,8 +350,8 @@ We also observe a modest, but significant, drop in performance to an MRR of $0.5
       \toprule
       Metric & \textbf{DHS, CQT} & \textbf{DHS, Piano roll} & \textbf{TPAA} \\
       \midrule
-      Mean Reciprocal Rank & 0.722 & 0.580 & 0.270 \\
-      95\% Rank Threshold & 167 & 518 & 25,944 \\
+      Mean Reciprocal Rank & 0.704 & 0.580 & 0.270 \\
+      95\% Rank Threshold & 98 & 518 & 25,944 \\
       \bottomrule
     \end{tabular}
   \end{center}
@@ -372,7 +372,7 @@ From a high level, then, we can see that our proposed method substantially outpe
   \label{fig:ranks}
 \end{figure}
 
-Nevertheless, using our learning-based approach for creating downsampled hash sequences resulted in only about 64\% of the matches in our test set having the smallest DTW distance (i.e.\ having rank 1).
+Nevertheless, using our learning-based approach for creating downsampled hash sequences resulted in only about 59.2\% of the matches in our test set having the smallest DTW distance (i.e.\ having rank 1).
 This implies that we can't rely on the correct entry appearing as the top match among all the MSD tracks in practice.
 Some degree of inaccuracy can be attributed to the fact that our hashing model is not perfect (as shown in \cref{fig:distributions}) and that the MSD is very large, containing many possible decoys.
 In a relatively small proportion of cases, the MIDI hash sequence ended up being very similar to many MSD hash sequences, pushing down the rank of the correct entry.
@@ -381,7 +381,7 @@ Given that we cannot reliably assume the top hit is the correct MSD entry, it is
 We therefore propose that a useful metric is to find the rank threshold below which we can be highly confident that the correct match appears, which we report for our different methods in the second row of \cref{tab:ranking_metrics}.
 Specifically, we computed the threshold $N$ at which 95\% of the correct matches in the test set had a rank better than $N$.
 Given this high-confidence rank threshold $N$, we can compute the hash sequence DTW distance between a query MIDI and all MSD entries, discard all entries in the MSD except those with the $N$-smallest distances, and then perform the more precise and more expensive method of \cref{ch:dtw} to find the best match in the remaining candidates.
-Inspecting the resulting values of $N$ for the methods we evaluated, we see that we can discard the vast majority (all but 167 entries, or over 99.98\%) of the MSD with high confidence using the CQT hashing technique of \cref{sec:hashing_system}.
+Inspecting the resulting values of $N$ for the methods we evaluated, we see that we can discard the vast majority (all but 98 entries, or over 99.99\%) of the MSD with high confidence using the CQT hashing technique of \cref{sec:hashing_system}.
 Once again, utilizing piano roll matrices incurs a modest decrease in precision, and the baseline TPAA method has substantially worse performance.
 
 \section{Discussion}
