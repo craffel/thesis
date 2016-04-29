@@ -263,7 +263,6 @@ where $X_1, \ldots, X_{|\mathcal{S}|} \in \mathcal{S}$ is the training set of se
 After thresholding our constant-Q spectrograms, this resulted in binary vectors in $\mathbb{H}^{48}$.
 For more direct comparison, and to enable the use of exclusive-or and POPCNT to measure Hamming distance, we simply discarded the bottom and top eight entries in each of the resulting binary vectors so that they instead were embedded in $\mathbb{H}^{32}$.
 Intuitively, the resulting downsampled hash sequences represent whether a given semitone had more or less energy than average over subsequent blocks of 8 frames (corresponding to 371.5 milliseconds).
-We will refer to this approach as ``thresholded piecewise aggregate approximation'' (TPAA).
 
 \subsection{Matching MIDI Files to the MSD}
 \label{sec:matching_process}
@@ -272,6 +271,7 @@ After training our hashing system as described above, the process of evaluating 
 First, we precompute downsampled hash sequences for every 7digital preview clip and every MIDI file in the test and development sets for which we know a priori the correct match(es) in the MSD.
 Then, we compute the DTW distance as described in \cref{sec:dtw} between every audio and MIDI hash sequence, except that the Euclidean distance of \cref{eq:dtw_objective} is replaced with Hamming distance.
 Ideally, for a given MIDI file the correct match in the MSD will have the smallest DTW distance.
+For brevity, we will refer to the CQT-to-CQT hashing model of \cref{sec:hashing_system} as ``DHS'' (for \textbf{d}ownsampled \textbf{h}ash \textbf{s}equence), the piano roll-to-CQT model of \cref{sec:multimodal} as ``DHS-piano'', and the baseline system of \cref{sec:baseline} as ``TPAA'' (for \textbf{t}hresholded \textbf{p}iecewise \textbf{a}ggregate \textbf{a}pproximation).
 
 We tuned the parameters of the DTW cost calculation to optimize results over our ``development'' set of successfully aligned MIDI/MSD pairs.
 We found it beneficial to use a smaller value of $g = 0.9$.
@@ -286,7 +286,7 @@ Similarly, we found that normalizing by the average distance value as defined in
 \begin{figure}
   \includegraphics[width=\textwidth]{figures/5-cqts_and_dhs.pdf}
   \caption[Spectrograms and downsampled hash sequences for a matching pair]{Example constant-Q spectrograms (top) and downsampled hash sequences (bottom) for a matched MSD entry (left) and MIDI transcription (right) of the song ``I Wanna Be Your Lover'' by Prince, which appeared in our development set.
-The downsampled hash sequences were created using the trained model described in \cref{sec:hashing_system}.
+The downsampled hash sequences were created using the trained ``DHS'' model described in \cref{sec:hashing_system}.
 As utilized in our experiments, the constant-Q spectrograms are log-magnitude and $L^2$-normalized.
 For the spectrograms, the feature dimension corresponds to semitones; for the hash sequence, the Hamming space dimensions have no explicit meaning.
 The spectrogram utilizes a timebase of 46.4 milliseconds per sequence step, which the hash sequence downsamples by a factor of 8 to 371.5 milliseconds.}
@@ -306,9 +306,9 @@ At the bottom is the baseline TPAA distance matrix, which has less obvious struc
   \includegraphics[width=\textwidth]{figures/5-distance_matrices.pdf}
   \caption[Distance matrices utilizing different representations]{Distance matrices and DTW alignment paths (shown as dashed white lines) between the MSD entry and MIDI transcription shown in \cref{fig:cqts_and_dhs} utilizing different representations.
 At the top is the standard synthesized MIDI CQT-to-audio CQT distance matrix, as utilized in \cref{ch:dtw}.
-The second row shows the distance matrix for the downsampled hash sequences shown at the bottom of \cref{fig:cqts_and_dhs}.
-Below that is the distance matrix for hash sequences created utilizing the multimodal system described in \cref{sec:multimodal}.
-Finally, the bottom distance matrix was computed using the TPAA method defined in \cref{sec:baseline}.}
+The second row shows the distance matrix for the downsampled hash sequences shown at the bottom of \cref{fig:cqts_and_dhs}, produced by the DHS system.
+Below that is the distance matrix for hash sequences created utilizing DHS-piano system.
+Finally, the bottom distance matrix was computed using the TPAA method.}
   \label{fig:distance_matrices}
 \end{figure}
 
@@ -316,14 +316,14 @@ Finally, the bottom distance matrix was computed using the TPAA method defined i
   \includegraphics[width=\textwidth]{figures/5-distributions.pdf}
   \caption[Distributions of matching and non-matching distances]{Distributions of distances for matching and non-matching sequence elements from our validation set for a variety of representations.
 Real-valued (squared Euclidean) distance distributions for matching and non-matching pairs are shown in red and orange respectively; Hamming distance distributions are shown in blue and green.
-From top left to bottom right: synthesized MIDI CQT-to-audio recording CQT, the TPAA method described in \cref{sec:baseline}, MIDI piano roll-to-audio CQT, downsampled hash vectors using this ``multimodal'' data as described in \cref{sec:multimodal}, CQT-to-CQT hashing network output prior to thresholding, and downsampled hash vectors using the method in \ref{sec:hashing_system}.}
+From top left to bottom right are distance distributions for vectors produced by synthesized MIDI CQT-to-audio recording CQT, the TPAA method, MIDI piano roll-to-audio CQT, the DHS-piano model using this ``multimodal'' data, the DHS model prior to thresholding, and the DHS model after thresholding.}
   \label{fig:distributions}
 \end{figure}
 
 An intuitive surrogate for performance is the distribution of distances between matching and non-matching pairs.
 Ideally, the distance between aligned feature vectors or embedded binary vectors in matched MIDI and audio files will be small, and will be large for non-matching pairs.
 The extent to which the distributions of matching and non-matching distances overlap is measured by our objective, the Bhattacharyya coefficient, but it is also useful to inspect the distributions themselves before and after undergoing downsampling and hashing for the various techniques we are evaluating.
-These distributions, for the raw CQT-to-CQT, piano roll-to-CQT, and each of the Hamming-space representations proposed in sections \ref{sec:hashing_system}, \ref{sec:multimodal}, and \ref{sec:baseline}, are shown in \cref{fig:distributions}.
+These distributions, for the raw CQT-to-CQT, piano roll-to-CQT, and each of the Hamming-space representations produced by the DHS, DHS-piano, and TPAA approaches are shown in \cref{fig:distributions}.
 
 The overlap between the matching and non-matching distributions of CQT-to-CQT distances in the top left shows that there is certainly some room for improvement in this representation.
 Below this, the distributions for the piano roll-to-CQT distances show that comparing these two representations is substantially less effective, although there is some trend towards smaller distances for matching feature vectors.
@@ -348,7 +348,7 @@ We also observe a modest, but significant, drop in performance to an MRR of $0.5
   \begin{center}
     \begin{tabular}{l l l l}
       \toprule
-      Metric & \textbf{DHS, CQT} & \textbf{DHS, Piano roll} & \textbf{TPAA} \\
+      Metric & \textbf{DHS} & \textbf{DHS-piano} & \textbf{TPAA} \\
       \midrule
       Mean Reciprocal Rank & 0.704 & 0.580 & 0.270 \\
       95\% Rank Threshold & 98 & 518 & 25,944 \\
@@ -381,7 +381,7 @@ Given that we cannot reliably assume the top hit is the correct MSD entry, it is
 We therefore propose that a useful metric is to find the rank threshold below which we can be highly confident that the correct match appears, which we report for our different methods in the second row of \cref{tab:ranking_metrics}.
 Specifically, we computed the threshold $N$ at which 95\% of the correct matches in the test set had a rank better (i.e.\ lower) than $N$.
 Given this high-confidence rank threshold $N$, we can compute the hash sequence DTW distance between a query MIDI and all MSD entries, discard all entries in the MSD except those with the $N$-smallest distances, and then perform the more precise and more expensive method of \cref{ch:dtw} to find the best match in the remaining candidates.
-Inspecting the resulting values of $N$ for the methods we evaluated, we see that we can discard the vast majority (all but 98 entries, or over 99.99\%) of the MSD with high confidence using the CQT hashing technique of \cref{sec:hashing_system}.
+Inspecting the resulting values of $N$ for the methods we evaluated, we see that we can discard the vast majority (all but 98 entries, or over 99.99\%) of the MSD with high confidence using the DHS model.
 Once again, utilizing piano roll matrices incurs a modest decrease in precision, and the baseline TPAA method has substantially worse performance.
 
 \section{Discussion}

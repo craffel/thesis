@@ -17,7 +17,7 @@ Finally, in \cref{sec:ideas} we wrap up with ideas for additional applications a
 As an overview, our method for matching MIDI files to the MSD will proceed as follows:
 Given a query MIDI file, we first synthesize it using \prettymidi{}'s \texttt{fluidsynth} method.
 Then, we compute the log-magnitude, $L^2$-normalized, constant-Q spectrogram representation utilized throughout this thesis.
-Using the pre-trained models from \cref{ch:dtw,ch:pse}, we compute the MIDI file's downsampled hash sequence and embedding.
+Using the pre-trained DHS and PSE models from \cref{ch:dtw,ch:pse}, we compute the MIDI file's downsampled hash sequence and embedding.
 We then compute the pairwise distance between the resulting embedding and all pre-computed embeddings of entries in the MSD, rank the entries according to their distance, and discard all but the top $N_{PSE}$.
 We perform a similar pruning with the downsampled hash sequences, computing the DTW distance between the query and top $N_{PSE}$ MSD entries, ranking by distance, and discarding all but the top $N_{DHS}$.
 Finally, we align the MIDI file to the remaining $N_{DHS}$ entries utilizing the system of \cref{sec:goldstandard}.
@@ -48,19 +48,19 @@ In practice, we found the mean and median pairwise distance to be extremely clos
 
 Prior to performing the matching of our full collection of MIDI files to the MSD, it is useful to get an idea of the expected accuracy of the process described above.
 We therefore utilized this approach on the same evaluation task used in \cref{ch:dhs,ch:pse}, i.e.\ measuring the accuracy of matching our test set of known-correct MIDI-MSD pairs.
-Specifically, we utilized the methods of \cref{ch:pse,ch:dhs} to prune all but 100,000 and 250 entries respectively and then computed the match confidence score for the remaining 250 entries using the method of \cref{sec:goldstandard}.
+Specifically, we utilized the DHS and PSE methods of \cref{ch:pse,ch:dhs} to prune all but 100,000 and 250 entries respectively and then computed the match confidence score for the remaining 250 entries using the method of \cref{sec:goldstandard}.
 For evaluation, we then ranked the remaining 250 entries according to their resulting confidence scores.
 If the correct match in the MSD was pruned incorrectly, we assigned a rank 1,000,000, because effectively this results in the correct matching being unrecoverable by ouer system.
 For full details of this evaluation task, refer to \cref{sec:dhs_experiment}.
 
 \begin{figure}
   \includegraphics[width=\textwidth]{figures/7-ranks.pdf}
-  \caption[Percentage of the test set below a given rank]{Percentage of MIDI files in the test set whose correct match in the MSD ranked better than a given threshold, using the ``DHS'' method of \cref{ch:dhs}, ``PSE'' of \cref{ch:pse}, and their combination with the method of \cref{sec:goldstandard}.}
+  \caption[Percentage of the test set below a given rank]{Percentage of MIDI files in the test set whose correct match in the MSD ranked better than a given threshold, using the DHS model of \cref{ch:dhs}, PSE model of \cref{ch:pse}, and their combination with our best-performing DTW system described \cref{sec:goldstandard}.}
   \label{fig:combined_ranks}
 \end{figure}
 
 The proportion of pairs for which the correct entry was ranked under a given threshold is shown in \cref{fig:combined_ranks}.
-For comparison, we also plot the curves obtained using the approaches of \cref{ch:dhs,ch:pse}.
+For comparison, we also plot the curves obtained using the DHS and PSE approaches from \cref{ch:dhs,ch:pse}.
 Using the combined method, the correct match in the MSD had the highest confidence score 78.2\% of the time, and for 94.6\% of the test set the correct match ranked in the top 5.
 Beyond this point, the performance is effectively constant - this is because for 94.7\% of the test set, the pruning steps discarded the correct match.
 This is within our expected upper limit for the false reject rate of 6.6\%.
@@ -72,7 +72,7 @@ Of course, our approach's precision is only beneficial if it is also efficient.
 On average, matching a MIDI file to the MSD using this cascade of techniques takes xxx.
 Of this, on average xxx is spent pruning all but 100,000 entries using the embedding approach, xxx is spent pruning down to 250 entries using the downsampled hash sequence approach, and xxx is spent computing confidence scores for the remaining 250 entries.
 The remaining xxx is the time required to compute all of the necessary representations for the MIDI file prior to matching.
-Compared to the approximately 1.5 days it would take to match a single MIDI file to the MSD using the approach from \cref{sec:goldstandard} on its own, we consider the 5.4\% false reject rate a small price to pay for this increase in efficiency.
+Compared to the approximately 1.5 days it would take to match a single MIDI file to the MSD using the DTW approach from \cref{sec:goldstandard} on its own, we consider the 5.4\% false reject rate a small price to pay for this increase in efficiency.
 Of course, we could increase precision substantially by raising the pruning thresholds in exchange for a drop in efficiency, but we consider this to be a good trade-off.
 
 \subsection{The Lakh MIDI Dataset}
@@ -201,7 +201,7 @@ We therefore propose that \textit{non-C major} MIDI key change events are as rel
 Utilizing many of the sources of information in MIDI files in audio content-based MIR tasks depends on the precise alignment of a given MIDI file to an audio recording of a performance of the same song.
 We therefore performed an additional experiment to evaluate the quality of MIDI-derived beat annotations, which are evaluated on the scale of tens of milliseconds.
 Producing valid beat annotations from a MIDI file requires not only that the file's timing information is correct, but also that it has been aligned with high precision.
-To align our Beatles MIDI files to corresponding audio recordings, we used the scheme from \cref{sec:goldstandard} exactly, except that we computed spectrograms with a hop size of 23 milliseconds rather than 46 milliseconds.
+To align our Beatles MIDI files to corresponding audio recordings, we used our best-performing DTW system from \cref{sec:goldstandard} exactly, except that we computed spectrograms with a hop size of 23 milliseconds rather than 46 milliseconds.
 This finer timescale is more appropriate for the beat evaluation metrics we will use, which have tolerances measured in tens of milliseconds.
 
 We used \prettymidi{}'s \texttt{get\char`_beats} method to extract beat times from our 545 Beatles MIDI files, and adjusted each beat's timing according to the MIDI file's alignment to corresponding audio recordings.
