@@ -680,6 +680,7 @@ These properties make it well-suited for neural network architectures, and as a 
 From the discussion above, it is clear that beyond the parameters of neural network models which are optimized by gradient descent (weight matrices, bias vectors, etc.), there are additional ``hyperparameters'' which govern specifics of the model architecture, loss function, and training.
 These hyperparameters are so called because they are not optimized through gradient descent with the rest of the parameters.
 Nevertheless, the success or failure of training a given model will often heavily depend on these hyperparamters being set appropriately.
+
 This problem fits into the general framework of black-box optimization, where we would like to maximize an objective function with tunable parameters which produces different values based on different parameter settings.
 In this framework, we assume that we do not have a way to compute an analytical solution or access to gradient information about the function and thus can only make decisions about what parameter settings to try based on the history of function evaluation results for different settings.
 For example, the function may be a mapping between hyperparameters governing the structure of a neural network model (number and width of layers, weight initialization scheme, etc.), its loss function (which loss function to use, whether to include regularization), and training procedure (which stochastic optimization technique to use, each of which has its own hyperparamwters such as the learning rate) and the objective value could be the trained model's accuracy on a held-out validation set.
@@ -765,11 +766,17 @@ where
         \sigma_T^2(\theta_n) &= k(\theta_n, \theta_n) - K_{n \times T} K_{T \times T}^{-1} K_{n \times T}^\top
 \end{align}
 
-Note that the predictive distribution's covariance matrix will have 1 all along its diagonal because any point is perfectly correlated with itself.
+Note that the covariance matrix of the joint marginal likelihood of $y_n$ and $y_T$ will have 1 all along its diagonal because any point is perfectly correlated with itself.
 This is an invalid assumption in the presence of noise, so a common modification to include a term $\sigma_{noise}^2$ for the variance of the noise in the covariance, which yields the predictive distribution
-\begin{equation}
-p(y_{n} | y_T, \theta_T, \theta_n) = \mathcal{N}(\mu_T(\theta_n), \sigma_T^2(\theta_n) + \sigma_{noise}^2)
-\end{equation}
+\begin{align}
+        p(y_{n} | y_T, \theta_T, \theta_n) &= \mathcal{N}(\mu_T(\theta_n), \sigma_T^2(\theta_n) + \sigma_{noise}^2)\\
+        \mu_T(\theta_n) &= K_{n \times T} (K_{T \times T} + \sigma_{noise}^2I)^{-1} \begin{bmatrix}
+                y_1 \\
+                \vdots \\
+                y_t
+        \end{bmatrix} \\
+        \sigma_T^2(\theta_n) &= k(\theta_n, \theta_n) - K_{n \times T} (K_{T \times T} + \sigma_{noise}^2I)^{-1} K_{n \times T}^\top
+\end{align}
 
 \subsubsection{Acquisition Functions}
 
