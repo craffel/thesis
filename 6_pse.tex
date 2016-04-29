@@ -170,6 +170,7 @@ The best-performing network configuration achieved a Bhattacharyya coefficient o
 Before arriving at this system design, we also tried:
 \begin{itemize}
 \item Using more or fewer convolutional/pooling layers at the input of the network, including using no convolutional and pooling layers at all, a $5 \times 12$ convolutional layer followed by a variable number of $2 \times 2$ max-pooling layers and $3 \times 3$ convolutional layers, or using the same front-end as in \cref{ch:dhs}.
+\item Using $2 \times 1$ pooling layers as in \cref{ch:dhs} and \cite{humphrey2012rethinking}; we found $2 \times 2$ max-pooling worked better for embedding networks.
 \item Using up to four ``parallel'' attention mechanisms, whose output was concatenated before being processed by the fully-connected layer; this produced no performance gains.
 \item The output $L^2$ penalty from \cref{ch:dhs} as well as the hash entropy-encouraging loss term proposed in \cite[equation (3)]{yang2015supervised}, but neither were beneficial.
 \item Using dropout in the fully-connected layers, which hurt performance.
@@ -244,7 +245,7 @@ As advocated in \cite{mordvintsev2015inceptionism}, we initialized with zero-mea
 In addition, we enforced the constraint that the input feature vectors stay $L^2$-normalized.
 We plot 40 frames of the resulting input surrounding the maximal-attention region for both of our networks in \cref{fig:attention_dream}.
 Most apparently, there is a clear lack of high-frequency content in the high-attention regions.
-In addition, the regions of low attention appear to be basically noise. 
+In addition, the regions of low attention appear to be basically noise.
 This suggests that our attention mechanism may be most interested in steady-state regions with little high-frequency content.
 
 \begin{figure}

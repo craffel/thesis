@@ -190,7 +190,8 @@ Each of the three max-pooling layers were preceded by two convolutional layers, 
 The use of a larger number of smaller convolutional filters is advocated by Simonyan and Zisserman \cite{simonyan2014very}, who argue that this structure improves the network's modeling capabilities without sacrificing receptive field size.
 The convolutional layers in each of the three ``groups'' had 16, 32, and 64 filters, respectively.
 We padded the input to each convolutional layer so that the output size was the same as the input size.
-All of the max-pooling layers utilized $2 \times 2$ pooling with a stride of $2$.
+All of the max-pooling layers utilized $2 \times 1$ pooling with a stride of $2$.
+The pooling size of $2 \times 1$ is advocated for spectrograms in \cite{humphrey2012rethinking} and results in only the temporal axis, not the frequency axis, being downsampled; we found this to work better than the more standard $2 \times 2$ pooling commonly used in image processing networks.
 
 After the convolutional layers, we utilized two dense layers with $2048$ units each, followed by the output layer.
 The fully-connected layers were applied independently over the temporal axis to the output of the convolutional portion of the network.
@@ -215,7 +216,6 @@ This hyperparameter configuration achieved a Bhattacharyya coefficient of $0.385
 Beyond those described above, we also experimented with a number of other regularizers, model architectures, and optimization schemes.
 For posterity, we report those here:
 \begin{itemize}
-\item We tried $2 \times 1$ pooling (i.e.\ not downsampling the frequency axis) as advocated in \cite{humphrey2012rethinking} but found it did not effect results despite being somewhat more computationally expensive.
 \item We experimented with a larger $5 \times 12$ filter size in the first layer as used in \cite{raffel2015large} with single $3 \times 3$ convolutional in the second and third layers, but found this structure resulted in slightly worse performance despite having a similar receptive field.
 \item We tested the use of dropout \cite{hinton2012improving} in the fully-connected layers, but it slightly decreased performance.
 \item We tried adding a ``stress'' \cite{kruskal1964multidimensional} term to the loss function to encourage the networks' outputs to preserve the distances of their input, but found it hurt performance.

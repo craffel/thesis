@@ -22,7 +22,7 @@ Second, we utilized the ``gold standard` system of \cref{sec:goldstandard} to cr
 Third, we used 32-bit binary vectors rather than 16-bit, which potentially gives them more expressive power.
 It also resulted in the use of the POPCNT instruction being more efficient than the pre-computed table look-up used in \cite{raffel2015large}.
 Finally, we experimented with a wider variety of system designs, all of which are documented in \cref{sec:hashing_system}.
-This included the output $L^2$ penalty and the larger number of small $3 \times 3$ convolutional layers, rather than the $5 \times 12$ input filter size.
+This included the output $L^2$ penalty, $2 \times 1$ pooling, and the larger number of small $3 \times 3$ convolutional layers, rather than the $5 \times 12$ input filter size.
 Taken together, these changes resulted in dramatic increases in precision; specifically, we were improved our high-confidence pruning threshold from 10,000 to 250.
 In addition, for better framing of our results, we added the baseline learning-free approach described in \cref{sec:baseline}.
 
