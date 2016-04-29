@@ -270,8 +270,8 @@ We will refer to this approach as ``thresholded piecewise aggregate approximatio
 
 After training our hashing system as described above, the process of evaluating the effectiveness of matching MIDI files to the MSD proceeds as follows:
 First, we precompute downsampled hash sequences for every 7digital preview clip and every MIDI file in the test and development sets for which we know a priori the correct match(es) in the MSD.
-Then, we compute the DTW cost as described in \cref{sec:dtw} between every audio and MIDI hash sequence, except that the Euclidean distance of \cref{eq:dtw_objective} is replaced with Hamming distance.
-We can evaluate the effectiveness of a given approach by ranking MSD entries according to their hash sequence DTW distance to a given MIDI file, and determining the rank of the correct match.
+Then, we compute the DTW distance as described in \cref{sec:dtw} between every audio and MIDI hash sequence, except that the Euclidean distance of \cref{eq:dtw_objective} is replaced with Hamming distance.
+Ideally, for a given MIDI file the correct match in the MSD will have the smallest DTW distance.
 
 We tuned the parameters of the DTW cost calculation to optimize results over our ``development'' set of successfully aligned MIDI/MSD pairs.
 We found it beneficial to use a smaller value of $g = 0.9$.
@@ -316,7 +316,7 @@ Finally, the bottom distance matrix was computed using the TPAA method defined i
   \includegraphics[width=\textwidth]{figures/5-distributions.pdf}
   \caption[Distributions of matching and non-matching distances]{Distributions of distances for matching and non-matching sequence elements from our validation set for a variety of representations.
 Real-valued (squared Euclidean) distance distributions for matching and non-matching pairs are shown in red and orange respectively; Hamming distance distributions are shown in blue and green.
-From top left to bottom right: synthesized MIDI CQT-to-audio recording CQT, downsampled hash vectors using the method in \ref{sec:hashing_system}, MIDI piano roll-to-audio CQT, downsampled hash vectors using this ``multimodal'' data as described in \cref{sec:multimodal}, CQT-to-CQT hashing network output prior to thresholding, and the TPAA method described in \cref{sec:baseline}.}
+From top left to bottom right: synthesized MIDI CQT-to-audio recording CQT, the TPAA method described in \cref{sec:baseline}, MIDI piano roll-to-audio CQT, downsampled hash vectors using this ``multimodal'' data as described in \cref{sec:multimodal}, CQT-to-CQT hashing network output prior to thresholding, and downsampled hash vectors using the method in \ref{sec:hashing_system}.}
   \label{fig:distributions}
 \end{figure}
 
@@ -338,7 +338,7 @@ Clearly, there is substantially move overlap between matching and non-matching e
 \label{sec:ranking}
 
 To evaluate our system using the known MIDI-audio pairs of our test set, we ranked MSD entries according to their hash sequence DTW distance to a given MIDI file, and determined the rank of the correct match.
-Because some MIDI files were matched to multiple MSD entries due to duplicates in the MSD, we made the forgiving choice of utilizing the best rank among all correct matches for a given MIDI file.
+Because some MIDI files were matched to multiple MSD entries due to duplicates in the MSD, we made the forgiving choice of utilizing the best (i.e.\ smallest) rank among all correct matches for a given MIDI file.
 We also ignored all resulting hash sequences with less than 30 sequence elements; these generally corresponded to corrupt MP3 files and occasionally confounded the results.
 The mean reciprocal rank (MRR) across the test set for the three methods we evaluated is shown in the first row of \cref{tab:ranking_metrics}.
 This metric makes it clear that our learning-based system outperforms our baseline, producing a MRR of $0.704$ compared to $0.270$.
@@ -364,7 +364,7 @@ The second shows the threshold below which 95\% had a smaller rank.}
 While the MRR provides a compact measure of performance, we believe a more intuitive empirical measure is the proportion of MIDI files in the test set whose correct match ranked under a certain threshold.
 We plot this proportion against the rank threshold in \cref{fig:ranks}.
 A high-performance metric will yield a curve which approaches 100\% very quickly, meaning that the majority of the correct matches in the test set were ranked highly.
-From a high level, then, we can see that our proposed method substantially outperforms the baseline, due to the fact a much larger proportion of the test set had high ranks.
+From a high level, then, we can see that our proposed method substantially outperforms the baseline, due to the fact a much larger proportion of the test set was highly ranked.
 
 \begin{figure}
   \includegraphics[width=\textwidth]{figures/5-ranks.pdf}
@@ -379,7 +379,7 @@ In a relatively small proportion of cases, the MIDI hash sequence ended up being
 
 Given that we cannot reliably assume the top hit is the correct MSD entry, it is more realistic to look at our system as a pruning technique; that is, it can be used to discard MSD entries which we can be reasonably confident do not match a given MIDI file.
 We therefore propose that a useful metric is to find the rank threshold below which we can be highly confident that the correct match appears, which we report for our different methods in the second row of \cref{tab:ranking_metrics}.
-Specifically, we computed the threshold $N$ at which 95\% of the correct matches in the test set had a rank better than $N$.
+Specifically, we computed the threshold $N$ at which 95\% of the correct matches in the test set had a rank better (i.e.\ lower) than $N$.
 Given this high-confidence rank threshold $N$, we can compute the hash sequence DTW distance between a query MIDI and all MSD entries, discard all entries in the MSD except those with the $N$-smallest distances, and then perform the more precise and more expensive method of \cref{ch:dtw} to find the best match in the remaining candidates.
 Inspecting the resulting values of $N$ for the methods we evaluated, we see that we can discard the vast majority (all but 98 entries, or over 99.99\%) of the MSD with high confidence using the CQT hashing technique of \cref{sec:hashing_system}.
 Once again, utilizing piano roll matrices incurs a modest decrease in precision, and the baseline TPAA method has substantially worse performance.
