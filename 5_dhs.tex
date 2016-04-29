@@ -9,10 +9,10 @@ We use the 994,960 7digital preview clips \cite{schindler2012facilitating} corre
 A complete search for matches could thus involve 994,960 alignments for each of our 178,561 MIDI files, resulting in 177,661,052,560 comparison.
 
 The method proposed in \cref{ch:dtw} is much too inefficient to be used in this manner.
-Under this approach, aligning a typical-length MIDI file to a single audio recording from the MSD takes on average about 132 milliseconds on an Intel Core i7-4930k processor when using an extremely efficient LLVM-compiled DTW routine and a parallelized distance matrix computation.
+Under this approach, aligning a typical-length MIDI file to a single audio recording from the MSD takes on average about 247 milliseconds on an Intel Core i7-4930k processor when using an extremely efficient LLVM-compiled DTW routine and the optimized distance matrix calculation of \texttt{scipy}.
 Matching our entire collection of MIDI files using this approach would therefore take approximately
 \begin{equation}
-\frac{(.132 \mathrm{\;seconds})(178{,}561 \mathrm{\;MIDI\;files})(994{,}960 \mathrm{\;audio\;files})}{(60 \mathrm{\;seconds})(60 \mathrm{\;minutes})(24 \mathrm{\;hours})(365 \mathrm{\;days})} \approx 745 \mathrm{\;years}
+        \frac{(.247 \mathrm{\;seconds})(178{,}561 \mathrm{\;MIDI\;files})(994{,}960 \mathrm{\;audio\;files})}{(60 \mathrm{\;seconds})(60 \mathrm{\;minutes})(24 \mathrm{\;hours})(365 \mathrm{\;days})} \approx 1{,}391 \mathrm{\;years}
 \end{equation}
 Clearly, a more efficient approach is warranted.
 
@@ -388,9 +388,9 @@ Once again, utilizing piano roll matrices incurs a modest decrease in precision,
 \label{sec:dhs_discussion}
 
 Pruning methods are valuable only when they are substantially faster than performing the original computation; fortunately, our approach is orders of magnitude faster:
-On an same Intel Core i7-4930k processor, for the median hash sequence lengths, calculating a Hamming distance matrix between downsampled hash sequences is about xxx times faster than computing the CQT cosine distance matrix (xxx microseconds vs. xxx milliseconds) and computing the DTW score is about xxx times faster (xxx microseconds vs. xx microseconds).
+On an same Intel Core i7-4930k processor, calculating a Hamming distance matrix between downsampled hash sequences is on average about 1,500 times faster than computing the CQT cosine distance matrix (142 microseconds vs. 225 milliseconds) and computing the DTW score is about 62 times faster (371 microseconds vs. 23 milliseconds).
 These speedups can be attributed to the fact that computing an exclusive-or and a POPCNT is much more efficient than computing the cosine distance between two vectors and that, thanks to downsampling, our hash-based distance matrices have $\frac{1}{64}$ of the entries of the CQT-based ones.
-In summary, a straightforward way to describe the success of our system is to observe that we can, with high confidence, discard over xxx\% of the entries of the MSD by performing a calculation that takes about as much time as matching against xxx\% of the MSD.
+In summary, a straightforward way to describe the success of our system is to observe that we can, with high confidence, discard over 99.99\% of the entries of the MSD by performing a calculation that takes about as much time as matching against 0.2\% of the MSD.
 In addition, our learning-based approach provides a huge improvement over simply thresholding the raw feature values.
 
 We identify a variety of potential avenues for improving our approach.
@@ -398,7 +398,7 @@ First, our simple method of randomly swapping matching pairs to construct our di
 Preferentially choosing pairs on which our model is having difficulty, as done in \cite{schroff2015facenet}, or using a curriculum learning approach which presents more and more difficult examples to the network over time \cite{bengio2009curriculum} could prove beneficial.
 Furthermore, we are interested in trying the various other loss functions which have been proposed for similarity-preserving embedding, such as the ``coscos'' loss from \cite{kamper2016deep} or the $k$-means style loss from \cite{hershey2016deep}.
 
-Despite our system's efficiency, we estimate that comparing each of the MIDI files in our 178,561 file collection to the entire the MSD would still take xxx.
-There is therefore room for improving the efficiency of our technique.
+Despite our system's efficiency, we estimate that comparing each of the MIDI files in our 178,561 file collection to the entire the MSD would still take about 1,000 days.
+We therefore still require an even more efficient technique.
 The main bottleneck is that it still requires DTW to compare hash sequences; if we could avoid this quadratic-complexity operation we could potentially develop an even faster pruning method.
 We explore this possibility in the following chapter.

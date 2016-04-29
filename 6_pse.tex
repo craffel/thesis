@@ -277,8 +277,8 @@ This means that we can used our proposed embedding method to prune over 90\% of 
 
 Comparing to \cref{fig:ranks}, our embedding approach is clearly much less precise than any of the hash sequence-based methods.
 This is to be expected due to the fact that we are representing sequences of potentially thousands of 48-dimensional vectors as a single 128-dimensional vector.
-Fortunately, it is also much faster: Computing the million embedding distance calculations required to compare a MIDI file to the entire MSD only takes about xxx milliseconds using an unoptimized Python implementation.
-This means that we can discard over 90\% of the MSD with high confidence with an operation which is xxx times faster than the downsampled hash sequence-based methods of \cref{ch:dhs} and is xxx times faster than a brute-force DTW search approach from \cref{ch:dtw}.
+Fortunately, it is also much faster: Computing the million embedding distance calculations required to compare a MIDI file to the entire MSD only takes about 400 milliseconds (i.e.\ about 400 nanoseconds per MIDI-to-MSD entry comparison) on our Intel Core i7-4930k CPU.
+This means that we can discard over 90\% of the MSD with high confidence with an operation which is over 1,000 times faster than the downsampled hash sequence-based methods of \cref{ch:dhs} and is over 600,000 times faster than a brute-force approach using the DTW system from \cref{ch:dtw}.
 
 To improve performance of our proposed method we are interested in investigating the same ideas discussed in \cref{sec:dhs_discussion}, i.e.\ different loss functions and methods of sampling negative examples.
 In addition, as more and more methods are developed for making recurrent networks able to handle very long-term dependencies (some of which are mentioned in \cref{sec:recurrent_networks}), we are interested in testing whether recurrence could become applicable to our problem.
