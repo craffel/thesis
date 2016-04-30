@@ -81,9 +81,9 @@ Now that we have empirically validated our approach, we proceed to matching our 
 To do so, we simply followed the approach of the previous section exactly, except that we matched our entire collection against the MSD instead of just our test set.
 Based on the fact that matching a single file takes roughly 109 seconds on average, performing this matching for all 178,561 MIDI files takes about 225 days of compute time.
 To speed things up, we ran this process in parallel across 32 processors, resulting in a total run time of about 7 days.
-While performing the match, we discovered xxx MIDI files which were corrupt or otherwise unparsable by \prettymidi{}.
+While performing the match, we discovered 5,602 MIDI files which were corrupt or otherwise unparsable by \prettymidi{}.
 In addition, in order to avoid spurious matches and incomplete transcriptions, we discarded all MIDI files which were less than 30s in length.
-In the end, we therefore matched a total of xxx MIDI files to the MSD.
+In the end, we therefore searched for matches in the MSD for a total of 160,603 MIDI files.
 
 \begin{figure}
   \includegraphics[width=\textwidth]{figures/7-matches.pdf}
@@ -96,7 +96,6 @@ An informative way to report the extent to which we successfully found matches i
 We plot this curve in \cref{fig:match_confidences}.
 Choosing 0.5 as the threshold above which a confidence score denotes a match (as we did in \cref{sec:training_data} based on the results of \cref{sec:qualitative}), we found 50,513 MIDI files which had at least one match in the MSD, and a total of 138,026 MIDI-to-MSD pairings.
 Many MIDI files were matched to multiple MSD entries due to duplicates, covers, and alternate versions; for example, one MIDI transcription of ``Imagine'' by John Lennon was matched to six original renditions, ten covers, one hip-hop song which sampled it (``Image'' by Nas), and one song which used an identical chord progression (``Bringin' Down Dinner'' by Neil Young).
-On the other hand, many MSD entries were matched to multiple MIDI files; the most commonly-matched MSD entry was xxx which xxx MIDI files matched to.
 
 % TODO: Note about decoys?
 
