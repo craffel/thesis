@@ -160,3 +160,23 @@ This provides an estimate of the similarity of two sequences by an inexpensive E
 Finally, \cref{ch:assembling} utilizes all of these methods to construct a large collection of MIDI files which have been matched and aligned to corresponding audio recordings.
 We also address the practical question of the quality of ground-truth information extracted from MIDI files.
 To wrap up, we describe some of the characteristics of our new dataset and outline some interesting applications for it.
+
+\section{Notation}
+
+In this thesis, we will not make an explicit notational distinction between variables with differing numbers of dimensions, but we will always state the dimensionality of variables when they are introduced.
+For example, a real-valued scalar $x$ would be introduced as $x \in \mathbb{R}$, a vector $y$ with $N$ entries in a Hamming space (i.e. having binary values) would be introduced as $y \in \mathbb{H}^N$, and a natural number-valued matrix $z$ with dimensions $M$ and $N$ would be introduced as $z \in \mathbb{N}^{M \times N}$.
+To refer to entries in these variables, we will use ``indexing'' notation, e.g.\ $y[n]$ would denote the $n^{th}$ entry of the just-introduced vector $y$.
+We will always count these entries starting from one, e.g.\ $y = [y[1], \ldots, y[N]]$.
+On the other hand, when referring to members of a collection of things, we will use subscript notation, e.g.\ a collection of $K$ variables might be denoted $x_1, x_2, \ldots, x_K$.
+Finally, we will use $\jmath$ to refer to the imaginary number $\sqrt{-1}$ and use an overline to refer to complex conjugation, e.g.\ $\overline{a + b\jmath} = a - b\jmath$.
+
+For visualization, we will use the following color pallete:
+\begin{center}
+\includegraphics[width=.5\textwidth]{figures/1-colors.pdf}
+\end{center}
+In captions, we will refer to these colors (from left to right) as ``blue'', ``green'', ``gray'', ``orange'', and ``red''.
+When visualizing two dimensional data, we will use the following colormap:
+\begin{center}
+\includegraphics[width=.5\textwidth]{figures/1-colormap.pdf}
+\end{center}
+These colors will reflect smaller to larger values from left to right respectively.
