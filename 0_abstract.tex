@@ -1,1 +1,30 @@
-Abstract.
+Sequences of feature vectors are a natural way of representing temporal data.
+Given a database of sequences, a fundamental task is to find the database entry which is the most similar to a query.
+In this thesis, we present learning-based methods for efficiently and accurately comparing sequences in order to facilitate large-scale sequence search.
+Throughout, we will focus on the problem of matching MIDI files (a digital score format) to a large collection of audio recordings of music.
+The combination of our proposed approaches enables us to create the largest corpus of paired MIDI files and audio recordings ever assembled.
+
+Dynamic time warping (DTW) has proven to be an extremely effective method for both aligning and matching sequences.
+However, its performance is heavily affected by factors such as the feature representation used and its adjustable parameters.
+We therefore investigate automatically optimizing DTW-based alignment and matching of MIDI and audio data.
+Our approach uses Bayesian optimization to tune system design and parameters over a synthetically-created dataset of audio and MIDI pairs.
+We then perform an exhaustive search over DTW score normalization techniques to find the optimal method for reporting a reliable alignment confidence score, as required in matching tasks.
+This results in a DTW-based system which is conceptually simple and highly accurate at both alignment and matching.
+We also verify that this system achieves high performance in a large-scale qualitative evaluation of real-world alignments.
+
+Unfortunately, DTW can be far too inefficient for large-scale search when sequences are very long and consist of high-dimensional feature vectors.
+We therefore propose a method for mapping sequences of continuously-valued feature vectors to downsampled sequences of binary vectors.
+Our approach involves training a pair of convolutional networks to map paired groups of subsequent feature vectors to a Hamming space where similarity is preserved.
+Evaluated on the task of matching MIDI files to a large database of audio recordings, we show that this technique enables 99.99\% of the database to be discarded while only requiring 0.2\% of the time to compute.
+
+Even when sped-up with a more efficient representation, the quadratic complexity of DTW greatly hinders its feasibility for very large-scale search.
+This cost can be avoided by mapping entire sequences to fixed-length vectors in an embedded space where sequence similarity is approximated by Euclidean distance.
+To achieve this embedding, we propose a feed-forward attention-based neural network model which can integrate arbitrarily long sequences.
+We show that this approach can extremely efficiently prune 90\% of our audio recording database with high confidence.
+
+After developing these approaches, we applied them together to the practical task of matching 178,561 unique MIDI files to the Million Song Dataset.
+The resulting ``Lakh MIDI Dataset'' provides a potential bounty of ground-truth information for audio content-based music information retrieval.
+This can include transcription, meter, lyrics, and high-level musicological features.
+The reliability of the resulting annotations depends both on the quality of the transcription and the accuracy of the score-to-audio alignment.
+We therefore establish a baseline of reliability for score-derived information for different content-based MIR tasks.
+Finally, we discuss potential future uses of our dataset and the learning-based sequence comparison methods we developed.
