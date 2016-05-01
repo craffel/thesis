@@ -62,14 +62,14 @@ Attention can also be seen as analogous to the ``soft addressing'' mechanisms of
 
 More specifically, following the definition from \cite{bahdanau2014neural}, given a length-$T$ sequence $h$, attention-based models compute a series of ``context'' vectors $c_t$ as the weighted mean of the sequence $h$ by
 \begin{equation}
-c_t = \sum_{j = 1}^T \alpha_t[j] h[j]
+c_t = \sum_{j = 1}^T \omega_t[j] h[j]
 \end{equation}
-where $\alpha_t \in \mathbb{R}^T$ is a vector of weights computed at each time step $t$, with an entry for each sequence step in $h$.
+where $\omega_t \in \mathbb{R}^T$ is a vector of weights computed at each time step $t$, with an entry for each sequence step in $h$.
 These context vectors are then used to compute a new sequence $s$, where $s_t$ depends on $s_{t - 1}$, $c_t$ and the model's output at $t - 1$.
-The weightings $\alpha_t[j]$ are computed by
+The weightings $\omega_t[j]$ are computed by
 \begin{align}
 e_t[j] &= a(s_{t - 1}, h[j])\\
-\alpha_t[j] &= \frac{\exp(e_t[j])}{\sum_{k = 1}^T \exp(e_t[k])}
+\omega_t[j] &= \frac{\exp(e_t[j])}{\sum_{k = 1}^T \exp(e_t[k])}
 \end{align}
 where $a$ is a learned function which can be thought of as computing a scalar importance value for $h[j]$ given the value of $h[j]$ and the previous state $s_{t - 1}$.
 This formulation allows the new sequence $s$ to have more direct access to the entire sequence $h$.
@@ -86,9 +86,9 @@ Finally, attention provides its own form of temporal modeling because it integra
 We therefore propose a ``feed-forward'' variant of attention, which computes a weighting for each sequence step independent of all other steps as follows:
 \begin{align}
 e[t] &= a(h[t])\\
-\alpha[t] &= \frac{\exp(e[t])}{\sum_{k = 1}^T \exp(e[k])}\\
+\omega[t] &= \frac{\exp(e[t])}{\sum_{k = 1}^T \exp(e[k])}\\
 \label{eq:ffattention}
-c &= \sum_{t = 1}^T \alpha[t] h[t]
+c &= \sum_{t = 1}^T \omega[t] h[t]
 \end{align}
 Conceptually, this attention mechanism can be thought of as using the learned nonlinear function $a$ to compute scalar ``importance'' values for each sequence step in $h$, which are then normalized using the softmax function and used to compute a weighted mean $c$ over all sequence elements in $h$.
 Clearly, this mechanism will produce a single fixed-length vector regardless of the length of the sequence, which is what is necessary in sequence embedding.
@@ -97,12 +97,12 @@ A schematic of our feed-forward attention mechanism is shown in \cref{fig:attent
 \begin{figure}
   \includegraphics[width=\textwidth]{figures/6-attention_schematic.pdf}
   \caption[Feed-forward attention mechanism]{Diagram visualizing our feed-forward attention mechanism.
-Given a length-$T$ input sequence $h$, the learned nonlinear function $a$ computes a weighting $\alpha[t]$ for each sequence element $h[t]$.
-The resulting probability vector $\alpha \in \mathbb{R}^T$ is used to compute a weighted average $c$ of $h$.}
+Given a length-$T$ input sequence $h$, the learned nonlinear function $a$ computes a weighting $\omega[t]$ for each sequence element $h[t]$.
+The resulting probability vector $\omega \in \mathbb{R}^T$ is used to compute a weighted average $c$ of $h$.}
   \label{fig:attention_schematic}
 \end{figure}
 
-The main difference between this formulation and the one proposed in \cite{bahdanau2014neural, cho2015describing} (stated in the previous section) is that here we are only producing a single weighting $\alpha$ and context vector $c$ rather than a different $\alpha_t$ and context vector $c_t$ at each time step.
+The main difference between this formulation and the one proposed in \cite{bahdanau2014neural, cho2015describing} (stated in the previous section) is that here we are only producing a single weighting $\omega$ and context vector $c$ rather than a different $\omega_t$ and context vector $c_t$ at each time step.
 This is primarily because our goal in embedding is to produce a single vector for the entire sequence whereas previous applications of attention have mainly focused on sequence-to-sequence transduction.
 As a result, \cref{eq:ffattention} does not contain any terms for a previous attention vector or a previous hidden state, because in the present contexts these quantities do not exist.
 The main disadvantage to using attention in this way is that it ignores temporal order by computing an average over the entire sequence.
@@ -146,7 +146,7 @@ We use the same feature representation, i.e.\ log-magnitude constant-Q spectrogr
 We also use the same exact training, validation, development, and test splits, and utilize the statistics from the training split to standardize feature vectors.
 
 For our networks, we fed the sequences first into a convolutional layer with 32 $3 \times 3$ filters followed by a $2 \times 2$ max-pooling layer, followed by the attention mechanism of \cref{eq:ffattention} with the weighting function of \cref{eq:weighting_function}, followed by two fully-connected layers with 2048 units each, followed by a 128-dimensional output layer.
-We utilized rectified linear nonlinearities throughout, except on the final output layer and the weighting function which both used $\tanh$.
+We utilized rectified linear nonlinearities throughout, except on the final output layer and the weighting function which both used a hyperbolic tangent nonlinearity.
 All weights were initialized using He et.\ al.'s method \cite{he2015delving} and all biases were initialized to zero.
 The networks were optimized with respect to \cref{eq:embedding_objective} using RMSProp with mini-batches of 20 similar and dissimilar pairs.
 As in \cref{ch:dhs}, we assembled $\mathcal{N}$ by randomly choosing non-matching pairs which were re-sampled every time we had iterated over the training set.
@@ -225,21 +225,21 @@ Note that the x-axes are log-scaled.}
 \end{figure}
 
 Because our proposed feed-forward attention system is a novel architecture, we are interested in getting some insight into its learned behavior.
-One way to accomplish this is to look at the attention weighting values $\alpha$ over the course of an input sequence.
+One way to accomplish this is to look at the attention weighting values $\omega$ over the course of an input sequence.
 We visualize this for our MIDI spectrogram embedding network in \cref{fig:attention}.
 One clear pattern from this visualization is that the attention mechanism tends to downweight the portion of the song with strong low-frequency transients (frames 350 to 800).
 In addition, in one region of mostly high attention (frames 100 to 350) there are two regions where the attention drops; these regions also have a sudden burst of energy in a low-frequency bin.
 
 \begin{figure}
   \includegraphics[width=\textwidth]{figures/6-attention.pdf}
-  \caption[Example attention weighting]{Example attention weighting values $\alpha$ (bottom) produced by our MIDI embedding network for a synthesized MIDI spectrogram (top) from our validation set.
-The raw attention values are shown in light green; because they are noisy, we also display a median filtered version (with a window size of 15 frames) in dark blue.}
+  \caption[Example attention weighting]{Example attention weighting values $\omega$ (bottom) produced by our MIDI embedding network for a synthesized MIDI spectrogram (top) from our validation set.
+The raw attention values are shown in light green; because they are noisy, we also display a median filtered version (with a window size of 15 frames) in blue.}
   \label{fig:attention}
 \end{figure}
 
 Another generally applicable visualization technique is DeepDream \cite{mordvintsev2015inceptionism}, which refers to the technique of optimizing the {\em input} of a pre-trained model, rather than the parameters, in order to minimize an objective.
 We utilized this technique to see what kind of inputs the attention mechanism in each of our networks weights very highly.
-To achieve this, we optimized a randomly-initialized input to minimize the entropy of the attention weights $\alpha$.
+To achieve this, we optimized a randomly-initialized input to minimize the entropy of the attention weights $\omega$.
 This effectively tells the network to generate an input for which a small region is given the maximum attention and the rest of the input is ignored.
 As advocated in \cite{mordvintsev2015inceptionism}, we initialized with zero-mean, unit-variance Gaussian noise and utilized standard gradient descent with gradients normalized to have unit norm.
 In addition, we enforced the constraint that the input feature vectors stay $L^2$-normalized.
@@ -250,7 +250,7 @@ This suggests that our attention mechanism may be most interested in steady-stat
 
 \begin{figure}
   \includegraphics[width=\textwidth]{figures/6-attention_dream.pdf}
-  \caption[Generated maximal attention inputs]{Inputs generated by minimizing the entropy of the resulting attention weights $\alpha$ produced by our trained MIDI embedding (left) and audio embedding (right) networks.
+  \caption[Generated maximal attention inputs]{Inputs generated by minimizing the entropy of the resulting attention weights $\omega$ produced by our trained MIDI embedding (left) and audio embedding (right) networks.
 Shown are 40 frames of each generated input, centered around the region of maximal attention.}
   \label{fig:attention_dream}
 \end{figure}

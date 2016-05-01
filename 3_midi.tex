@@ -104,7 +104,7 @@ In practice, we find that this is due to the fact that even when a single tempo 
   \centering
   \includegraphics[width=\textwidth]{figures/3-n_signatures.pdf}
   \caption[Histogram of the number of time signature changes in MIDI files]{Histogram of the number of time signature change events per file in our collection.
-Although these events can be ommitted, almost all of our MIDI files had at least one.}
+Although these events can be omitted, almost all of our MIDI files had at least one.}
     \label{fig:3-n_signatures}
 \end{figure}
 
@@ -208,7 +208,7 @@ Finally, both \texttt{music21} and \texttt{melisma} are capable of inferring hig
 Apart from metadata-agnostic corpus studies such as \cite{mauch2012corpus}, determining the song a given MIDI file represents is usually required.
 Matching a given MIDI file to, for example, a corresponding entry in the Million Song Dataset \cite{bertin2011million} can be beneficial even in experiments solely involving symbolic data analysis because it can provide additional metadata for the track including its year, genre, and user-applied tags.
 Utilizing information in a MIDI file for ground truth in audio content-based MIR tasks further requires that it be matched to an audio recording of the song, but this is made difficult by the lack of a standardized method for storing song-level metadata in MIDI files (as discussed in Section \ref{sec:missing}).
-Content-based matching offers a solution; for example, early work by Hu et al.\cite{hu2003polyphonic} assigned matches by finding the smallest dynamic time warp (DTW) distance between spectrograms of MIDI syntheses and audio files across a corpus.
+Content-based matching offers a solution; for example, early work by Hu et al. \cite{hu2003polyphonic} assigned matches by finding the smallest dynamic time warp (DTW) distance between spectrograms of MIDI syntheses and audio files across a corpus.
 However, this approach is prohibitively slow for very large collections of MIDI and/or audio files.
 
 \subsection{Aligning}
@@ -224,6 +224,6 @@ We do not know of any research into automatically determining the quality of a M
 
 \subsection{Roadmap}
 
-Given our extremely large collection of MIDI files and the possibility of leveraging the sources of information available of them outlined in \cref{sec:information}, the remainder of this thesis focuses on matching and aligning this collection to the Million Song Dataset (MSD) \cite{bertin2011million}.
+Given our extremely large collection of MIDI files and the possibility of leveraging the sources of information available in them outlined in \cref{sec:information}, the remainder of this thesis focuses on matching and aligning this collection to the Million Song Dataset (MSD) \cite{bertin2011million}.
 Due to the scale of this problem, we will develop a suite of learning-based methods for efficient large-scale comparison of sequences.
 We will then demonstrate how the combination of these approaches allows us to rapidly match and align our huge MIDI file collection to the MSD and discuss some possible applications for the resulting data.

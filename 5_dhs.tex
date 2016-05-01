@@ -9,7 +9,7 @@ We use the 994,960 7digital preview clips \cite{schindler2012facilitating} corre
 A complete search for matches could thus involve 994,960 alignments for each of our 178,561 MIDI files, resulting in 177,661,052,560 comparison.
 
 The method proposed in \cref{ch:dtw} is much too inefficient to be used in this manner.
-Under this approach, aligning a typical-length MIDI file to a single audio recording from the MSD takes on average about 247 milliseconds on an Intel Core i7-4930k processor when using an extremely efficient LLVM-compiled DTW routine and the optimized distance matrix calculation of \texttt{scipy}.
+Under this approach, aligning a typical-length MIDI file to a single audio recording from the MSD takes on average about 247 milliseconds on an Intel Core i7-4930k processor when using an extremely efficient LLVM-compiled DTW routine and the optimized distance matrix calculation of \texttt{scipy} \cite{jones2014scipy}.
 Matching our entire collection of MIDI files using this approach would therefore take approximately
 \begin{equation}
         \frac{(.247 \mathrm{\;seconds})(178{,}561 \mathrm{\;MIDI\;files})(994{,}960 \mathrm{\;audio\;files})}{(60 \mathrm{\;seconds})(60 \mathrm{\;minutes})(24 \mathrm{\;hours})(365 \mathrm{\;days})} \approx 1{,}391 \mathrm{\;years}
@@ -37,7 +37,7 @@ For the time-frequency representation we utilize in \cref{ch:dtw}, our sequences
 As a result, in our problem setting computing the pairwise distance matrix is actually more expensive than finding the lowest-cost path through it because each entry in the distance matrix requires at least $D$ operations, where $D$ is the feature dimensionality.
 Computing the distance matrix similarly receives quadratic speed gains when the sequences are downsampled, but also can be made faster by using a lower-dimensional or otherwise more efficient feature representation.
 
-In addition, the ``raw'' representation in which data is initially provided may not produce the most effective measure of similarity under the Euclidian distance utilized by DTW.
+In addition, the ``raw'' representation in which data is initially provided may not produce the most effective measure of similarity under the Euclidean distance utilized by DTW.
 More concretely, while the audio-to-synthesized MIDI CQT comparison utilized in \cref{ch:dtw} proved effective, it may be that we are able to transform the individual feature vectors to a space where similarity is better represented so that matching MIDI files and audio recordings have a smaller DTW distance.
 Recently, the framework of ``representation learning'' has proven to be effective for this type of problem \cite{bengio2013representation}.
 Representation learning utilizes prior knowledge, such as a collection of pairs of known-similar and dissimilar elements, to learn a mapping to a more effective transformed space.
@@ -128,7 +128,7 @@ For the above reasons, we utilize convolutional networks for the rest of this ch
 To determine the effectiveness of this approach on the task of matching MIDI files to the MSD, we evaluated its effectiveness on a smaller surrogate problem.
 As an overview, this experiment proceeded as follows:
 First, we assembled a collection of known-correct MIDI-MSD matches.
-We then aligned these pairs using the method described in \cref{sec:goldstandard} and used a subset of the matched and aligned pairs to train our hashing model.
+We then aligned these pairs using the ``gold-standard'' system described in \cref{sec:goldstandard} and used a subset of the matched and aligned pairs to train our hashing model.
 Finally, we utilized the trained model to produce hash sequences for the entire MSD and a held-out subset of MIDI files from our collection of known-correct matches.
 Our approach was then evaluated based on how accurately it was able to recover the correct match in the MSD by nearest-neighbor DTW search utilizing the downsampled hash sequences.
 To explore the ability of our approach to handle multimodal data, we repeated this experiment using piano roll matrices to represent MIDI files rather than constant-Q spectrograms.
@@ -179,7 +179,7 @@ To obtain a more consistent metric, we also computed the distribution of distanc
 We then used the Bhattacharyya coefficient \cite{bhattacharyya1943measure} to compute the separation of these distributions to obtain a more direct measure of network performance.
 
 In each modality, the hashing networks have the same architecture: A series of alternating convolutional and pooling layers followed by a series of fully-connected layers.
-While the exact specification of this architecture will effect performance, the most impactful design choice for our problem setting is the extent to which the temporal axis is downsampled by pooling layers.
+While the exact specification of this architecture will affect performance, the most impactful design choice for our problem setting is the extent to which the temporal axis is downsampled by pooling layers.
 Following the common convention of pooling by 2, each pooling layer will result in sequence lengths being halved and the resulting DTW calculation being faster by up to a factor of 4.
 However, too much downsampling may result in a loss of precision, particularly if the resulting sequences become extremely short.
 We therefore chose to utilize a total of three pooling layers, which corresponds to downsampling by a factor of 8.
@@ -187,7 +187,7 @@ This resulted in the 30-second 7digital preview clips being mapped to length-80 
 
 For the convolutional front-end of our networks, we experimented with a variety of architectures and chose the following:
 Each of the three max-pooling layers were preceded by two convolutional layers, each with $3 \times 3$ filters (where the first dimension is time and the second is constant-Q frequency bin).
-The use of a larger number of smaller convolutional filters is advocated by Simonyan and Zisserman \cite{simonyan2014very}, who argue that this structure improves the network's modeling capabilities without sacrificing receptive field size.
+The use of a larger number of smaller convolutional filters is advocated by Simonyan and Zisserman \cite{simonyan2014very}, who argue that this structure improves the network's modeling capabilities while maintaining receptive field size and requiring fewer parameters.
 The convolutional layers in each of the three ``groups'' had 16, 32, and 64 filters, respectively.
 We padded the input to each convolutional layer so that the output size was the same as the input size.
 All of the max-pooling layers utilized $2 \times 1$ pooling with a stride of $2$.
@@ -222,7 +222,7 @@ For posterity, we report those here:
 \item We also tried the hash entropy-encouraging loss term proposed in \cite[equation (3)]{yang2015supervised} but it did not significantly affect the resulting hash distribution.
 \item In early experiments, we utilized fully-connected networks with no convolutional layers, but quickly achieved better results after including the convolutional front-end.
 \item We experimented with a variety of architectures for the fully-connected portion of the network, including using 1, 2, or 3 hidden layers, with 256, 512, 1024, 2048, or 4096 layers; 2 layers with 2048 units was the largest configuration which could fit in memory and incidentally produced the best performance.
-\item Apart from RMSProp, we also experimentied with Nesterov's accelerated gradient \cite{nesterov1983method} and Adam \cite{kingma2015adam} (see \cref{sec:nesterov} and \cref{sec:adam}) but found that RMSProp produced the best results.
+\item Apart from RMSProp, we also experimented with Nesterov's accelerated gradient \cite{nesterov1983method} and Adam \cite{kingma2015adam} (see \cref{sec:nesterov} and \cref{sec:adam}) but found that RMSProp produced the best results.
 \end{itemize}
 
 \subsection{Adapting to Multimodal Data}
@@ -236,7 +236,7 @@ This representation can be readily extracted from the MIDI file itself (i.e.\ wi
 It is, however, still a ``time-frequency'' matrix, so it is not truly multimodal in the strictest sense.
 
 For ease of comparison, we utilized the exact same system as outlined in \cref{sec:hashing_system} except that we replaced the constant-Q spectrograms of synthesized MIDI files with piano roll matrices, computed over the same timebase and range of semitones.
-Specifically, after matching and aligning entries from the clean MIDI subset, we computed piano roll matrices using the \texttt{get\char`_piano\char`_roll} method of the \texttt{pretty\char`_midi} library \cite{raffel2014pretty_midi}.
+Specifically, after matching and aligning files from the clean MIDI subset, we computed piano roll matrices using the \texttt{get\char`_piano\char`_roll} method of the \texttt{pretty\char`_midi} library \cite{raffel2014pretty_midi}.
 As with the constant-Q spectrograms, we also $L^2$ normalized each feature vector in the piano roll matrices and standardized the feature dimensions using statistics from the training set.
 We then carried out a separate hyperparameter optimization, because we don't necessarily expect the same system design to perform best using both feature representations.
 The best performance was attained with a learning rate of $0.00011$, an RMSProp decay parameter of $0.90$, $\alpha = 5.72$, and $m = 5$, and $\beta = 0.036$, producing a Bhattacharyya coefficient of $0.428$.
@@ -246,7 +246,7 @@ The best performance was attained with a learning rate of $0.00011$, an RMSProp 
 
 In order to verify whether our hashing system is beneficial, we also evaluated a simple learning-free baseline method.
 This approach is inspired by the ``piecewise aggregate approximation'' approach proposed in \cite{keogh2001dimensionality,yi2000fast}, which downsamples a sequence by computing the average of feature vectors within non-overlapping blocks of fixed length.
-Given a constant-Q spectrogram, our baseline method first computes the averate spectrum over non-overlapping blocks of 8 spectra, which achieves the same downsampling ratio as our convolutional network models.
+Given a constant-Q spectrogram, our baseline method first computes the average spectrum over non-overlapping blocks of 8 spectra, which achieves the same downsampling ratio as our convolutional network models.
 In order to produce binary vectors, we first computed the mean value in each feature dimension among all sequences in our training set, and then thresholded the downsampled sequences about this value.
 More explicitly, given a sequence $X \in \mathbb{R}^{M \times D}$ which consists of $M$ $D$-dimensional feature vectors, we compute
 \begin{equation}
@@ -299,7 +299,7 @@ While the hash sequences are not directly interpretable, they do appear to match
 The pairwise distance matrices and DTW path for these constant-Q spectrogram and downsampled hash sequence pairs can be seen in the first and second row of \cref{fig:distance_matrices} respectively.
 Visualized in this manner, the hash sequence distance matrix clearly shows the structure of the song, including local repetitions as well as the two choruses at around 1/3 and 2/3 of the way through the song.
 Furthermore, the hash sequence DTW operation recovered the same alignment path.
-The distance matrix produced by the ``multimodal'' system, shown in the second row, has similar structure although the DTW alignment chose the first rather than second chorus.
+The distance matrix produced by the ``multimodal'' system, shown in the third row, has similar structure although the DTW alignment chose the first rather than second chorus.
 At the bottom is the baseline TPAA distance matrix, which has less obvious structure than the other hash sequence representations.
 
 \begin{figure}
@@ -307,7 +307,7 @@ At the bottom is the baseline TPAA distance matrix, which has less obvious struc
   \caption[Distance matrices utilizing different representations]{Distance matrices and DTW alignment paths (shown as dashed white lines) between the MSD entry and MIDI transcription shown in \cref{fig:cqts_and_dhs} utilizing different representations.
 At the top is the standard synthesized MIDI CQT-to-audio CQT distance matrix, as utilized in \cref{ch:dtw}.
 The second row shows the distance matrix for the downsampled hash sequences shown at the bottom of \cref{fig:cqts_and_dhs}, produced by the DHS system.
-Below that is the distance matrix for hash sequences created utilizing DHS-piano system.
+Below that is the distance matrix for hash sequences created utilizing the DHS-piano system.
 Finally, the bottom distance matrix was computed using the TPAA method.}
   \label{fig:distance_matrices}
 \end{figure}
@@ -357,7 +357,7 @@ We also observe a modest, but significant, drop in performance to an MRR of $0.5
   \end{center}
   \caption[Performance of different downsampled hash sequence approaches]{Metrics measuring the performance of the different approaches we tried for creating downsampled hash sequences.
 The first row shows the mean reciprocal rank of the correct match across all entries in our test set.
-The second shows the threshold below which 95\% had a smaller rank.}
+The second shows the threshold below which 95\% of the test set had a smaller rank.}
   \label{tab:ranking_metrics}
 \end{table}
 

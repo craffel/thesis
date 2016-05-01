@@ -19,8 +19,8 @@ Given a query MIDI file, we first synthesize it using \prettymidi{}'s \texttt{fl
 Then, we compute the log-magnitude, $L^2$-normalized, constant-Q spectrogram representation utilized throughout this thesis.
 Using the pre-trained DHS and PSE models from \cref{ch:dtw,ch:pse}, we compute the MIDI file's downsampled hash sequence and embedding.
 We then compute the pairwise distance between the resulting embedding and all pre-computed embeddings of entries in the MSD, rank the entries according to their distance, and discard all but the top $N_{PSE}$.
-We perform a similar pruning with the downsampled hash sequences, computing the DTW distance between the query and top $N_{PSE}$ MSD entries, ranking by distance, and discarding all but the top $N_{DHS}$.
-Finally, we align the MIDI file to the remaining $N_{DHS}$ entries utilizing the system of \cref{sec:goldstandard}.
+We perform a similar pruning with the downsampled hash sequences, computing the DTW distance between the query and the MSD entries which remain after the embedding-based pruning step, ranking by hash sequence DTW distance, and discarding all but the top $N_{DHS}$.
+Finally, we align the MIDI file to the remaining $N_{DHS}$ entries utilizing the ``gold-standard'' system of \cref{sec:goldstandard}.
 
 Before proceeding, we must first decide the pruning thresholds $N_{PSE}$ and $N_{DHS}$.
 Choosing these thresholds directly trades off precision and computation, because setting larger thresholds will decrease the likelihood of discarding a valid match but will result in more comparisons being made downstream.
@@ -48,9 +48,9 @@ In practice, we found the mean and median pairwise distance to be extremely clos
 
 Prior to performing the matching of our full collection of MIDI files to the MSD, it is useful to get an idea of the expected accuracy of the process described above.
 We therefore utilized this approach on the same evaluation task used in \cref{ch:dhs,ch:pse}, i.e.\ measuring the accuracy of matching our test set of known-correct MIDI-MSD pairs.
-Specifically, we utilized the DHS and PSE methods of \cref{ch:pse,ch:dhs} to prune all but 100,000 and 250 entries respectively and then computed the match confidence score for the remaining 250 entries using the method of \cref{sec:goldstandard}.
-For evaluation, we then ranked the remaining 250 entries according to their resulting confidence scores.
-If the correct match in the MSD was pruned incorrectly, we assigned a rank 1,000,000, because effectively this results in the correct matching being unrecoverable by ouer system.
+Specifically, we utilized the DHS and PSE methods of \cref{ch:pse,ch:dhs} to prune all but 100,000 and 250 entries respectively and then computed the match confidence score for the remaining 250 entries using the gold-standard alignment system of \cref{sec:goldstandard}.
+For evaluation, we ranked the remaining 250 entries according to their resulting confidence scores.
+If the correct match in the MSD was pruned incorrectly, we assigned a rank 1,000,000, because this effectively results in the correct matching being unrecoverable by our system.
 For full details of this evaluation task, refer to \cref{sec:dhs_experiment}.
 
 \begin{figure}
@@ -69,7 +69,7 @@ It's also important to note that these figures do not necessarily reflect real-w
 Nevertheless, it does demonstrate the extent to which our combination of pruning approaches causes false rejects.
 
 Of course, our approach's precision is only beneficial if it is also efficient.
-On average, matching a MIDI file to the MSD using this cascade of techniques takes about 109 seconds.
+On average, matching a MIDI file to the MSD using this cascade of techniques takes about 109 seconds utilizing a single core of an Intel Core i7-4930k CPU.
 Of this, on average roughly 500 milliseconds is spent pruning all but 100,000 entries using the embedding approach, 46 seconds is spent pruning down to 250 entries using the downsampled hash sequence approach, and 62 seconds is spent computing confidence scores for the remaining 250 entries.
 Most of the remaining 500 milliseconds is the time required to compute all of the necessary representations for the MIDI file prior to matching.
 Compared to the approximately 2.8 days it would take to match a single MIDI file to the MSD using the DTW approach from \cref{sec:goldstandard} on its own, we consider the 5.4\% false reject rate a small price to pay for this increase in efficiency.
@@ -79,7 +79,7 @@ Of course, we could increase precision substantially by raising the pruning thre
 
 Now that we have empirically validated our approach, we proceed to matching our collection of 178,561 MIDI files to the MSD.
 To do so, we simply followed the approach of the previous section exactly, except that we matched our entire collection against the MSD instead of just our test set.
-Based on the fact that matching a single file takes roughly 109 seconds on average, performing this matching for all 178,561 MIDI files takes about 225 days of compute time.
+Based on the fact that matching a single file takes roughly 109 seconds on average, performing this matching for all 178,561 MIDI files would take about 225 days of compute time.
 To speed things up, we ran this process in parallel across 32 processors, resulting in a total run time of about 7 days.
 While performing the match, we discovered 5,602 MIDI files which were corrupt or otherwise unparsable by \prettymidi{}.
 In addition, in order to avoid spurious matches and incomplete transcriptions, we discarded all MIDI files which were less than 30s in length.
@@ -88,19 +88,19 @@ In the end, we therefore searched for matches in the MSD for a total of 160,603 
 \begin{figure}
   \includegraphics[width=\textwidth]{figures/7-matches.pdf}
   \caption[Number of MIDI files with matches above a given confidence]{Number of MIDI files which had at least one entry in the MSD whose DTW confidence score was above a given threshold.
- For example, about 50,000 MIDI files had at least one MSD entry whose match confidence score was above 0.5.}
+ For example, just under 50,000 MIDI files had at least one MSD entry whose match confidence score was above 0.5.}
   \label{fig:match_confidences}
 \end{figure}
 
-An informative way to report the extent to which we successfully found matches in the MSD is to plot the number of MIDI files in our collection which had at least one MSD entry against which the DTW confidecne score was below a threshold.
+An informative way to report the extent to which we successfully found matches in the MSD is to plot the number of MIDI files in our collection which had at least one MSD entry against which the DTW confidence score was below a threshold.
 We plot this curve in \cref{fig:match_confidences}.
-Choosing 0.5 as the threshold above which a confidence score denotes a match (as we did in \cref{sec:training_data} based on the results of \cref{sec:qualitative}), we found 50,513 MIDI files which had at least one match in the MSD, and a total of 138,026 MIDI-to-MSD pairings.
+Choosing 0.5 as the threshold above which a confidence score denotes a match (as we did in \cref{sec:training_data} based on the results of \cref{sec:qualitative}), we found 45,612 MIDI files which had at least one match in the MSD, and a total of 118,661 MIDI-to-MSD pairings.
 Many MIDI files were matched to multiple MSD entries due to duplicates, covers, and alternate versions; for example, one MIDI transcription of ``Imagine'' by John Lennon was matched to six original renditions, ten covers, one hip-hop song which sampled it (``Image'' by Nas), and one song which used an identical chord progression (``Bringin' Down Dinner'' by Neil Young).
 
 % TODO: Note about decoys?
 
 Of course, the main purpose of creating this dataset is to facilitate MIR research by sharing it.
-Following the example of the Million Song Dataset, we name this collection the ``lakh MIDI dataset'' (LMD), because depending on how you count we are providing about 100,000 MIDI files.
+Following the example of the Million Song Dataset, we name this collection the ``Lakh MIDI Dataset'' (LMD), because depending on how you count we are providing about 100,000 MIDI files.
 Towards this end, we make it available in the following formats:
 First, the entire collection of 178,561 unique MIDI files, unmodified, along with all potential metadata available from their filenames (referred to as ``LMD-full'').
 Second, a mapping between each of these MIDI files to MSD entries they were successfully matched to, along with the resulting DTW confidence score (referred to as ``LMD-matched'').
@@ -128,7 +128,7 @@ For example, in the past large-scale musicological studies have been undertaken 
 These results are potentially confounded by the fact that these features only represent a high-level, noisy, and potentially error-prone approximation of the actual transcription.
 We expect that similar corpus studies utilizing the matched transcriptions will produce more reliable results.
 The transcriptions can also provide a stronger signal for query-by-humming retrieval systems.
-On the other hand, by being matched to the MSD, the MIDI files themselves are augmented with a great deal of additional metadata, including the song's release year, lyrics, user listening preferencs \cite{jansson2015this}, and human-annotated tags and genre labels \cite{schreiber2015improving}.
+On the other hand, by being matched to the MSD, the MIDI files themselves are augmented with a great deal of additional metadata, including the song's release year, lyrics, user listening preferences \cite{jansson2015this}, and human-annotated tags and genre labels \cite{schreiber2015improving}.
 
 Finally, based on the discussion in \cref{sec:information}, the LMD-aligned dataset can potentially be used to produce ground-truth annotations for audio content-based MIR.
 For example, beat annotations for a given 7digital preview recording could be obtained by utilizing the time signature and tempo change events in the corresponding aligned MIDI file.
@@ -200,7 +200,7 @@ We therefore propose that \textit{non-C major} MIDI key change events are as rel
 Utilizing many of the sources of information in MIDI files in audio content-based MIR tasks depends on the precise alignment of a given MIDI file to an audio recording of a performance of the same song.
 We therefore performed an additional experiment to evaluate the quality of MIDI-derived beat annotations, which are evaluated on the scale of tens of milliseconds.
 Producing valid beat annotations from a MIDI file requires not only that the file's timing information is correct, but also that it has been aligned with high precision.
-To align our Beatles MIDI files to corresponding audio recordings, we used our best-performing DTW system from \cref{sec:goldstandard} exactly, except that we computed spectrograms with a hop size of 23 milliseconds rather than 46 milliseconds.
+To align our Beatles MIDI files to corresponding audio recordings, we used our best-performing DTW system from \cref{sec:goldstandard} exactly, except that we computed spectrograms with a hop size of 23.2 milliseconds rather than 46.4 milliseconds.
 This finer timescale is more appropriate for the beat evaluation metrics we will use, which have tolerances measured in tens of milliseconds.
 
 We used \prettymidi{}'s \texttt{get\char`_beats} method to extract beat times from our 545 Beatles MIDI files, and adjusted each beat's timing according to the MIDI file's alignment to corresponding audio recordings.
@@ -226,7 +226,7 @@ However, there is no reliable correspondence between high confidence scores and 
 For example, while it appears that a prerequisite for an accurate MIDI-derived beat annotation is a confidence score above $.5$, there are many MIDI files which had high confidence scores but low metric scores (appearing in the bottom-right corner of the plots in Figure \ref{fig:beat}).
 
 We found that this undesirable behavior was primarily caused by a few issues:
-First, it is common that the alignment system would produce alignments which were slightly ``sloppy'', i.e.\ were off by one or two frames (corresponding to 23 milliseconds each) in places.
+First, it is common that the alignment system would produce alignments which were slightly ``sloppy'', i.e.\ were off by one or two frames (corresponding to 23.2 milliseconds each) in places.
 This had less of an effect on the {\em F-measure} and {\em Any Metric Level Total} metrics, which are invariant to small temporal errors up to a certain threshold, but deflated the {\em Information Gain} scores because this metric rewards consistency even for fine-timing errors.
 Second, many MIDI files had tempos which were at a different metric level than the annotations (e.g.\ double, half, or a third of the tempo).
 This affected the {\em Any Metric Level Total} scores the least because it is invariant to these issues, except for the handful of files which were transcribed at a third of the tempo.

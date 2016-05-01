@@ -16,7 +16,7 @@ Traditionally, machine learning techniques are divided into three types: Supervi
 Supervised learning requires a collection of training data that specifies both the input to the algorithm and the desired output.
 Unsupervised learning, on the other hand, does not utilize target output data, and thus is limited to finding structure in the input data.
 Finally, reinforcement learning refers to the broader problem of determining a policy to respond to input data in a dynamic ``environment'' based on a potentially rare signal which tells the algorithm whether it is successful or not.
-All of the problems in this thesis fall into the category of supervised learing, so we will not discuss unsupervised or reinforcement learning further.
+All of the problems in this thesis fall into the category of supervised learning, so we will not discuss unsupervised or reinforcement learning further.
 
 \subsection{Supervised Learning}
 
@@ -26,7 +26,7 @@ In the supervised setting, our machine learning algorithm produces a function $f
 \hat{y} = f(x, \theta)
 \end{equation}
 
-Supervised learning requires a training set $\mathcal{S}$ of input-target pairs $(x_1, y_1), (x_2, y_2), \ldots (x_{|\mathcal{S}|}, y_{|\mathcal{S}|})$, where $x_n \in \mathcal{X}$ and $y_n \in \mathcal{Y}$.
+Supervised learning requires a training set $\mathcal{S}$ of input-target pairs $(x_1, y_1), (x_2, y_2), \ldots (x_{|\mathcal{S}|}, y_{|\mathcal{S}|})$, where $x_n \in \mathcal{X}$ (the input space) and $y_n \in \mathcal{Y}$ (the target space).
 We assume that these pairs are drawn from an unknown joint probability distribution $p(x, y)$, of which the only information we explicitly know is the training set $\mathcal{S}$.
 The goal of a supervised learning algorithm is to capture the probability distribution $p(x, y)$ with $f$ by adjusting the parameters $\theta$ based solely on $\mathcal{S}$.
 
@@ -34,7 +34,7 @@ One way to formulate this goal is to state that for a sample from $p(x, y)$ whic
 Of course, because we are only given the samples in $\mathcal{S}$, the parameters $\theta$ must be optimized solely according the training pairs in $\mathcal{S}$.
 This approach, where $f$ is used directly to produce the predicted value for $y$, is referred to as discriminant training.
 An alternative approach, called probabilistic training, is to use $f$ to model $p(x, y)$ by estimating $p(y | x)$ and then choosing the most probable $y$.
-In either case, choosing $f$ typically involves using a task-specific ``loss function'' $\mathcal{L}$ which computes a nonnegative scalar value which measures the extent to which $\hat{y}$ agress with $y$.
+In either case, adjusting the parameters $\theta$ of $f$ typically involves using a task-specific ``loss function'' $\mathcal{L}$ which computes a non-negative scalar value which measures the extent to which the model's output $\hat{y}$ agrees with the target $y$.
 Ideally, minimizing this loss over the training set by adjusting $\theta$ will yield an $f$ which closely approximates $p(x, y)$.
 
 The choice of a loss function will depend on the characteristics of the problem, in particular the target space $\mathcal{Y}$.
@@ -46,6 +46,7 @@ A natural loss function in this case is the zero-one loss
 1,& \hat{y} = y\\
 0,& \hat{y} \ne y
 \end{cases}
+\label{eq:zero_one}
 \end{equation}
 
 In {\em regression} problems, the targets are continuously valued, and a common loss function is the squared error
@@ -64,7 +65,7 @@ In general, a suitable goal for training an unsupervised learning algorithm is t
 
 Minimizing this average loss is equivalent to minimizing the empirical risk of $f$.
 A common paradigm is to compute the derivative of the loss function $\mathcal{L}$ with respect to the model parameters $\theta$ and use this derivative information to incrementally change $\theta$ to make $\mathcal{L}$ smaller.
-In this case, it is beneficial to have a loss function which is continuous and smooth, which precludes the use of loss functions like the zero-one loss.
+In this case, it is beneficial to have a loss function which is continuous and smooth, which precludes the use of loss functions like the zero-one loss (\cref{eq:zero_one}).
 A common solution to this problem is to use a surrogate loss function which has the desired properties (e.g.\ smoothness) and whose minimization will also minimize $\mathcal{L}$.
 
 There are supervised learning methods which do not follow the above framework.
@@ -94,7 +95,7 @@ Speech recognition is an exemplary case, where a sequence of discrete words must
 
 \subsection{Neural Networks}
 
-Most of the machine learning algorithms used in this thesis will come from a class of models known as ``neural netorks''.
+Most of the machine learning algorithms used in this thesis will come from a class of models known as ``neural networks''.
 Neural networks can be considered learnable functions which consist of a sequence of nonlinear processing stages.
 First proposed in the 1940s \cite{mcculloch1943logical,hebb1949organization}, these models were designed as an artificial model of the way the brain was understood to work at that time.
 The modern understanding of the brain has diverged substantially from this model; nevertheless, the name ``neural network'' has endured.
@@ -129,7 +130,7 @@ In summary, a given layer's output is computed as
 \begin{equation}
         a = f(x) = \sigma(W x + b)
 \end{equation}
-where $\sigma$ is a nonlinear ``activation'' function, $x \in \mathbb{D}$ is the layer's input, $W \in \mathbb{R}^{M \times D}$ is the weight matrix, $b \in \mathbb{R}^M$ is the bias vector, $a \in \mathbb{R}^M$ is the layer's output, and $M$ is the output dimensionality of the layer.
+where $\sigma$ is a nonlinear ``activation'' function, $x \in \mathbb{R}^D$ is the layer's input, $W \in \mathbb{R}^{M \times D}$ is the weight matrix, $b \in \mathbb{R}^M$ is the bias vector, $a \in \mathbb{R}^M$ is the layer's output, and $M$ is the output dimensionality of the layer.
 The individual entries of $a$ are referred to as the layer's ``units''.
 The original perceptron is recovered when $\sigma$ is the Heaviside step function and $M = 1$.
 Under this generic definition, multilayer perceptrons are, in fact, equivalent to what are now called feedforward networks; we will use this terminology for the remainder of this thesis.
@@ -157,7 +158,7 @@ As a result, for supervised learning, universal approximation only implies that 
 This is referred to as ``overfitting'', and is an undesirable property of machine learning models.
 
 Despite this issue, feedforward networks have proven to be extremely effective models in a variety of machine learning tasks.
-This success is thanks to a suite of methods and model designs which allow these models to be trained effectively, over potentially very large datasets, while avoiding overfitting.
+This success is thanks to a suite of methods and model designs which allow them to be trained effectively, over potentially very large datasets, while avoiding overfitting.
 It has also led to the development of variants which are more appropriate for sequential data (recurrent networks) and data with local regularities (convolutional networks).
 In the following sections, we give an overview of these different developments and approaches.
 
@@ -168,10 +169,10 @@ These partial derivatives can then be used to update the network's parameters us
 In truth, backpropagation is a special case of the more generic ``reverse-mode automatic differentiation'' method.
 Deriving backpropagation involves numerous clever applications of the chain rule for functions of vectors.
 
-While originally introduced earlier, the wide-spread adoption of backpropagation for training neural networks is largely thanks to Rumelhart et.\ al's seminal paper \cite{rumelhart1986learning}.
+While originally introduced earlier, the widespread adoption of backpropagation for training neural networks is largely thanks to Rumelhart et.\ al's seminal paper \cite{rumelhart1986learning}.
 Backpropagation is so successful and widely applied that in some sense the term ``neural network'' has become genericized to mean ``a machine learning model for which backpropagation is applicable''.
 Because it is fundamental in many of the approaches proposed in this thesis, we give a full derivation of backpropagation for a simple multilayer feedforward network in this section.
-A similar, higher-level and more verbose derivation can be found at \cite{nielsen2015neural}.
+A similar, higher-level and more verbose derivation can be found in \cite{nielsen2015neural}.
 
 By way of review, the chain rule is a way to compute the derivative of a function whose variables are themselves functions of other variables.
 If $\mathcal{L}$ is a scalar-valued function of a scalar $z$ and $z$ is itself a scalar-valued function of another scalar variable $w$, then the chain rule states that
@@ -270,7 +271,7 @@ or, in vector form
 \end{equation}
 
 The first term $\partial \mathcal{L}/\partial a_L$ is just the derivative of the loss function with respect to its argument, whose form depends on the loss function chosen.
-Similarly, $\partial a_m/\partial z_m$ (for any layer $m$ includling $L$) is the derivative of layer $m$'s nonlinearity with respect to its argument and will depend on the choice of nonlinearity.
+Similarly, $\partial a_m/\partial z_m$ (for any layer $m$ including $L$) is the derivative of layer $m$'s nonlinearity with respect to its argument and will depend on the choice of nonlinearity.
 For other layers, we again invoke the chain rule:
 
 \begin{align}
@@ -298,7 +299,7 @@ By way of example, \cref{tab:nonlinearities} and \cref{tab:loss_functions} list 
 \begin{center}
 \begin{tabular}{lll}
   \toprule
-  Nonlinearity & $a_m$                                            & $\frac{\partial a_m}{\partial z_m}$                   \\
+  Nonlinearity & $a_m = \sigma_m(z_m)$                            & $\frac{\partial a_m}{\partial z_m}$                   \\
   \midrule
   Logistic     & $\dfrac{1}{1 + e^{z_m}}$                         & $a_m(1 - a_m)$                                        \\[1.2ex]
   $\tanh$      & $\dfrac{e^{z_m} - e^{-z_m}}{e^{z_m} + e^{-z_m}}$ & $1 - (a_m)^2$                                         \\[1.2ex]
@@ -314,14 +315,14 @@ By way of example, \cref{tab:nonlinearities} and \cref{tab:loss_functions} list 
 \begin{center}
 \begin{tabular}{lll}
   \toprule
-  Loss Function & $\mathcal{L}(a_L, y)$                           & $\frac{\partial \mathcal{L}}{\partial a^L}$ \\
+  Loss Function & $\mathcal{L}(a_L, y)$                           & $\frac{\partial \mathcal{L}}{\partial a_L}$ \\
   \midrule
-  Squared Error & $\dfrac{1}{2}(y - a^L)^\top(y - a^L)$ & $y - a^L$                         \\
-  Cross-Entropy & $(y - 1)\log(1 - a^L) - y\log(a^L)$   & $\dfrac{a^L - y}{a^L(1 - a^L)}$   \\
+  Squared Error & $\dfrac{1}{2}(y - a_L)^\top(y - a_L)$ & $y - a_L$                         \\
+  Cross-Entropy & $(y - 1)\log(1 - a_L) - y\log(a_L)$   & $\dfrac{a_L - y}{a_L(1 - a_L)}$   \\
   \bottomrule
 \end{tabular}
 \end{center}
-\caption[Common loss functions used in neural networks]{Common loss (loss) functions $\mathcal{L}(a_L, y)$ used in neural networks and their derivatives with respect to their input $a_L$.}
+\caption[Common loss functions used in neural networks]{Common loss functions $\mathcal{L}(a_L, y)$ used in neural networks and their derivatives with respect to their input $a_L$.}
   \label{tab:loss_functions}
 \end{table}
 
@@ -344,7 +345,7 @@ and
 \end{equation}
 
 From this procedure, we can see why backpropagation is an efficient way to compute these partial derivatives: By reusing terms, all of the partial derivatives can be computed by a single forward and backward pass.
-For a feedforward network, the computational loss of each of these passes is effectively $L$ matrix multiplications.
+For a feedforward network, the computational cost of each of these passes is effectively $L$ matrix multiplications.
 A simple alternative would be to measure the change in $\mathcal{L}$ by adjusting each of the parameters (i.e.\ individual elements of the weight matrices and bias vectors) by a small amount.
 However, this would require a separate forward pass for each parameter.
 Modern neural networks contain millions of parameters, so clearly backpropagation is an efficient choice.
@@ -355,7 +356,7 @@ Modern neural networks contain millions of parameters, so clearly backpropagatio
 Combined with a gradient descent technique, backpropagation provides an effective method for optimizing the parameters of a neural network (``training'') to minimize a given loss function.
 However, training neural networks is made difficult in practice by a variety of factors.
 First, the composition of the many nonlinear processing layers in a neural network make the resulting loss function highly non-convex.
-Nonconvexity means that, when minimizing the network's loss function with gradient descent methods, there is no guarantee that a given stationary point is a global minimum.
+Non-convexity means that, when minimizing the network's loss function with gradient descent methods, there is no guarantee that a given stationary point is a global minimum.
 It also implies that both the way the parameters are initialized prior to optimization and the gradient descent technique used may have a very strong effect on the best solution found during optimization.
 
 As mentioned above, the universal approximation property of neural networks can also have negative implications for their utility.
@@ -396,14 +397,14 @@ The rectifier nonlinearity has zero gradient for half of its domain, which can h
 
 Due to their tendency to overfit, some form of regularization is typically necessary to ensure that the optimized neural network's variance is not too high.
 A common regularizer which is used in many machine learning models is to include in the loss function a penalty on the norm of the model's parameters.
-In neural networks, adding the $L^2$ penalty $\lambda \sum_i \theta_i^2$ where $\lambda$ is a hyperparameter and $\theta_i$ are the model's parameters (e.g. individual entries of the weight matrices and bias vectors) is referred to as ``weight decay'' \cite{hanson1989comparing}.
-This can encourge the weight matrix of a given layer from focusing too heavily (via a very large weight value) on a single unit of its input.
+In neural networks, adding the $L^2$ penalty $\lambda \sum_i \theta_i^2$ where $\lambda$ is a hyperparameter and $\theta_i$ are the model's parameters (e.g.\ individual entries of the weight matrices and bias vectors) is referred to as ``weight decay'' \cite{hanson1989comparing}.
+This can prevent the weight matrix of a given layer from focusing too heavily (via a very large weight value) on a single unit of its input.
 A related term is $\lambda \sum_i |\theta_i|$ which effectively encourages parameter values to be zero \cite{bengio2012practical}.
 
 A completely different regularization method which has recently proven popular in neural networks is ``dropout'' \cite{hinton2012improving}.
 In dropout, at each training iteration each unit of each layer is randomly set to zero with probability $p$.
 After training, the weights in each layer are scaled by $1/p$.
-Dropout intends to prevent the units of the output of a given layer from being too heavily dependent (correlated) with one of the inputs by randomly artificially removing connections.
+Dropout intends to prevent the units of a given layer from being too heavily correlated with one another randomly artificially removing connections.
 More simply, it provides a source of noise which prevents memorization of correspondences in the training set and has repeatedly been shown empirically to be an effective regularizer.
 
 In practice, the technique of ``early stopping'' is almost always used to avoid overfitting in neural network models \cite{prechelt2012early}.
@@ -419,8 +420,8 @@ Data augmentation has also been explored in the domain of audio and music signal
 
 \paragraph{Parameter Initialization}
 
-Because the objective functions used for training neural networks tend to be highly nonconvex, the way parameters are initialized prior to training can have a substantial effect on the solutions found after optimization \cite{sutskever2013importance}.
-In fact, the recent sucess of neural network models was prompted by a new method for setting parameter values prior to supervised training called ``unsupervised pretraining''.
+Because the objective functions used for training neural networks tend to be highly non-convex, the way parameters are initialized prior to training can have a substantial effect on the solutions found after optimization \cite{sutskever2013importance}.
+In fact, the recent success of neural network models was prompted by a new method for setting parameter values prior to supervised training called ``unsupervised pretraining''.
 Unsupervised pretraining starts by training an unsupervised model (e.g.\ a Restricted Boltzmann Machine \cite{hinton2006reducing,hinton2006fast} or an autoencoder \cite{bengio2007greedy,erhan2009difficulty}) and then using the parameters from that model to initialize a supervised model.
 Ideally, the unsupervised model will take care of disentangling factors of variation and producing a more efficient representation of the input space.
 After initialization with values from the unsupervised model, training of the model proceeds in the normal supervised fashion.
@@ -436,7 +437,7 @@ An alternative is to use orthogonal matrices \cite{saxe2013exact} or to use a sp
 
 Most of the analysis performed on neural networks in order to determine how to facilitate training rely on the assumption that the feature dimensions of the input to the network have zero mean and unit variance.
 A necessary step in order to take advantage of many of these tricks is then to standardize the feature dimensions of the input, typically using statistics computed on the training set.
-An alternative which can also facilitate convergence is to whiten data using Pricipal Component Analysis before presenting it to the network \cite{lecun2012efficient}.
+An alternative which can also facilitate convergence is to whiten data using Principal Component Analysis before presenting it to the network \cite{lecun2012efficient}.
 
 \paragraph{Model Architecture}
 
@@ -449,7 +450,7 @@ We give an overview of the two most relevant architectures for sequential data, 
 \subsubsection{Recurrent Networks}
 \label{sec:recurrent_networks}
 
-A natural extension to feedforward networks are {\em recurrent} connections, which feed the output of the model back into its input.
+A natural extension to feedforward networks are {\em recurrent} connections, which feed the output of parts of the model back into their input.
 The resulting model can be considered a learnable function which at each time step produces an output based on its current input and previous output.
 This class of models, called recurrent networks or RNNs, are well-suited for sequential data due to their ability to model temporal dependencies.
 
@@ -485,7 +486,7 @@ In the two-dimensional case (as used in this thesis), a convolutional layer take
 where $w \in \mathbb{R}^{N \times M \times K_x \times K_y}$ are the layer's filters (also referred to as kernels), $\sigma$ is a nonlinearity, and $b \in \mathbb{R}^N$ are the layer's biases.
 This operation is visualized in \cref{fig:convolution}.
 The first dimension of $x$ and $y$ is referred to as the ``channels'' and can be considered different views or representations of the data (e.g.\ R, G, and B channels in images or left and right channels in a stereo audio recording).
-The remaining dimensions are feature dimensions each of which has an inherent ordering, which is exploited by the translation inherent in the convolution operation.
+The remaining dimensions are feature dimensions, each of which is assumed to have an inherent ordering which is exploited by the translation inherent in the convolution operation.
 The exact form of \cref{eq:convolution} depends on a variety of design choices, such as the convolution's stride, whether the convolution is zero-centered, whether biases are shared across input channels, whether a correlation or convolution is computed, and whether the input will be zero-padded.
 We forgo a complete enumeration of these differences here and instead refer to \cite{dumoulin2016guide}, which provides a thorough discussion of the arithmetic involved in convolutional networks.
 
@@ -494,7 +495,7 @@ We forgo a complete enumeration of these differences here and instead refer to \
   \includegraphics[width=\textwidth]{figures/2-convolution.pdf}
   \caption[Convolution operation]{Visualization of the convolution operation defined in \cref{eq:convolution}.
   The input and output are shown as $6 \times 6$ and $4 \times 4$ grids of units respectively.
-  The output unit highlighted in green depends on the green input units via a $3 \times 3$ filter, represented as horizontal lines.
+  The output unit highlighted in green depends on the green input units via a $3 \times 3$ filter.
   Convolution involves evaluating this filtering operation at all possible positions in the input.}
   \label{fig:convolution}
 \end{figure}
@@ -503,14 +504,14 @@ From this definition, we can observe a number of beneficial properties of using 
 First, the number of parameters per layer is potentially dramatically decreased: Following the common practice of ``flattening'' dimensions, a fully-connected layer with the same input and output dimensionality would have a weight matrix of shape $NJ_xJ_y \times I_xI_y$, compared with $N \times M \times K_x \times K_y$ with $K_x < J_x \le I_x$ and $K_y < J_y \le I_x$.
 This is commonly referred to as ``parameter sharing'', because the same set of weights are applied at different locations in the input rather than using a unique weight for each position.
 This property also gives the convolutional layer translational invariance, i.e.\ the ability to detect a certain pattern regardless of where it appears in the image.
-A final advantage to using a convolution operation is that the layer can naturally handle inputs whose feature dimensions vary in size - the kernels simply slide over the input regardless of its shape.
+A final advantage to using a convolution operation is that the layer can naturally handle inputs whose feature dimensions vary in size -- the kernels simply slide over the input regardless of its shape.
 This makes convolutional networks well-suited for sequential data whose length varies.
 
 An additional ingredient commonly found in convolutional networks are {\em pooling} layers, which provide additional translational invariance by aggregating their input over small regions.
 The most common pooling layer, and the only one used in this thesis, is the max-pooling layer, which outputs the maximum value within each input region.
 Given input $x \in \mathbb{R}^{M \times I_x \times I_y}$, a max-pooling layer with stride $p$ produces $y \in \mathbb{R}^{M \times \frac{I_x}{p} \times \frac{I_y}{p}}$ by
 \begin{equation}
-y[m, j_x, j_y] = \max(x[m, j_x:j_x + p, j_y:j_y + p])
+        y[m, j_x, j_y] = \max_{\substack{n_x \in \{1, \ldots, p\}\\n_y \in \{1, \ldots, p\}}} (x[m, p j_x + n_x, p j_y + n_y])
 \end{equation}
 for $j_x \in 1, \ldots, \frac{I_x}{p}$ and $j_y \in 1, \ldots, \frac{I_y}{p}$.
 The value of $p = 2$ is almost uniformly used.
@@ -520,9 +521,9 @@ Because pooling layers effectively downsample their input, they can be used to i
 Finally, in convolutional networks it is common for the last few layers to be standard fully-connected layers.
 This gives the output of the network access to the entire input region.
 In this framework, the series of convolutional and pooling layers transform and downsample the input, providing appropriate invariances and often learning a hierarchy of higher and higher-level representations \cite{zeiler2014visualizing}.
-In domains where none of the dimensions of the input vary from sample to sample, all of the channels and dimensions at the output of the convolutional portion of the network are flattened prior to being passed to the fully-connected layers.
+In domains where none of the dimensions of the input vary from sample to sample, all of the dimensions of the output of the convolutional portion of the network are flattened prior to being passed to the fully-connected layers.
 When one or more dimensions are variable in size, only the fixed-size dimensions are processed by the fully-connected layers.
-For example, in sequences where the sequence length varies, the output of the convolutional layersfor each time step are passed to the fully-connected layers independently.
+For example, in sequences where the sequence length varies, the output of the convolutional layers for each time step are passed to the fully-connected layers independently.
 
 \subsection{Stochastic Optimization}
 
@@ -543,8 +544,8 @@ This problem can be exacerbated when different structures are used in different 
 As a result, it can be beneficial to update different parameters by different amounts according to the extent to which they effect the objective value.
 
 The stochastic objective arising from training on minibatches and the requirement of only utilizing first-order gradients prompts the use of a special class of gradient descent methods called stochastic optimization.
-Effective stochastic optimization techniques typically include mechanisms for smoothing the updates, which helps mitigate noise from stochasticity, for estimating second-order information, which improves convergence, and for adaptively updating different parameters by different amounts.
-In addition, most optimization methods have at least one hyperparameter; good optimization techniques are able to be effective without being particularly sensitive to their hyperparameter values.
+Effective stochastic optimization techniques typically include mechanisms for smoothing the updates, which helps mitigate noise from stochasticity; for estimating second-order information, which improves convergence; and for adaptively updating different parameters by different amounts.
+In addition, most optimization methods have at least one hyperparameter (i.e.\ a model parameter not adjusted by gradient descent); good optimization techniques are able to be effective without being particularly sensitive to their hyperparameter values.
 In this section, we discuss some of the more popular stochastic optimization methods, particularly those which are used or referenced to in this thesis.
 Similar overviews are available in \cite{ruder2016overview,bayer2015climin}, and \cite{schaul2013unit} provides a comparison of many of these techniques on a variety of toy optimization problems.
 
@@ -565,7 +566,7 @@ Provided that $\eta$ is set correctly, SGD will decrease the loss function at ea
 However, if $\eta$ is too large, SGD can diverge (increase the loss function or oscillate between increasing and decreasing it); if it's too small, it will decrease the objective value very slowly \cite{lecun2012efficient}.
 This sensitivity to the setting of $\eta$ is visualized in \cref{fig:learning_rate}.
 In addition, when the loss surface is ill-conditioned (i.e.\ the curvature of the loss surface is dramatically different along different parameter axes), convergence can also be extremely slow because $\eta$ must be set small enough so that it does not diverge along any parameter axis.
-Nevertheless, SGD can be effective when $\eta$ is chosen correctly; a common heuristic is to choose the largest value of $\eta$ which does not cause divergence by starting with a large $\eta$ and decreasing it by a factor of $3$ until optimization no lonver diverges \cite{bengio2012practical}.
+Nevertheless, SGD can be effective when $\eta$ is chosen correctly; a common heuristic is to choose the largest value of $\eta$ which does not cause divergence by starting with a large $\eta$ and decreasing it by a factor of $3$ until optimization no longer diverges \cite{bengio2012practical}.
 
 \begin{figure}
   \centering
@@ -591,7 +592,7 @@ v_{t + 1} &= \mu v_t - \eta \nabla \mathcal{L}(\theta_t) \\
 \end{align}
 
 In addition, it has been argued that including the previous gradient step has the effect of approximating some second-order information about the gradient because directions with low curvature will tend to persist across iterations and accumulate, which can mitigate conditioning issues \cite{sutskever2013importance}.
-In practice, $\mu$ is often set close to $1$; this will cause parameters to change slowly from iteration to iteration.
+In practice, $\mu$ is often set close to $1$; this will cause the gradient updates to change slowly from iteration to iteration.
 While early theory and intuition suggested that some of the benefits of momentum are lost in the stochastic setting \cite{lecun2012efficient}, it can be particularly beneficial in the early stages of learning before the loss function is close to any minima.
 
 \subsubsection{Nesterov's Accelerated Gradient}
@@ -619,7 +620,7 @@ g_{t + 1} &= g_t + \nabla \mathcal{L}(\theta_t)^2 \\
 where division is elementwise and $\epsilon$ is a small constant included for numerical stability.
 Rescaling in this way effectively lowers the learning rate for parameters which consistently have large gradient values, which can be particularly useful in ill-conditioned settings.
 It also effectively decreases the learning rate over time, because the sum of squares will continue to grow with the iteration.
-This can prove beneficial as the loss function becomes close to a minimum, where large changes in the loss function would be detrimental.
+This can prove beneficial as the loss function becomes close to a minimum, where only small adjustments to the parameters are needed.
 
 \subsubsection{RMSProp}
 \label{sec:rmsprop}
@@ -627,7 +628,7 @@ This can prove beneficial as the loss function becomes close to a minimum, where
 In its originally proposed form \cite{tieleman2012lecture}, RMSProp is very similar to Adagrad.
 The only difference is that the $g_t$ term is computed as an exponentially decaying average instead of an accumulated sum.
 This makes $g_t$ an estimate of the second moment of $\nabla \mathcal{L}$ and prevents the learning rate from effectively shrinking over time.
-The name "RMSProp" comes from the fact that the update step is normalized by a decaying approximate root-mean-squared (RMS) of recent gradients.
+The name ``RMSProp'' comes from the fact that the update step is normalized by a decaying approximate root-mean-squared (RMS) of recent gradients.
 The update is as follows:
 
 \begin{align}
@@ -672,18 +673,18 @@ g_{t + 1} &= \gamma_2 g_t + (1 - \gamma_2) \nabla \mathcal{L}(\theta_t)^2 \\
 The use of the estimated first and second moments ensure that, in most cases, the step size is $\approx \pm \eta$ and that in magnitude it is less than $\eta$.
 However, as $\theta_t$ approaches a true minimum, the uncertainty of the gradient will increase and the step size will decrease.
 It is also invariant to the scale of the gradients.
-These properties make it well-suited for neural network architectures, and as a result has seen rapid adoption.
+These properties make it well-suited for neural network architectures, and as a result Adam has seen rapid adoption.
 
 \subsection{Bayesian Optimization}
 \label{sec:bayesian_optimization}
 
 From the discussion above, it is clear that beyond the parameters of neural network models which are optimized by gradient descent (weight matrices, bias vectors, etc.), there are additional ``hyperparameters'' which govern specifics of the model architecture, loss function, and training.
 These hyperparameters are so called because they are not optimized through gradient descent with the rest of the parameters.
-Nevertheless, the success or failure of training a given model will often heavily depend on these hyperparamters being set appropriately.
+Nevertheless, the success or failure of training a given model will often heavily depend on these hyperparameters being set appropriately.
 
-This problem fits into the general framework of black-box optimization, where we would like to maximize an objective function with tunable parameters which produces different values based on different parameter settings.
-In this framework, we assume that we do not have a way to compute an analytical solution or access to gradient information about the function and thus can only make decisions about what parameter settings to try based on the history of function evaluation results for different settings.
-For example, the function may be a mapping between hyperparameters governing the structure of a neural network model (number and width of layers, weight initialization scheme, etc.), its loss function (which loss function to use, whether to include regularization), and training procedure (which stochastic optimization technique to use, each of which has its own hyperparamwters such as the learning rate) and the objective value could be the trained model's accuracy on a held-out validation set.
+This problem fits into the general framework of black-box optimization, where we would like to maximize an objective function which produces different values based on different parameter settings.
+In this framework, we assume that we do not have a way to compute an analytical solution or have access to gradient information about the function and thus can only make decisions about what parameter settings to try based on the history of function evaluation results for different settings.
+For example, the function may be a mapping between hyperparameters governing the structure of a neural network model (number and width of layers, weight initialization scheme, etc.), its loss function (which loss function to use, whether to include regularization), and training procedure (which stochastic optimization technique to use, each of which has its own hyperparameters such as the learning rate) and the objective value could be the trained model's accuracy on a held-out validation set.
 Alternatively, one could consider the process of baking a cake in this framework, where the parameters are the amount and quantity of each ingredient as well as the baking temperature and time and the objective value is how good the cake tastes.
 
 In practice, this type of problem is often tackled by adjusting parameters by hand based on a series of trials of different settings.
@@ -693,13 +694,13 @@ This approach is only feasible when there are few parameters and possible settin
 In addition, it has been shown that grid search is often less efficient than simply randomly trying different parameter values, particularly when the setting of one or more parameters does not have a strong effect on the objective value \cite{bergstra2012random}.
 While grid search and random search can be effective, neither utilize the results of previous trials to inform subsequent parameter settings.
 
-A valuable alternative is Bayesian Optimization, which utilizes all of the information available in previous trials to produce a probabilistic model of the black-box function being optimized.
+A valuable alternative is Bayesian optimization, which utilizes all of the information available in previous trials to produce a probabilistic model of the black-box function being optimized.
 This requires more computation than methods which only use local approximations of the function, but can produce good solutions to highly non-convex functions after making only a small number of function evaluations.
 This is particularly valuable when the function itself is expensive to evaluate, as is the case when training machine learning models which take hours, days, or weeks (or when baking cakes, due to the price of ingredients).
-The use of a probabilistic model of the black-box function being optimized both allows for candidate parameter settings to be chosen in a principaled way and for prior information to be integrated into the optimization process.
-We utilize Bayesian Optimization techniques throughout this thesis for black-box optimization of different algorithms and systems.
-This section provides a brief overview of Bayesian Optimization; for more thorough treatments see \cite{brochu2010tutorial,snoek2012practical}.
-A visualization of Bayesian Optimization is shown in \cref{fig:bayesian_optimization}.
+The use of a probabilistic model of the black-box function being optimized both allows for candidate parameter settings to be chosen in a principled way and for prior information to be integrated into the optimization process.
+We utilize Bayesian optimization techniques throughout this thesis for black-box optimization of different algorithms and systems.
+This section provides a brief overview of Bayesian optimization; for more thorough treatments see \cite{brochu2010tutorial,snoek2012practical}.
+A visualization of Bayesian optimization is shown in \cref{fig:bayesian_optimization}.
 
 \begin{figure}
   \centering
@@ -714,10 +715,10 @@ A visualization of Bayesian Optimization is shown in \cref{fig:bayesian_optimiza
 
 \subsubsection{Gaussian Processes}
 
-Utilizing Bayesian Optimization requires first choosing a prior over functions which expresses beliefs about the behavior of the function being optimized.
+Utilizing Bayesian optimization requires first choosing a prior over functions which expresses beliefs about the behavior of the function being optimized.
 A common choice are Gaussian processes, which associate every point in the (continuous) parameter space with a normally distributed random variable.
 An alternative definition is that every finite collection of points in the parameter space induces a multivariate Gaussian distribution.
-In the setting of Bayesian Optimization, this corresponds to assuming that the objective values are characterized by Gaussian distributions.
+In the setting of Bayesian optimization, this corresponds to assuming that the objective values are characterized by Gaussian distributions.
 
 More formally, given parameter settings $\theta \in \Theta$ where $\Theta$ is the parameter space, a Gaussian process is characterized by a mean function $m : \Theta \rightarrow \mathbb{R}$ and covariance function $k : \Theta \times \Theta \rightarrow \mathbb{R}$.
 The mean function is (without loss of generality) typically assumed to be zero, while the choice of the covariance function allows strong assumptions to be made about the function being estimated.
@@ -781,7 +782,7 @@ This is an invalid assumption in the presence of noise, so a common modification
 \subsubsection{Acquisition Functions}
 
 We now have a recipe for predicting the mean and variance of the objective function's value at any point based on observed values.
-In order to perform optimization, we also need a principaled approach for selecting new parameter settings to evaluate the function at, both in hopes of achieving higher objective values and for obtaining a better estimate of the objective function.
+In order to perform optimization, we also need a principled approach for selecting new parameter settings to evaluate the function at, both in hopes of achieving higher objective values and for obtaining a better estimate of the objective function.
 This is achieved through acquisition functions, which utilize the predictive distribution to construct a function whose maximum corresponds to the point at which the objective function should be evaluated at next.
 Acquisition functions can be considered a proxy function which can be optimized to estimate the objective function's maximum value under certain assumptions.
 Importantly, sampling values from acquisition functions is potentially much cheaper than evaluating the objective function at new parameter values, which is one of the core reasons that Bayesian optimization is beneficial.
@@ -797,7 +798,7 @@ This probability can be computed as
 \end{equation}
 where $\Phi$ is the normal cumulative distribution function.
 In the case that $\sigma_T(\theta) = 0$, $\mathrm{PI}(\theta)$ is set to $0$.
-This strategy will always choose the $\theta$ which has the highest probability of yielding a larger objective value regardless of whether this value will provide more information about the function, i.e.\ it is completely explotation-based.
+This strategy will always choose the $\theta$ which has the highest probability of yielding a larger objective value regardless of whether this value will provide more information about the function, i.e.\ it is completely exploitation-based.
 A simple way to mitigate this is to add an exploration trade-off parameter $\xi$ to instead compute
 \begin{equation}
         \mathrm{PI}(\theta) = \Phi\left(\frac{\mu_T(\theta) - y_{best} + \xi}{\sigma_T(\theta)}\right)
@@ -886,12 +887,12 @@ Even when pitch and loudness are matched, there is an unlimited possible variety
 The remaining characteristics of a sound which cause it to be perceived differently from other sounds are referred to using the ambiguous catch-all term ``timbre''.
 The distinctions between sounds generally depend on their energy distribution in time and frequency.
 Being sensitive to these factors can help us distinguish between the voices of different people and notes played on different musical instruments.
-\Cref{fig:timbres} shows waveforms of a piano and a violin playing the same note at the same volume; despite having the same pitch and loudness, these sounds are easily distinguishable.
+\Cref{fig:timbres} shows waveforms of a piano and a viola playing the same note at the same volume; despite having the same pitch and loudness, these sounds are easily distinguishable.
 
 \begin{figure}
   \centering
   \includegraphics[width=\textwidth]{figures/2-timbres.pdf}
-  \caption[Waveforms of piano and violin]{Waveforms of a few periods of the same note being played on a piano (blue) and a violin (green) at the same loudness.
+  \caption[Waveforms of piano and viola]{Waveforms of a few periods of the same note being played on a piano (blue) and a viola (green) at the same loudness.
   These two signals will be perceived as having the same pitch and loudness, but are distinguishable due to differences in the distribution and change over time of the frequencies present.}
   \label{fig:timbres}
 \end{figure}
@@ -929,7 +930,7 @@ For real-valued signals (the only kind encountered in this thesis) where $N$ is 
         X[k] = \overline{X[N - k + 2]}, k \in \{2, \ldots, N/2 + 1\}
 \end{equation}
 For this reason, the DFT of real-valued signals of even length $N$ is typically only computed for $k \in \{1, \ldots, N/2 + 1\}$.
-If the real-valued input signal has sampling rate $f_s$, then the $k$th Fourier coefficient (also called a ``frequency bin'') corresponds to a frequency of
+If the real-valued input signal has sampling rate $f_s$, then the $k^{th}$ Fourier coefficient (also called a ``frequency bin'') corresponds to a frequency of
 \begin{equation}
         \frac{(k - 1)f_s}{N}, k \in \{1, \ldots, N/2 + 1\}
         \label{eq:bin_freq}
@@ -983,9 +984,9 @@ Important considerations when computing the STFT include the frame length $M$, t
 
 Increasing the frame length $M$ will result in higher-resolution spectra due to the fact that the frequencies corresponding to each bin are spaced according to \cref{eq:bin_freq}.
 However, it will also result in lower time resolution, due to the fact that if multiple events happen within a single frame then it is impossible to determine their ordering by inspecting the magnitude spectrum.
-Choosing $M$ is therefore a tradeoff of time and frequency resolution, i.e.\ we would like to be able to resolve differences of frequency and the timing of events which are relevant to the task.
+Choosing $M$ is therefore a trade-off of time and frequency resolution, i.e.\ we would like to be able to resolve differences of frequency and the timing of events which are relevant to the task.
 A more practical consideration is that the FFT is optimized for frame lengths which are a power of two.
-Based on these constraints, a common choice is to utilize a frame size of 2048 samples at a 22,050 Hz sampling rate, which corresponds to 92.8 milliseocnds with a 10.8 Hz resolution.
+Based on these constraints, a common choice is to utilize a frame size of 2048 samples at a 22,050 Hz sampling rate, which corresponds to 92.8 milliseconds with a 10.8 Hz resolution.
 
 \paragraph{Window Function}
 
@@ -1004,7 +1005,7 @@ Leakage is caused by truncating each frame immediately to zero at the window edg
 A common method for mitigating this is to use a window which tapers to zero.
 The Hann window
 \begin{equation}
-        w[m] = \frac{1}{2}\left(1 - \cos\left(\frac{2\pi m}{M}\right)\right)
+        w[m] = \frac{1}{2}\left(1 - \cos\left(\frac{2\pi m}{M}\right)\right), m \in \{1, \ldots, M\}
 \end{equation}
 provides a good trade-off between resolution and sensitivity; it has half of the resolution of the rectangular window but decreases side-lobe level and decay by a few orders of magnitude.
 As a result, we will use the Hann window throughout this thesis.
@@ -1021,7 +1022,7 @@ We therefore utilize a hop size of 1024 samples throughout this thesis which cor
 
 As discussed in \cref{sec:psychoacoustics}, our sensitivity to loudness is closer to logarithmic than linear in amplitude.
 The magnitude spectrograms we have studied so far report the amplitude of different frequencies across time.
-We can make this representation more similar to our perception by using log-magnitude spectra, i.e.\ computing the logarithm of the magnitude in each frequency bin so that, for example, a doubling in amplitude corresponds to the same-size “step” regardless of initial level.
+We can make this representation more similar to our perception by using log-magnitude spectra, i.e.\ computing the logarithm of the magnitude in each frequency bin so that, for example, a doubling in amplitude corresponds to the same-size ``step'' regardless of initial level.
 While sound pressure level is defined on a specific scale based on a reference SPL of 0 dB corresponding to the quietest perceptible sound, it is unimportant for the scale to be calibrated in analysis tasks which are scale invariant.
 
 A log-magnitude version of the spectrogram from \cref{fig:spectrogram} is shown in \cref{fig:log_spectrogram}.
@@ -1060,9 +1061,9 @@ The choice of $w_k$ depends on the desired time-frequency resolution trade-off.
 In this thesis, we set $w_k$ to the length-$M_k$ Hann window, which provides a good balance for analysis tasks.
 
 An important consideration when computing this formulation of the constant-Q transform is the hop size.
-If the hop size $R$ is larger than $\min_k M_k$ (the window size of the highest frequency bin), it is possible that a portion of the signal will not be analyzed, and furthermore if $R > \min_k M_k/2$ then some distortion may result.
-The simplest way to mitigate this is to set $R < \min_k M_k/2$.
-However, if $\min_k M_k$ is by necessity very small, this can result in excessive oversampling.
+If the hop size $R$ is larger than $\min_k(M_k)$ (the window size of the highest frequency bin), it is possible that a portion of the signal will not be analyzed, and furthermore if $R > \min_k(M_k)/2$ then some distortion may result.
+The simplest way to mitigate this is to set $R < \min_k(M_k)/2$.
+However, if $\min_k(M_k)$ is by necessity very small, this can result in excessive oversampling.
 An alternative, advocated by \cite{schorkhuber2010constant}, is to compute the high-frequency CQT bins at multiple offsets within each window and aggregate the results.
 
 As with the DFT, the CQT produces complex-valued coefficients, and a more more perceptually accurate transform can be obtained by computing a log-magnitude CQT.
@@ -1087,11 +1088,11 @@ As a result, it is often effective to use a warping similarity measure which all
 
 One such measure which will see extensive use in this thesis is Dynamic Time Warping (DTW).
 First proposed for in our exemplary domain of comparing speech utterances \cite{sakoe1978dynamic}, DTW uses dynamic programming to find a monotonic alignment such that the sum of a distance-like cost between aligned feature vectors is minimized.
-Because DTW produces an optimal alignment, it is also useful in tasks where the actual correspondense between sequence elements is required, as in the problem of audio-to-MIDI alignment explored in \cref{ch:dtw}.
+Because DTW produces an optimal alignment, it is also useful in tasks where the actual correspondence between sequence elements is required, as in the problem of audio-to-MIDI alignment explored in \cref{ch:dtw}.
 In this section, we give an overview of DTW; a more thorough treatment can be found in \cite{muller2007dynamic}.
 
 Suppose we are given two sequences of feature vectors $X \in \mathbb{R}^{M \times D}$ and $Y \in \mathbb{R}^{N \times D}$, where $D$ is the feature dimensionality and $M$ and $N$ are the number of feature vectors in $X$ and $Y$ respectively.
-DTW produces two nondecreasing sequences $p, q \in \mathbb{N}^L$ which define the optimal alignment between $X$ and $Y$, such that $p[i] = n, q[i] = m$ implies that the $m$th feature vector in $X$ should be aligned to the $n$th in $Y$.
+DTW produces two nondecreasing sequences $p, q \in \mathbb{N}^L$ which define the optimal alignment between $X$ and $Y$, such that $p[i] = n, q[i] = m$ implies that the $m^{th}$ feature vector in $X$ should be aligned to the $n^{th}$ in $Y$.
 Finding $p$ and $q$ involves globally solving the following minimization problem:
 \begin{equation}
 p, q = \mathrm{arg}\min_{p, q} \sum_{i = 1}^{L} \|X[p[i]] - Y[q[i]]\|_2
@@ -1106,8 +1107,8 @@ The constraint of monotonicity is enforced by only allowing certain ``step patte
 \end{align}
 although many others have been proposed \cite{muller2007dynamic, sakoe1978dynamic}.
 This minimization can be solved in $\mathcal{O}(MN)$ time using dynamic programming \cite{sakoe1978dynamic}.
-A common equivalent way to frame this problem which fits straightforwardly into the framework of dynamic programming is to construct a pairwise distance matrix $C \in \mathbb{R}^{M \times N}$ by computing $C[i, j] = \|X[i], Y[i]\|_2$ and then finding the lowest-cost path (subject to appropriate constraints) through the matrix.
-This perspective prompts path entries where $p[i + 1] = p[i] + 1, q[i + 1] = q[i] + 1$ to be reffered to as ``diagonal moves''.
+A common equivalent way to frame this problem which fits straightforwardly into the framework of dynamic programming is to construct a pairwise distance matrix $C \in \mathbb{R}^{M \times N}$ by computing $C[i, j] = \|X[i] - Y[i]\|_2$ and then finding the lowest-cost path (subject to appropriate constraints) through the matrix.
+This perspective prompts path entries where $p[i + 1] = p[i] + 1, q[i + 1] = q[i] + 1$ to be referred to as ``diagonal moves''.
 
 DTW is often constrained so that $p$ and $q$ span the entirety of $X$ and $Y$, i.e.\ $p[1] = q[1] = 1$ and $p[L] = N; q[L] = M$.
 However, this constraint is inapplicable when subsequence alignment is allowed in which case it is required that either $gN \le p[L] \le N$ or $gM \le q[L] \le M$ where $g \in (0, 1]$ (the ``gully'') is a parameter which determines the proportion of the subsequence which must be successfully matched.
@@ -1123,7 +1124,7 @@ An alternative way to encourage the alignment to favor ``diagonal'' paths is to 
                 0, \mathrm{otherwise}
         \end{cases}
 \end{equation}
-where $\phi$ is a tunable parameter controlling how much to discourage non-diagonal path entries.
+where $\phi$ is a tuneable parameter controlling how much to discourage non-diagonal path entries.
 
 Once an optimal alignment path is found, a rough similarity measure can be obtained as the sum of the pairwise distances between aligned sequence elements from $X$ and $Y$.
 In addition, to achieve alignment one sequence can be adjusted (via resampling or otherwise) so that so that $t_X[p[i]] = t_Y[q[i]], \forall i \in \{1, \ldots, L\}$, where $t_X \in \mathbb{R}^M, t_Y \in \mathbb{R}^N$ are the times corresponding to the feature vectors in $X$ and $Y$ respectively.
