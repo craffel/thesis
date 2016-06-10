@@ -9,7 +9,7 @@ Nevertheless, its efficiency and well-designed specification make it a convenien
 In this thesis, we will make extensive use of on MIDI files, which in a simplistic view can be considered a compact way of storing a musical score.
 MIDI files are specified by an extension to the MIDI standard \cite{international1988standard} and consist of a sequence of MIDI messages organized in a specific format.
 A typical MIDI file contains timing and meter information in addition to a collection of one or more ``tracks'', each of which contains a sequence of notes and control messages.
-The General MIDI standard further specifies a collection of 128 instruments on which the notes can be played, which standardizes the playback of MIDI files and has therefore been widely adopted.
+The General MIDI standard \cite{international1991general} further specifies a collection of 128 instruments on which the notes can be played, which standardizes the playback of MIDI files and has therefore been widely adopted.
 
 When paired with a General MIDI synthesizer, MIDI files have been used as a sort of {\em semantic} audio codec, with entire songs only requiring a few kilobytes of storage.
 The early availability of this ``coding method'', combined with the expense of digital storage in the 90s, made MIDI files a highly pervasive method of storing and playing back songs before the advent of the MP3.
@@ -46,7 +46,7 @@ Program numbers above 96 are relatively uncommon, and correspond to ``Synth Effe
 \end{figure}
 
 MIDI files are specified as a collection of ``tracks'', where each track consists of a sequence of MIDI events on one of 16 channels.
-Commonly used MIDI events are note on and note off messages, which together specify the start and end time of notes played at a given pitch on a given channel.
+Commonly used MIDI events are note-on and note-off messages, which together specify the start and end time of notes played at a given pitch on a given channel.
 Various control events also exist, such as pitch bends, which allow for finer control of the playback of the MIDI file.
 Program change events determine which instrument these events are sent to.
 The General MIDI standard defines a correspondence between program numbers and a predefined list of 128 instruments.
@@ -68,7 +68,7 @@ The vast majority (over 126,000) were transcribed at a fixed tempo.}
     \label{fig:3-n_tempos}
 \end{figure}
 
-\subsection{Musicological Features}
+\subsection{Music-Theoretic Features}
 
 Because many MIDI files are transcriptions of music, they can also be used to compute high-level musicological characteristics of a given piece.
 Towards this end, the software library \texttt{jSymbolic} \cite{mckay2006jsymbolic} includes functionality to extract a wide variety of features, including instrumentation, rhythm, and pitch statistics.
@@ -119,7 +119,7 @@ Surprisingly, a substantial number of non-4/4 time signatures were found.}
 Time signature change events further augment MIDI files with the ability to specify time signatures, and are also used to indicate the start of a measure.
 By convention, MIDI files have a time signature change at the first tick, although this is not a requirement.
 Because time signature changes are relatively rare in western popular music, the vast majority of the MIDI files in our collection contain a single time signature change, as seen in \cref{fig:3-n_signatures}.
-Despite the fact that 4/4 is the default time signature for MIDI files and is pervasive in western popular music, a substantial portion (about half) included a non-4/4 time signature, as shown in \cref{fig:3-time_signatures}.
+Despite the fact that 4/4 is the default time signature for MIDI files and is pervasive in western popular music, a substantial portion (about half) of the time signature changes were not 4/4, as shown in \cref{fig:3-time_signatures}.
 
 Because MIDI files are required to include tempo information in order to specify their timing, it is straightforward to extract beat locations from a MIDI file.
 By convention, the first (down)beat in a MIDI transcription occurs at the first tick.
@@ -151,7 +151,7 @@ An additional useful event in MIDI files is the key change event.
 Any of the 24 major or minor keys may be specified.
 Key changes simply give a suggestion as to the tonal content and do not affect playback, and so are a completely optional meta-event.
 As seen in \cref{fig:3-n_keys}, this results in many MIDI files omitting key change events altogether.
-A further complication is that a disproportionate number (about half) of the MIDI files in our collection had key changes to the key of C major, as shown in \cref{fig:3-keys}.
+A further complication is that a disproportionate number (about half) of the key changes in the MIDI files in our collection were C major, as shown in \cref{fig:3-keys}.
 This disagrees with corpus studies of popular music, e.g.\ \cite{carlton2012analyzed} which found that only about 26\% of songs from the Billboard 100 were in C major.
 We believe this is because many MIDI transcription software packages automatically insert a C major key change at the beginning of the file.
 
@@ -170,9 +170,10 @@ While the General MIDI specification includes the vocal instruments ``Choir Aahs
 As a result, in a given MIDI file there is no reliable way of determining which instrument is a transcription of the vocals in a song.
 Furthermore, because a substantial portion of MIDI files were designed for karaoke, the vocals may not be transcribed at all.
 
-While the MIDI specification does include a ``track name'' meta-event, it is seldom used and there is no standard for its use, and so the instruments in MIDI files are further constrained to the General MIDI specification.
+While the MIDI specification does include ``track name'', ``program name'', and ``instrument name'' meta-events, they are not standardized and so are not used consistently.
 It follows that there is no simple way to retrieve the ``melody'' from a MIDI transcription, although the fact that all instruments are transcribed separately can make its estimation more straightforward than for audio files.
-To our knowledge, there has been no published research into automatically determining which instrument in a given MIDI file is a transcription of the melody or vocal line.
+For example, \cite{tang2000selection} explores the use of simple features such as the average velocity and note range within a track to predict whether it is a melody, and also finds that in a small dataset the track name reliably indicates a melody track 44.3\% of the time.
+Similarly, \cite{ponce2008mining} uses heuristic features and a random forest classifier to predict with high accuracy whether a track is a melody.
 
 There is also no explicit way for MIDI files to include chord labels or structural segmentation boundaries (e.g.\ ``verse'', ``chorus'', ``solo'').
 While this would in principle be possible thanks to the generic MIDI ``text'' meta-event, we have yet to find any MIDI files which store this information.
@@ -198,7 +199,7 @@ The information sources enumerated in Section \ref{sec:information} are not read
 For example, in order to extract the time (in seconds) of all onsets from a given instrument in a MIDI file, note events which occur on the same track and channel as program change events for the instrument must be collected and their timing must be computed from their relative ticks using the global tempo change events.
 Fortunately, various software libraries have been created to facilitate this process.
 \texttt{pretty\char`_midi} \cite{raffel2014pretty_midi}, discussed in \cref{sec:pretty_midi}, simplifies the extraction of useful information from MIDI transcriptions by taking care of most of the low-level parsing needed to convert the information to a more human-friendly format.
-It contains functions for retrieving beats, onsets, note lists from specific instruments, and the times and values of key, tempo, and time signature changes.
+It contains functions for retrieving beats, onsets, and note lists from specific instruments, and the times and values of key, tempo, and time signature changes.
 It also can be used to modify MIDI files, as well as to convert them to synthesized audio or a spectrogram-like piano roll representation.
 The aforementioned \texttt{jSymbolic} contains an extensive collection of routines for computing musicological features from MIDI files.
 Finally, both \texttt{music21} and \texttt{melisma} are capable of inferring high-level music information from symbolic data of various types, including MIDI.
@@ -216,7 +217,7 @@ However, this approach is prohibitively slow for very large collections of MIDI 
 There is no guarantee that a MIDI transcription for a given song was transcribed so that its timing matches an audio recording of a performance of the song.
 For the many types of ground truth data that depend on timing (e.g.\ beats, note transcription, or lyrics), the MIDI file must therefore have its timing adjusted so that it matches that of the performance.
 Fortunately, score-to-audio alignment, of which MIDI-to-audio alignment is a special ``offline'' case, has received substantial research attention.
-A common method is to use DTW or another edit-distance measure to find the best alignment between spectrograms of the synthesized MIDI and audio recording; see \cite{raffel2016optimizing} or \cite{ewert2012towards} for surveys.
+A common method is to use DTW or another edit-distance measure to find the best alignment between spectrograms of the synthesized MIDI and the audio recording; see \cite{raffel2016optimizing} or \cite{ewert2012towards} for surveys.
 
 In practice, audio-to-MIDI alignment systems can fail when there are overwhelming differences in timing or deficiencies in the transcription, e.g.\ missing or incorrect notes or instruments.
 Ideally, the alignment and matching processes would automatically report the success of the alignment and the quality of the MIDI transcription.
