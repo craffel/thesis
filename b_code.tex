@@ -41,7 +41,7 @@ To facilitate its usage in contexts outside of the experiments in this thesis, t
 \item[\texttt{match.py}] Given hash sequences represented as lists of integers, rapidly compute the pairwise distance matrix using exclusive-or and POPCNT operations and the DTW distance corresponding to the lowest-cost path through this matrix.
 \item[\texttt{utils.py}] Tools for iterating over sequential data and constructing ``dissimilar'' pairs by randomly swapping matching pairs.
 \end{description}
-This library makes use of \texttt{theano} \cite{bergstra2010theano,bastien2012theano} and \texttt{lasagne} \cite{dieleman2015lasagne} to construct the loss function, automatically compute its derivative, and optimize the networks' parameters with respect to it.
+This library makes use of \texttt{theano} \cite{bergstra2010theano,bastien2012theano,al-rfou2016theano} and \texttt{lasagne} \cite{dieleman2015lasagne} to construct the loss function, automatically compute its derivative, and optimize the networks' parameters with respect to it.
 It also utilizes \texttt{numba}\footnote{\url{http://numba.pydata.org}} to rapidly compute the DTW distance and \texttt{cython}\footnote{\url{http://cython.org}} to access the SSE 4.2 POPCNT instruction directly from Python code.
 While thus far this library has only been used for the experiments in this thesis, we hope it will be facilitate research into other problem settings.
 

@@ -152,7 +152,7 @@ The networks were optimized with respect to \cref{eq:embedding_objective} using 
 As in \cref{ch:dhs}, we assembled $\mathcal{N}$ by randomly choosing non-matching pairs which were re-sampled every time we had iterated over the training set.
 Minibatches were constructed by randomly choosing matching and non-matching pairs of sequences and cropping them to the minimum length within the minibatch.
 Every 200 minibatches, we computed the mean loss on the held-out validation set; when it was less than .99 times the previous lowest validation loss, we trained for 1000 more minibatches.
-We implemented our model using \texttt{lasagne} \cite{dieleman2015lasagne}, which is built on \texttt{theano} \cite{bergstra2010theano, bastien2012theano}.
+We implemented our model using \texttt{lasagne} \cite{dieleman2015lasagne}, which is built on \texttt{theano} \cite{bergstra2010theano,bastien2012theano,al-rfou2016theano}.
 A visualization of our model structure is shown in \cref{fig:model_schematic}.
 
 \begin{figure}

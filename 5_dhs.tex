@@ -200,7 +200,7 @@ This choice in output nonlinearity allows us to obtain binary hash vectors by te
 We chose 32 bits as the dimensionality of our embedded Hamming space, since 32 bit values are efficiently manipulated as unsigned integers.
 For initial weight parameter values, as suggested in \cite{he2015delving}, we used normally-distributed random variables with a mean of zero and a standard deviation of $\sqrt{2/n_{in}}$, where $n_{in}$ is the number of inputs to each layer.
 All bias values were initialized to $0$.
-Our model was implemented using \texttt{theano} \cite{bastien2012theano,bergstra2010theano} and \texttt{lasagne} \cite{dieleman2015lasagne}.
+Our model was implemented using \texttt{theano} \cite{bergstra2010theano,bastien2012theano,al-rfou2016theano} and \texttt{lasagne} \cite{dieleman2015lasagne}.
 
 For regularization, we found it beneficial to add a squared $L^2$ penalty to the network's output prior to thresholding.
 This effectively encourages the network to produce values near 0, which we believe improves convergence due to the fact that the gradient of the hyperbolic tangent nonlinearity vanishes away from 0.
