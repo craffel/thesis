@@ -1093,7 +1093,7 @@ Because DTW produces an optimal alignment, it is also useful in tasks where the 
 In this section, we give an overview of DTW; a more thorough treatment can be found in \cite{muller2007dynamic}.
 
 Suppose we are given two sequences of feature vectors $X \in \mathbb{R}^{M \times D}$ and $Y \in \mathbb{R}^{N \times D}$, where $D$ is the feature dimensionality and $M$ and $N$ are the number of feature vectors in $X$ and $Y$ respectively.
-DTW produces two nondecreasing sequences $p, q \in \mathbb{N}^L$ which define the optimal alignment between $X$ and $Y$, such that $p[i] = n, q[i] = m$ implies that the $m^{th}$ feature vector in $X$ should be aligned to the $n^{th}$ in $Y$.
+DTW produces two nondecreasing sequences $p, q \in \mathbb{N}^L$ which define the optimal alignment between $X$ and $Y$, such that $p[i] = m, q[i] = n$ implies that the $m^{th}$ feature vector in $X$ should be aligned to the $n^{th}$ in $Y$.
 Finding $p$ and $q$ involves globally solving the following minimization problem:
 \begin{equation}
 p, q = \mathrm{arg}\min_{p, q} \sum_{i = 1}^{L} \|X[p[i]] - Y[q[i]]\|_2
@@ -1111,11 +1111,11 @@ This minimization can be solved in $\mathcal{O}(MN)$ time using dynamic programm
 A common equivalent way to frame this problem which fits straightforwardly into the framework of dynamic programming is to construct a pairwise distance matrix $C \in \mathbb{R}^{M \times N}$ by computing $C[i, j] = \|X[i] - Y[i]\|_2$ and then finding the lowest-cost path (subject to appropriate constraints) through the matrix.
 This perspective prompts path entries where $p[i + 1] = p[i] + 1, q[i + 1] = q[i] + 1$ to be referred to as ``diagonal moves''.
 
-DTW is often constrained so that $p$ and $q$ span the entirety of $X$ and $Y$, i.e.\ $p[1] = q[1] = 1$ and $p[L] = N; q[L] = M$.
-However, this constraint is inapplicable when subsequence alignment is allowed in which case it is required that either $gN \le p[L] \le N$ or $gM \le q[L] \le M$ where $g \in (0, 1]$ (the ``gully'') is a parameter which determines the proportion of the subsequence which must be successfully matched.
+DTW is often constrained so that $p$ and $q$ span the entirety of $X$ and $Y$, i.e.\ $p[1] = q[1] = 1$ and $p[L] = M; q[L] = N$.
+However, this constraint is inapplicable when subsequence alignment is allowed in which case it is required that either $g\min(M, N) \le p[L] \le M$ or $g \min(M, N) \le q[L] \le N$ where $g \in (0, 1]$ (the ``gully'') is a parameter which determines the proportion of the subsequence which must be successfully matched.
 In addition, the path is occasionally further constrained so that
 $$
-q[i] - p[i] + R \le N, p[i] - q[i] + R \le M
+p[i] - q[i] + R \le M, q[i] - p[i] + R \le N
 $$
 for $i \in \{1, \ldots, L\}$ where $R = g\min(M, N)$ is the ``radius'', sometimes called the Sakoe-Chiba band \cite{sakoe1978dynamic}.
 An alternative way to encourage the alignment to favor ``diagonal'' paths is to add a penalty to \cref{eq:dtw_objective}:
