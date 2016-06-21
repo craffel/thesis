@@ -28,14 +28,14 @@ In the supervised setting, our machine learning algorithm produces a function $f
 
 Supervised learning requires a training set $\mathcal{S}$ of input-target pairs $(x_1, y_1), (x_2, y_2), \ldots (x_{|\mathcal{S}|}, y_{|\mathcal{S}|})$, where $x_n \in \mathcal{X}$ (the input space) and $y_n \in \mathcal{Y}$ (the target space).
 We assume that these pairs are drawn from an unknown joint probability distribution $p(x, y)$, of which the only information we explicitly know is the training set $\mathcal{S}$.
-The goal of a supervised learning algorithm is to capture the probability distribution $p(x, y)$ with $f$ by adjusting the parameters $\theta$ based solely on $\mathcal{S}$.
+The goal of a supervised learning algorithm is to approximate the probability distribution $p(x, y)$ (or just salient characteristics of it) with $f$ by adjusting the parameters $\theta$ based solely on $\mathcal{S}$.
 
 One way to formulate this goal is to state that for a sample from $p(x, y)$ which is not in $\mathcal{S}$, the function $f$ should produce the correct output.
 Of course, because we are only given the samples in $\mathcal{S}$, the parameters $\theta$ must be optimized solely according the training pairs in $\mathcal{S}$.
-This approach, where $f$ is used directly to produce the predicted value for $y$, is referred to as discriminant training.
-An alternative approach, called probabilistic training, is to use $f$ to model $p(x, y)$ by estimating $p(y | x)$ and then choosing the most probable $y$.
-In either case, adjusting the parameters $\theta$ of $f$ typically involves using a task-specific ``loss function'' $\mathcal{L}$ which computes a non-negative scalar value which measures the extent to which the model's output $\hat{y}$ agrees with the target $y$.
-Ideally, minimizing this loss over the training set by adjusting $\theta$ will yield an $f$ which closely approximates $p(x, y)$.
+This approach, where $f$ is used directly to produce the predicted value for $y$, is referred to as discriminative training.
+An alternative approach, called generative or probabilistic training, is to use $f$ to model $p(x, y)$ by estimating $p(y | x)$ and then choosing the most probable $y$.
+In either case, adjusting the parameters $\theta$ of $f$ typically involves using a task-specific ``loss function'' $\mathcal{L}$ which computes a lower-bounded scalar value which measures the extent to which the model's output $\hat{y}$ agrees with the target $y$.
+Ideally, minimizing this loss over the training set by adjusting $\theta$ will well-approximate the minimum over the underlying distribution.
 
 The choice of a loss function will depend on the characteristics of the problem, in particular the target space $\mathcal{Y}$.
 For example, in {\em classification} problems, the targets $y$ may take one of $K$ discrete values.
@@ -66,7 +66,7 @@ In general, a suitable goal for training an unsupervised learning algorithm is t
 Minimizing this average loss is equivalent to minimizing the empirical risk of $f$.
 A common paradigm is to compute the derivative of the loss function $\mathcal{L}$ with respect to the model parameters $\theta$ and use this derivative information to incrementally change $\theta$ to make $\mathcal{L}$ smaller.
 In this case, it is beneficial to have a loss function which is continuous and smooth, which precludes the use of loss functions like the zero-one loss (\cref{eq:zero_one}).
-A common solution to this problem is to use a surrogate loss function which has the desired properties (e.g.\ smoothness) and whose minimization will also minimize $\mathcal{L}$.
+A common solution to this problem is to use a surrogate loss function which has the desired properties (e.g.\ smoothness) and whose minimization approximates the minimization of $\mathcal{L}$.
 
 There are supervised learning methods which do not follow the above framework.
 For example, k-nearest neighbors \cite{cover1967nearest} is a classification algorithm which labels its input by assigning it the most common $y$ among the $k$ points in $\mathcal{S}$ which are closest to the input.
@@ -146,15 +146,14 @@ Under this generic definition, multilayer perceptrons are, in fact, equivalent t
   \label{fig:network}
 \end{figure}
 
-In parallel seminal works \cite{cybenko1989approximation, hornik1989multilayer}, it was shown that feedforward networks with at least two layers are {\em universal function approximators} when the activation function of each layer is a ``squashing'' function (i.e.\ is monotonically increasing, $\lim_{x \rightarrow \infty} \sigma(x) = 1$ and $\lim_{x \rightarrow -\infty} \sigma(x) = 0$).
+In parallel seminal works \cite{cybenko1989approximation, hornik1989multilayer}, it was shown that feedforward networks with at least two layers with sufficiently many units are {\em universal function approximators} when the activation function of each layer is a ``squashing'' function (i.e.\ is monotonically increasing, $\lim_{x \rightarrow \infty} \sigma(x) = 1$ and $\lim_{x \rightarrow -\infty} \sigma(x) = 0$).
 This implies that such models can approximate any function to arbitrary precision.
-Similar results were later demonstrated for other classes of activation functions, typically utilizing the Stone-Weierstrass theorem.
 
 Of course, the ability of a model to approximate any function is only valuable when there is a reliable method to adjust its parameters so that the desired function is suitably approximated.
 Currently, the most pervasive method to achieve this is ``backpropagation'', which computes the gradient of an error function which measures the deviation between the network's output and the target output with respect to the model parameters \cite{rumelhart1986learning}.
 We give a derivation of backpropagation for feedforward networks in the following section.
 In the supervised learning context, the error function computes the deviation between the network's output and the target for input-target pairs in the training set $\mathcal{S}$.
-As a result, for supervised learning, universal approximation only implies that the multilayer feedforward network can ``memorize'' the target output for each input in $\mathcal{S}$, not that it will accurately approximate the data's underlying joint probability distribution $p(x, y)$.
+As a result, for supervised learning, universal approximation only implies that the multilayer feedforward network can ``memorize'' the target output for each input in the training set $\mathcal{S}$ but not that it can produce the correct $y$ for $x \not \in \mathcal{S}$.
 This is referred to as ``overfitting'', and is an undesirable property of machine learning models.
 
 Despite this issue, feedforward networks have proven to be extremely effective models in a variety of machine learning tasks.
@@ -322,7 +321,7 @@ By way of example, \cref{tab:nonlinearities} and \cref{tab:loss_functions} list 
   \bottomrule
 \end{tabular}
 \end{center}
-\caption[Common loss functions used in neural networks]{Common loss functions $\mathcal{L}(a_L, y)$ used in neural networks and their derivatives with respect to their input $a_L$.}
+\caption[Common loss functions used in neural networks]{Common loss functions $\mathcal{L}(a_L, y)$ used in neural networks and their (sub)gradients with respect to their input $a_L$.}
   \label{tab:loss_functions}
 \end{table}
 
@@ -361,7 +360,7 @@ It also implies that both the way the parameters are initialized prior to optimi
 
 As mentioned above, the universal approximation property of neural networks can also have negative implications for their utility.
 The fact that a possible outcome of training a neural network is the simple memorization of correspondences in the training set means that the resulting model may be of little use in practice.
-As a result, in many cases it is necessary to regularize the network to prevent it from overfitting to the training set.
+As a result, in many cases it is necessary to use some form of regularization when training the network to prevent it from overfitting to the training set.
 
 Finally, feedforward networks with many layers are also prone to the problem of ``vanishing and exploding gradients''.
 This issue is caused by the fact that as gradients are backpropagated through layers, they are multiplied by each successive weight matrix and the derivative of each nonlinearity (as shown in \cref{eq:L_wrt_z_m}).
@@ -376,8 +375,9 @@ Practical and broader overviews can be found in \cite{bengio2012practical, lecun
 \paragraph{Number and Size of Layers}
 
 When designing a neural network model, one of the first choices which must be made is the number of layers and their sizes (output dimensionality).
-Because early theory proved that networks with a single layer could approximate any function arbitrarily well given that the layer was sufficiently ``wide'' (having many units) \cite{cybenko1989approximation,hornik1989multilayer}, and because networks with many layers can be more difficult to train due to the vanishing and exploding gradients problem \cite{glorot2010understanding,erhan2009difficulty}, early applications of neural networks typically only used a single hidden layer.
+Because early theory proved that networks with a single hidden layer could approximate any function arbitrarily well given that the layer was sufficiently ``wide'' (having many units) \cite{cybenko1989approximation,hornik1989multilayer}, and because networks with many layers can be more difficult to train due to the vanishing and exploding gradients problem \cite{glorot2010understanding,erhan2009difficulty}, early applications of neural networks typically only used a single hidden layer.
 However, recent results have shown that using many layers can help networks learn a hierarchical transformation to more and more abstract representations which, for real-world problems, can be highly beneficial \cite{bengio2009learning}.
+Furthermore, it has been shown that for some simple problems, networks with many hidden layers are exponentially more efficient than networks with a single hidden layer with many units \cite{bengio2011expressive}.
 Coupled with recent advances in training very deep networks \cite{glorot2011deep,glorot2010understanding,bengio2007greedy,hinton2006fast,hinton2012improving,hinton2006reducing,sutskever2013importance,ioffe2015batch,he2015delving,ciresan2010deep}, the paradigm of ``deep'' networks (having many layers) has come to dominate.
 
 Regardless of depth, the dimensionality of each intermediate representation (the ``layer sizes'') must be chosen.
@@ -404,11 +404,11 @@ A related term is $\lambda \sum_i |\theta_i|$ which effectively encourages param
 A completely different regularization method which has recently proven popular in neural networks is ``dropout'' \cite{hinton2012improving}.
 In dropout, at each training iteration each unit of each layer is randomly set to zero with probability $p$.
 After training, the weights in each layer are scaled by $1/p$.
-Dropout intends to prevent the units of a given layer from being too heavily correlated with one another randomly artificially removing connections.
-More simply, it provides a source of noise which prevents memorization of correspondences in the training set and has repeatedly been shown empirically to be an effective regularizer.
+Dropout intends to prevent the units of a given layer from being too heavily correlated with one another by randomly artificially removing connections.
+More simply, it provides a source of noise which prevents memorization of correspondences in the training set and has been shown empirically and theoretically \cite{wager2013dropout} to be an effective regularizer.
 
 In practice, the technique of ``early stopping'' is almost always used to avoid overfitting in neural network models \cite{prechelt2012early}.
-To utilize early stopping, during training the performance on a held-out ``validation set'' (over which the parameters of the network are not optimized) is computed.
+To utilize early stopping, during training the performance on a held-out ``validation set'' (over which the parameters of the network are not optimized by gradient descent) is computed.
 Overfitting is indicated by performance degrading on the validation set, which simulates real-world performance.
 As a result, early stopping effectively prevents overfitting by simply stopping training once the performance begins to degrade.
 The measure of performance and criteria for stopping my vary widely from task to task (and practitioner to practitioner) but the straightforwardness and effectiveness of this approach has led it to be nearly universally applied.
@@ -534,7 +534,7 @@ Beyond practical limitations, using a stochastic objective has also been shown t
 
 So far, we have only alluded to the fact that the gradient information produced by backpropagation is used to train a neural network.
 This is achieved using gradient descent methods, which specify a formula to adjust the network's parameters to minimize an objective.
-In many problems, it is beneficial to leverage second-order gradient information to estimate the local curvature of the objective function during optimization.
+In many problems, it is beneficial to leverage second-order gradient information to estimate the local curvature of the objective function during optimization (for intuition as to why this is true, see \cref{sec:sgd}).
 However, the number of entries in the Hessian (matrix of second-order derivatives) is quadratic in the number of parameters, which makes computing it infeasible for modern neural network models which typically have millions of parameters.
 As a result, neural networks are typically trained using gradient descent methods which only utilize first-order gradient information.
 
@@ -805,6 +805,7 @@ A simple way to mitigate this is to add an exploration trade-off parameter $\xi$
 \end{equation}
 
 \paragraph{Expected Improvement}
+\label{par:expected_improvement}
 
 Instead of simply choosing the point which is most likely to yield an improvement, we can also consider the expected magnitude of the improvement.
 This can be encapsulated using an ``improvement function'' which is positive when the objective value for the predicted value of $\theta$ is larger than $y_{best}$.
@@ -876,7 +877,7 @@ An example curve can be seen in \cref{fig:equal_loudness}.
 \begin{figure}
   \centering
   \includegraphics[width=\textwidth]{figures/2-equal_loudness.pdf}
-  \caption[Equal loudness curve]{Equal loudness curve, along which all frequencies are perceived to have approximately the same loudness.
+  \caption[Equal loudness curve]{Equal loudness curve from the ISO 226 specification, along which all frequencies are perceived to have approximately the same loudness.
   These curves reveal important characteristics about our sensitivity to different frequencies; for example, in order for a low-frequency sound to be perceived loudly, they must have a relatively high sound pressure level.}
   \label{fig:equal_loudness}
 \end{figure}

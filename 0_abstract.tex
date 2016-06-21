@@ -15,7 +15,7 @@ We also verify that this system achieves high performance in a large-scale quali
 Unfortunately, DTW can be far too inefficient for large-scale search when sequences are very long and consist of high-dimensional feature vectors.
 We therefore propose a method for mapping sequences of continuously-valued feature vectors to downsampled sequences of binary vectors.
 Our approach involves training a pair of convolutional networks to map paired groups of subsequent feature vectors to a Hamming space where similarity is preserved.
-Evaluated on the task of matching MIDI files to a large database of audio recordings, we show that this technique enables 99.99\% of the database to be discarded while only requiring 0.2\% of the time to compute.
+Evaluated on the task of matching MIDI files to a large database of audio recordings, we show that this technique enables 99.99\% of the database to be discarded with a modest false reject rate while only requiring 0.2\% of the time to compute.
 
 Even when sped-up with a more efficient representation, the quadratic complexity of DTW greatly hinders its feasibility for very large-scale search.
 This cost can be avoided by mapping entire sequences to fixed-length vectors in an embedded space where sequence similarity is approximated by Euclidean distance.

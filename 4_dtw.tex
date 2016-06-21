@@ -140,6 +140,7 @@ To decide which settings to try, we use Bayesian optimization, which approximate
 Using this formulation, Bayesian optimization can automatically propose new alignment systems based on the performance of previously-evaluated systems.
 A more thorough description of Bayesian optimization can be found in \cref{sec:bayesian_optimization}.
 We utilized the framework and software proposed in \cite{snoek2012practical} in all of our experiments.
+For an acquisition function, we utilized the Expected Improvement (see \cref{par:expected_improvement}).
 
 Based on the design choices outlined in \cref{sec:dtw_parameters}, we chose to optimize over the following parameter space:
 \begin{description}

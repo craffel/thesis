@@ -39,8 +39,7 @@ Given this, while computing the pairwise distance matrix for downsampled hash se
 If fewer than $M$ entries are less than $T$, we can skip computing the DTW alignment path because we can guarantee that the resulting normalized DTW distance will not be smaller than $T$.
 In practice, this avoids the expensive operation of computing the DTW distance for many candidates whose distance matrices dictate that they cannot be the correct match.
 
-Second, instead of utilizing the median pairwise distance for the CQT-to-CQT DTW additive penalty as suggested in \cref{sec:goldstandard}, we will use the mean distance.
-This choice is largely made for performance reasons; computing the median of the $MN$ distances is at least $\mathcal{O}( NM\log(NM) )$ complexity whereas computing the mean is always $\mathcal{O}(NM)$.
+Second, instead of utilizing the median pairwise distance for the CQT-to-CQT DTW additive penalty as suggested in \cref{sec:goldstandard}, we will use the mean distance because in practice it is cheaper to compute than the median.
 We justify this decision based on the discussion in \cref{sec:optimizing} which suggests that small changes to the additive penalty will not affect alignment quality.
 In practice, we found the mean and median pairwise distance to be extremely close, so this change likely has a negligible effect on the results aside from a small speed-up.
 
@@ -64,6 +63,7 @@ For comparison, we also plot the curves obtained using the DHS and PSE approache
 Using the combined method, the correct match in the MSD had the highest confidence score 78.2\% of the time, and for 94.6\% of the test set the correct match ranked in the top 5.
 Beyond this point, the performance is effectively constant - this is because for 94.7\% of the test set, the pruning steps discarded the correct match.
 This is within our expected upper limit for the false reject rate of 6.6\%.
+We could in theory further verify the source of these false rejects by also evaluating the final slow-but-accurate DTW step alone, but running this evaluation over our entire test set would take about nine years of CPU time, so we skipped this experiment.
 That our high-precision approach only ranked the correct match first 78.2\% of the time is also expected because the MSD contains many duplicates and alternate versions of songs \cite{bertin2012large}.
 It's also important to note that these figures do not necessarily reflect real-world performance because, due to the way it was constructed, our test set consists only of ground-truth matches which could successfully be recovered by our DTW-based system of \cref{sec:goldstandard}.
 Nevertheless, it does demonstrate the extent to which our combination of pruning approaches causes false rejects.
@@ -157,7 +157,7 @@ In our first experiment, we evaluated the reliability of key change events in MI
 We followed the MIREX methodology for comparing keys \cite{ehmann2016mirex}, which proceeds as follows:
 Each song may only have a single key.
 All keys must be either major or minor, e.g.\ ``C\# Major'' and ``E minor'' are allowed but ``D Mixolydian'' is not.
-An estimated key is given a score of 1.0 when it exactly matches a ground truth key, 0.5 when it is a perfect fifth above the ground truth key, 0.3 when it is a relative major or minor, 0.2 when it is a parallel major or minor, and 0.0 otherwise.
+An estimated key is given a score of 1.0 when it exactly matches a ground truth key, 0.5 when it is a perfect fifth above the ground truth key, 0.3 when it is a relative major or minor, 0.2 when it is a parallel major or minor, and 0.0 otherwise \cite{ehmann2016mirex}.
 We utilized the evaluation library \texttt{mir\char`_eval} \cite{raffel2014mir_eval} to compute this score.
 
 The Isophonics annotations mostly follow this format, except that 21 songs contained multiple key annotations and 7 others contained non-major/minor keys.

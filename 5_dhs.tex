@@ -29,7 +29,7 @@ One of the reasons DTW-based search is so expensive is that it has $\mathcal{O}(
 Clearly, then, DTW can be made quadratically more efficient by decreasing the number of elements in the sequences being compared.
 For example, \cite{keogh2001dimensionality,yi2000fast} proposed downsampling sequences by computing their average over non-overlapping blocks, which for some tasks provided orders of magnitude speedup without dramatically affecting accuracy.
 Similarly, \cite{salvador2007toward} propose an iterative procedure for making DTW more efficient which starts by finding the alignment path based on a low-resolution estimate of the sequences being compared, and then refines this estimate at higher and higher resolutions.
-The appropriateness of downsampling sequences depends on the sequences being oversampled (i.e.\ having an unnecessarily high correlation between consecutive sequence elements).
+The appropriateness of downsampling depends partially on the extent to which the sequences are oversampled (i.e.\ having an unnecessarily high correlation between consecutive sequence elements).
 
 Computing the DTW distance between two sequences also potentially involves computing the pairwise Euclidean distance between all of their elements.
 In data mining tasks, entries in sequences are often one-dimensional, so the cost of this operation is usually not considered independent of the overall cost of DTW.
@@ -196,7 +196,7 @@ The pooling size of $2 \times 1$ is advocated for spectrograms in \cite{humphrey
 After the convolutional layers, we utilized two dense layers with $2048$ units each, followed by the output layer.
 The fully-connected layers were applied independently over the temporal axis to the output of the convolutional portion of the network.
 In our networks, all layers except the output use rectifier nonlinearities; as in \cite{masci2014multimodal}, the output layer uses a hyperbolic tangent.
-This choice in output nonlinearity allows us to obtain binary hash vectors by testing whether each output unit is greater or less than zero.
+We can then obtain binary hash vectors by testing whether each output unit is greater or less than zero.
 We chose 32 bits as the dimensionality of our embedded Hamming space, since 32 bit values are efficiently manipulated as unsigned integers.
 For initial weight parameter values, as suggested in \cite{he2015delving}, we used normally-distributed random variables with a mean of zero and a standard deviation of $\sqrt{2/n_{in}}$, where $n_{in}$ is the number of inputs to each layer.
 All bias values were initialized to $0$.
@@ -251,13 +251,13 @@ In order to produce binary vectors, we first computed the mean value in each fea
 More explicitly, given a sequence $X \in \mathbb{R}^{M \times D}$ which consists of $M$ $D$-dimensional feature vectors, we compute
 \begin{equation}
 \hat{X}[n, d] = \begin{dcases}
-1, \frac{1}{G} \sum_{n = Gm}^{G(m + 1)} X[m, d] \ge \bar{X}[d]\\
+1, \left(\frac{1}{G} \sum_{m = Gn}^{G(n + 1)} X[m, d]\right) \ge \bar{X}[d]\\
 0, \mathrm{otherwise}
 \end{dcases}
 \end{equation}
-where $G$ is the downsampling factor ($8$ in our experiments), $\hat{X} \in \mathbb{H}^{\lfloor \frac{M}{G} \rfloor \times D}$ is the resulting downsampled hash sequence, and
+where $G$ is the downsampling factor ($8$ in our experiments), $n \in \{1, \ldots, \lfloor \frac{M}{G} \rfloor\}$,  $\hat{X} \in \mathbb{H}^{\lfloor \frac{M}{G} \rfloor \times D}$ is the resulting downsampled hash sequence, and
 \begin{equation}
-\bar{X}[d] = \frac{1}{|\mathcal{S}|} \sum_{k = 1}^{|\mathcal{S}|} \sum_{m = 1}^{M_k} X_k[m, d]
+\bar{X}[d] = \frac{1}{|\mathcal{S}|} \sum_{k = 1}^{|\mathcal{S}|} \frac{1}{M_k}\sum_{m = 1}^{M_k} X_k[m, d]
 \end{equation}
 where $X_1, \ldots, X_{|\mathcal{S}|} \in \mathcal{S}$ is the training set of sequences with $X_k \in \mathbb{R}^{M_k \times D}$.
 After thresholding our constant-Q spectrograms, this resulted in binary vectors in $\mathbb{H}^{48}$.
@@ -329,9 +329,9 @@ The overlap between the matching and non-matching distributions of CQT-to-CQT di
 Below this, the distributions for the piano roll-to-CQT distances show that comparing these two representations is substantially less effective, although there is some trend towards smaller distances for matching feature vectors.
 At the bottom left, the distributions for raw (pre-thresholding) distances are shown.
 This plot gives a clear picture that representation learning is helpful, because there is virtually no overlap between matching and non-matching distances, and furthermore the Euclidean distance in the embedded space for matching sequence elements is generally very small.
-The effect of thresholding this representation is shown in the top right; thresholding clearly limits some of the discriminative power of the representation, but nevertheless there is much less overlap in the distributions than there was for the ``raw'' CQT feature representation.
-Below, the Hamming distance distributions are shown for the model which learned to embed piano roll vectors; the separation of the distributions almost matches the CQT-to-CQT-based model, showing that our system is adaptable to differing input representations.
-Finally, in the bottom right, we show the distributions for our baseline TPAA method.
+The effect of thresholding this representation is shown in the bottom right; thresholding clearly limits some of the discriminative power of the representation, but nevertheless there is much less overlap in the distributions than there was for the ``raw'' CQT feature representation.
+Above, the Hamming distance distributions are shown for the model which learned to embed piano roll vectors; the separation of the distributions almost matches the CQT-to-CQT-based model, showing that our system is adaptable to differing input representations.
+Finally, in the top right, we show the distributions for our baseline TPAA method.
 Clearly, there is substantially move overlap between matching and non-matching embeddings in this representation.
 
 \subsubsection{Ranking Metrics}

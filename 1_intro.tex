@@ -24,7 +24,7 @@ Given a way of measuring similarity, the simplest way to index a database is to 
 One pervasive way of framing this problem is to represent database entries and queries as vectors in a space where their similarity is encoded by a distance metric.
 This makes item-to-item comparison simple and enables efficient nearest-neighbor retrieval.
 
-In order to extend this method to sequential data, a natural approach would be to compute the sum of the distances of co-occurring elements in two sequences.
+In order to extend this method to sequential data, a natural approach would be to compute the sum of the distances of co-occurring (i.e.\ appearing at the same time) elements in two sequences.
 \Cref{fig:example_distance_unwarped} visualizes this method on two one-dimensional sequences.
 While straightforward, this method is made impractical for most problems of interest due to a few factors.
 First, it cannot be used to compare sequences which differ in length, which is a natural problem in many domains.
@@ -172,7 +172,7 @@ For visualization, we will use the following color palette:
 \begin{center}
 \includegraphics[width=.5\textwidth]{figures/1-colors.pdf}
 \end{center}
-In captions, we will refer to these colors (from left to right) as ``blue'', ``green'', ``gray'', ``orange'', and ``red''.
+In captions, we will refer to these colors (from left to right) as ``blue'', ``green'', ``gray'', ``red'', and ``orange''.
 When visualizing two dimensional data, we will use the following colormap:
 \begin{center}
 \includegraphics[width=.5\textwidth]{figures/1-colormap.pdf}
