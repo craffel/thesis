@@ -65,7 +65,7 @@ Beyond this point, the performance is effectively constant - this is because for
 This is within our expected upper limit for the false reject rate of 6.6\%.
 We could in theory further verify the source of these false rejects by also evaluating the final slow-but-accurate DTW step alone, but running this evaluation over our entire test set would take about nine years of CPU time, so we skipped this experiment.
 That our high-precision approach only ranked the correct match first 78.2\% of the time is also expected because the MSD contains many duplicates and alternate versions of songs \cite{bertin2012large}.
-It's also important to note that these figures do not necessarily reflect real-world performance because, due to the way it was constructed, our test set consists only of ground-truth matches which could successfully be recovered by our DTW-based system of \cref{sec:goldstandard}.
+It's also important to note that these figures do not necessarily reflect real-world performance because, due to the way it was constructed, our test set consists only of ground truth matches which could successfully be recovered by our DTW-based system of \cref{sec:goldstandard}.
 Nevertheless, it does demonstrate the extent to which our combination of pruning approaches causes false rejects.
 
 Of course, our approach's precision is only beneficial if it is also efficient.
@@ -113,11 +113,11 @@ Alternatively, we could also easily leverage other digital score formats for whi
 \section{Measuring a Baseline of Reliability for MIDI-Derived Information}
 \label{sec:reliability}
 
-Based on the discussion in \cref{sec:information}, our dataset can potentially be used to produce ground-truth annotations for audio content-based MIR.
+Based on the discussion in \cref{sec:information}, our dataset can potentially be used to produce ground truth annotations for audio content-based MIR.
 For example, beat annotations for a given 7digital preview recording could be obtained by utilizing the time signature and tempo change events in the corresponding aligned MIDI file.
 However, the validity of a given annotation will depend on both the transcription quality as well as the success of the alignment process.
 Ideally, our alignment confidence score will reflect whether or not a given annotation is to be trusted.
-To investigate further, we now focus on measuring the reliability of ground-truth data extracted from aligned MIDI transcriptions.
+To investigate further, we now focus on measuring the reliability of ground truth data extracted from aligned MIDI transcriptions.
 
 A straightforward way to evaluate the quality of MIDI-derived annotations is to compare them with hand-made annotations for the same songs.
 Given a MIDI transcription and human-generated ground truth data, we can extract corresponding information from the MIDI file and compare using the evaluation metrics employed in the Music Information Retrieval Evaluation eXchange (MIREX) \cite{downie2008music}.

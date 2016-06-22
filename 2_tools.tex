@@ -1087,7 +1087,7 @@ In many domains, time-varying differences in phase can complicate direct compari
 For word utterances, this is realized by different speakers speaking different parts of words more quickly or slowly.
 As a result, it is often effective to use a warping similarity measure which allows for non-co-occuring sequence elements to be compared.
 
-One such measure which will see extensive use in this thesis is Dynamic Time Warping (DTW).
+One such measure which will see extensive use in this thesis is dynamic time warping (DTW).
 First proposed for in our exemplary domain of comparing speech utterances \cite{sakoe1978dynamic}, DTW uses dynamic programming to find a monotonic alignment such that the sum of a distance-like cost between aligned feature vectors is minimized.
 Because DTW produces an optimal alignment, it is also useful in tasks where the actual correspondence between sequence elements is required, as in the problem of audio-to-MIDI alignment explored in \cref{ch:dtw}.
 In this section, we give an overview of DTW; a more thorough treatment can be found in \cite{muller2007dynamic}.

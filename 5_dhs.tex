@@ -137,14 +137,14 @@ We also compared our technique to a simple baseline, to ensure that our learning
 \subsection{Preparing Data}
 \label{sec:training_data}
 
-For evaluation, we need a collection of ground-truth MIDI-audio pairs which are correctly matched.
+For evaluation, we need a collection of ground truth MIDI-audio pairs which are correctly matched.
 To train our hashing model, we further require a collection of {\em aligned} MIDI and audio files, to supply the matching groups of feature vectors from each domain that will be used to train our model.
 To obtain MIDI-audio pairs, we first separated a subset of MIDI files from our 178,561-file collection for which the directory name corresponded to the song's artist and the filename gave the song's title.
 The resulting metadata needed additional canonicalization; for example, ``The Beatles'', ``Beatles, The'', ``Beatles'', and ``The Beatles John Paul Ringo George'' all appeared as artists.
 To normalize these issues, we applied some manual text processing and resolved the artists and song titles against the Freebase \cite{bollacker2008freebase} and Echo Nest\footnote{\texttt{http://developer.echonest.com/docs/v4}} databases.
 This resulted in a collection of 17,256 MIDI files for 10,325 unique songs, which we will refer to as the ``clean MIDI subset''.
 
-We will leverage the clean MIDI subset in two ways: First, to obtain ground-truth pairings of MSD/MIDI matches, and second, to create training data for our hashing scheme.
+We will leverage the clean MIDI subset in two ways: First, to obtain ground truth pairings of MSD/MIDI matches, and second, to create training data for our hashing scheme.
 The training data does not need to be restricted to the MSD, and using other sources to increase the training set size will likely improve our hashing performance, so we combined the MSD with three benchmark audio collections: CAL500 \cite{turnbull2007towards}, CAL10k \cite{tingle2010exploring}, and uspop2002 \cite{berenzweig2004large}.
 To match these datasets to the clean MIDI subset, we used the Python search engine library \texttt{whoosh}\footnote{\texttt{https://github.com/dokipen/whoosh}} to perform a fuzzy matching of their metadata.
 This resulted in 25,707 audio/MIDI file pairs corresponding to 5,249 unique songs.

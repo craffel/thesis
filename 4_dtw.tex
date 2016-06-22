@@ -2,7 +2,7 @@
 \label{ch:dtw}
 
 The central application of this thesis is the problem of matching musical scores to corresponding audio recordings in a large database.
-This is motivated by our collection of 178,561 unique MIDI transcriptions which, as we explored in \cref{ch:midi}, can provide a bounty of ground-truth data for content-based music information retrieval tasks.
+This is motivated by our collection of 178,561 unique MIDI transcriptions which, as we explored in \cref{ch:midi}, can provide a bounty of ground truth data for content-based music information retrieval tasks.
 To maximize its value, a given MIDI file must be both matched and aligned in time to a corresponding music audio file.
 In both scenarios, it is of great value to produce a confidence score which can communicate both how well the content in a MIDI file matches a given audio file and the quality of the transcription.
 
@@ -62,7 +62,7 @@ The list above defines a large space of parameter settings/design choices for DT
 Previous research has typically involved manually tuning alignment parameters based on a modest-sized test set of MIDI/audio pairs and informally auditioning the aligned MIDI data.
 Because this method only facilitates small-scale comparisons, there is an obvious question of what parameter settings would yield the best general-purpose alignment system.
 Unfortunately, manual audition of even a tiny subset of possible parameter settings on a modestly-sized collection of paired MIDI and audio files is infeasible, let alone a collection large enough to make substantive judgements about the general performance of a given system.
-Furthermore, automatic evaluation has been blocked by the lack of a large ground-truth dataset of ``correct'' alignments.
+Furthermore, automatic evaluation has been blocked by the lack of a large ground truth dataset of ``correct'' alignments.
 We therefore propose a method for synthetically creating MIDI/audio pairs with known alignments by applying a series of corruptions to MIDI files to resemble real-world conditions.
 When applying the corruptions, we keep track of the adjustments needed to correctly align the corrupted MIDIs, which allows us to rapidly and automatically evaluate a huge number of possible systems.
 
@@ -123,7 +123,7 @@ When the alignment has failed for a portion of the song, the error between the m
 \begin{equation}
 \frac{1}{L}\sum_{i = 1}^{L} \min(|t_X[p[i]] - \hat{t}_X[q[i]]|, 0.5)
 \end{equation}
-where $\hat{t}_X$ is the ground-truth ``warped'' time scale.  We average this measure across the test set.
+where $\hat{t}_X$ is the ground truth ``warped'' time scale.  We average this measure across the test set.
 The resulting error $|t_X[p[i]] - \hat{t}_X[q[i]]|$ from aligning the spectrograms shown in \cref{fig:corruption} using our ``gold standard'' system (described later in \cref{sec:goldstandard}) is shown in \cref{fig:correction_error}.
 
 \begin{figure}

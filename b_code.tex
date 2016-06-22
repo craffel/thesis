@@ -14,8 +14,8 @@ Specifically, it includes the following scripts, in order of their intended use:
 \item[\texttt{create\char`_msd\char`_cqts.py}] Pre-computes constant-Q spectrograms for all of the 7digital preview clips \cite{schindler2012facilitating} from the entire Million Song Dataset \cite{bertin2011million} in the format described in \cref{sec:hashing_system} and used throughout this thesis.
 \item[\texttt{create\char`_whoosh\char`_indices.py}] Builds search indices for the Python library \texttt{whoosh} of all datasets used in these experiments (the MSD, the ``clean MIDI subset'', uspop2002, CAL10k, and CAL500) to allow for the fuzzy text-based matching utilized in \cref{sec:training_data}.
 \item[\texttt{text\char`_match\char`_datasets.py}] Runs fuzzy text matching of the clean MIDI subset against each of the aforementioned audio datasets using \texttt{whoosh} in order to obtain candidate matches.
-\item[\texttt{align\char`_text\char`_matches.py}] Runs the audio-to-MIDI alignment process described in \cref{sec:goldstandard} on all of the text matches to find true ground-truth MIDI-audio matches as described in \cref{sec:training_data}.
-\item[\texttt{split\char`_training\char`_data.py}] Creates the fixed train/validation/development/test split {\em by song} of the ground-truth MIDI-audio matches.
+\item[\texttt{align\char`_text\char`_matches.py}] Runs the audio-to-MIDI alignment process described in \cref{sec:goldstandard} on all of the text matches to find true ground truth MIDI-audio matches as described in \cref{sec:training_data}.
+\item[\texttt{split\char`_training\char`_data.py}] Creates the fixed train/validation/development/test split {\em by song} of the ground truth MIDI-audio matches.
 \item[\texttt{experiments}] A collection of experiments for evaluating all of the matching techniques we proposed and described.
 Each experiment optionally includes a script \texttt{parameter\char`_search.py} which optimizes the parameters of the system using the training and validation sets.
 All experiments include scripts \texttt{precompute.py} and \texttt{match\char`_msd.py} which respectively pre-compute all necessary data for the experiment (for example, fixed-length embeddings of the entire MSD and clean MIDI test set) and evaluate the matching on the test set.
@@ -28,7 +28,7 @@ Experiments included are:
 \item[\texttt{stats}] for the feature statistics-based embedding baseline described in \cref{sec:embedding_baseline}.
 \item[\texttt{combined}] for the experiment from \cref{ch:assembling} evaluating the performance of the combination of the above learning-based methods and the DTW-based matching system described in \cref{sec:goldstandard}.
 \end{description}
-\item[\texttt{match.py}] Matches one or more MIDI files to the million song dataset quickly and accurately using the cascade of methods proposed in this thesis, as described in \cref{ch:assembling}.
+\item[\texttt{match.py}] Matches one or more MIDI files to the Million Song Dataset quickly and accurately using the cascade of methods proposed in this thesis, as described in \cref{ch:assembling}.
 \end{description}
 
 Also included are \texttt{experiment\char`_utils.py}, \texttt{feature\char`_extraction.py}, and \texttt{whoosh\char`_search.py} which contain shared helper functions for the experiments, extracting features, and text-based matching respectively.

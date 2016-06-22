@@ -15,7 +15,7 @@ An exemplary domain is musical data.
 Digital audio is commonly represented either as a sequence of sampled amplitude values corresponding to the sonic waveform, or as a sequence of time-frequency spectra computed over short snippets of the audio signal.
 Musical scores can also be conveniently represented digitally as a sequence of notes played on a collection of instruments.
 This has allowed for extremely large collections of musical audio recordings and scores to be assembled.
-The availability of this data has facilitated the nascent field of Music Information Retrieval (MIR), which focuses on inferring high-level information from music through computational means.
+The availability of this data has facilitated the nascent field of music information retrieval (MIR), which focuses on inferring high-level information from music through computational means.
 
 \section{Large-Scale Sequence Retrieval}
 
@@ -75,10 +75,10 @@ Provided that the distance in the embedded space suitably approximates sequence 
 \label{sec:score_overview}
 
 Many of these issues are exhibited in the task of finding the entry in a large database of audio recordings which corresponds to a given musical score.
-Such a matching is of great utility in the field of content-based Music Information Retrieval due to the large amount of high-level information present in the score.
-This information can be used as ground-truth for content-based MIR algorithms, whose success is often dependent on the quantity and quality of this data.
-Creating such ground-truth by hand for a given song typically requires person-hours on the order of the duration of the song, and so training data availability is a frequent bottleneck in content-based MIR tasks.
-Leveraging existing collections of scores could greatly facilitate the curation of this data; through a large-scale web scrape, we obtained 178,561 unique MIDI files (a common digital score format) -- orders of magnitude larger than any available ground-truth dataset for MIR.
+Such a matching is of great utility in the field of content-based music information retrieval due to the large amount of high-level information present in the score.
+This information can be used as ground truth for content-based MIR algorithms, whose success is often dependent on the quantity and quality of this data.
+Creating such ground truth by hand for a given song typically requires person-hours on the order of the duration of the song, and so training data availability is a frequent bottleneck in content-based MIR tasks.
+Leveraging existing collections of scores could greatly facilitate the curation of this data; through a large-scale web scrape, we obtained 178,561 unique MIDI files (a common digital score format) -- orders of magnitude larger than any available ground truth dataset for MIR.
 
 The mere existence of a large collection of scores is not enough:  In order to use information from a score as ground truth, it needs to be matched (paired with a corresponding audio recording), aligned (adjusted so that the timing of the events in the file match the audio), and relevant information must be inferred or extracted.
 Given large corpora of audio recordings of music and scores, the task of matching entries of each type may seem to be a simple matter of fuzzy text matching of the files' metadata.
@@ -134,7 +134,7 @@ The creation of a task or dataset for evaluating score-to-audio alignment system
 
 Finally, once matched and aligned, the relevant information for content-based MIR must be extracted from the score.
 This can include transcription, meter, lyrics, and high-level musicological features.
-Extracting score-derived ground-truth requires parsing the score's format (e.g.\ the MIDI protocol) and then performing any post-processing needed to derive higher-level information.
+Extracting score-derived ground truth requires parsing the score's format (e.g.\ the MIDI protocol) and then performing any post-processing needed to derive higher-level information.
 The reliability of the resulting annotations will depend both on the quality of the transcription and the accuracy of the score-to-audio alignment.
 It would therefore be useful to establish a baseline of reliability for score-derived information for different content-based MIR tasks.
 
@@ -142,7 +142,7 @@ It would therefore be useful to establish a baseline of reliability for score-de
 
 The remainder of this thesis focuses on methods for efficient large-scale sequence comparison and tests them on the specific problem of matching scores to corresponding audio recordings.
 Because this task exhibits all of the problematic characteristics of large-scale sequence comparison problems, we consider it an appropriate benchmark to evaluate the usefulness of the proposed methods.
-In addition, by developing an effective system for matching a MIDI file to its corresponding entry in a database of audio recordings, we will be able to leverage our large collection of MIDI files to create valuable ground-truth information for content-based MIR.
+In addition, by developing an effective system for matching a MIDI file to its corresponding entry in a database of audio recordings, we will be able to leverage our large collection of MIDI files to create valuable ground truth information for content-based MIR.
 Throughout, we will focus on {\em learning-based methods}, i.e.\ algorithms which are optimized to achieve high performance over a collection of exemplary data.
 
 The rest of this thesis is organized as follows.
@@ -156,7 +156,7 @@ The resulting sequences are orders of magnitude faster to compare and only resul
 We propose a second pruning method in \cref{ch:pse} which maps sequences to fixed-length vectors in a Euclidean space where their distance approximates sequence similarity.
 This provides an estimate of the similarity of two sequences by an inexpensive Euclidean distance calculation.
 Finally, \cref{ch:assembling} utilizes all of these methods to construct a large collection of MIDI files which have been matched and aligned to corresponding audio recordings.
-We also address the practical question of the quality of ground-truth information extracted from MIDI files.
+We also address the practical question of the quality of ground truth information extracted from MIDI files.
 To wrap up in \cref{ch:conclusion}, we enumerate our contributions, discuss future work, and outline some interesting applications for our new dataset.
 
 \section{Notation}

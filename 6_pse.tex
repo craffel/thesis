@@ -141,7 +141,7 @@ where $x \in \mathbb{R}^D$ is a single feature vector from the input sequence an
 \label{sec:pse_specifics}
 
 As training data, we use the same collection assembled in \cref{sec:training_data}.
-However, we will solely use the matches as ground-truth, {\em not} the alignments, because our system needs to be able to produce similarity-preserving embeddings regardless of whether the input sequences are aligned.
+However, we will solely use the matches as ground truth, {\em not} the alignments, because our system needs to be able to produce similarity-preserving embeddings regardless of whether the input sequences are aligned.
 We use the same feature representation, i.e.\ log-magnitude constant-Q spectrograms consisting of spectra with 12 bins per octave from MIDI note C2 (65.4 Hz) to B6 (987.8 Hz) computed every 46.4 milliseconds.
 We also use the same exact training, validation, development, and test splits, and utilize the statistics from the training split to standardize feature vectors.
 
