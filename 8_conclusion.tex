@@ -1,0 +1,93 @@
+\chapter{Conclusion}
+\label{ch:conclusion}
+
+To summarize, we have studied learning-based methods for large-scale sequence retrieval, with the specific application of matching a collection of MIDI files to the Million Song Dataset.
+We began by enumerating the sources of information available in MIDI files as they pertain to content-based music information retrieval in \cref{ch:midi}.
+Then, in \cref{ch:dhs}, we optimized DTW-based audio-to-MIDI alignment system design over a novel synthetic task to produce an alignment scheme which was both accurate and able to report a reliable confidence score.
+This system was too slow for large-scale applications, so in \cref{ch:dhs} we developed a method for learning a similarity-preserving mapping from sequences of continuously-valued feature vectors to downsampled sequences of binary vectors.
+For further speed-up, we also designed an attention mechanism which can learn to map entire sequences of feature vectors to single vectors in an embedded space where similarity is preserved, described in \cref{ch:pse}.
+The combination of these methods allowed us to efficiently assemble the largest collection of MIDI files which have been paired and aligned to corresponding audio recordings, which we discuss in \cref{ch:assembling}.
+
+Our specific contributions are as follows:
+
+\begin{description}
+
+\item[\Cref{ch:tools}] We define and give background information for all of the tools and techniques used in this thesis, including neural networks, stochastic optimization, Bayesian optimization, time-frequency analysis, and dynamic time warping.
+
+\item[\Cref{sec:information}] We present a unified overview of the events in MIDI files which are relevant to music information retrieval and measure their availability in MIDI files found ``in the wild''.
+
+\item[\Cref{sec:utilizing}] We itemize the steps necessary for leveraging MIDI files in music information retrieval tasks.
+
+\item[\Cref{sec:dtw_parameters}] We give a thorough review of system design choices and parameter settings used in DTW-based audio-to-MIDI alignment systems.
+
+\item[\Cref{sec:synthetic}] We design a method for generating synthetic ground truth alignments for evaluating the accuracy of a given alignment system.
+
+\item[\Cref{sec:optimizing}] We optimize DTW system design over synthetically-generated data to obtain a simple-to-implement system which is accurate and produces a score which reliably indicates whether an alignment has failed.  We also verified that this system performs well on real-world data by manually auditioning alignments.
+
+\item[\Cref{sec:hashing_model}] We propose the novel approach of using a pair of convolutional networks to map groups of subsequent feature vectors to binary vectors.  The implicit downsampling provides quadratic speedup to DTW and the use of binary vectors allows us to compute pairwise distances by a single exclusive-or followed by a POPCNT instruction.
+
+\item[\Cref{sec:dhs_experiment}] We show that, on the task of matching MIDI files to the Million Song Dataset, this approach can discard over 99.99\% of the database with 95\% confidence and is about 500 times faster than naive application of DTW.  We also show that our model is applicable in settings where the raw data representation is not directly comparable using Euclidean distance.
+
+\item[\Cref{sec:pse_model}] We use the paradigms of embedding and attention to motivate a novel feed-forward network structure which can learn to embed sequences in a fixed-dimensional space where similarity is approximated by Euclidean distance.
+
+\item[\Cref{sec:pse_experiment}] On the same MIDI-to-MSD matching experiment, we show that our embedding technique can discard over 90\% of the database with 95\% confidence, and is about 600,000 times faster than naive DTW.
+
+\item[\Cref{sec:cascade}] We combine the above techniques to enable the full-scale matching of our collection of 178,561 MIDI files to the MSD, which yields about 50,000 MIDI files which have been successfully matched and aligned to entries in the MSD, the largest collection of its type.  We make the collection available online.\footnote{\url{http://colinraffel.com/projects/lmd}}
+
+\item[\Cref{sec:reliability}] We perform a quantitative evaluation of whether information extracted from MIDI files can be used as ground truth information for content-based music information retrieval by comparing MIDI-derived annotations to human-annotated ground truth.
+
+\item[\Cref{ch:software}] We make available all of the code used in this thesis.
+
+\end{description}
+
+\section{Motivating Future Work}
+\label{sec:ideas}
+
+The main product of this thesis is the Lakh MIDI Dataset, described in \cref{sec:lmd}.
+On its own, the collection of 178,561 unique MIDI files (``LMD-full'') itself is most applicable to corpus studies of music structure and patterns which are ``metadata-agnostic''.
+For example, \cite{mauch2012corpus} analyzed a smaller corpus of MIDI files to determine common drum patterns.
+Similar analyses could be performed on other aspects of the transcriptions, such as common chord progressions and melodic patterns.
+While LMD-full cannot be used on its own to obtain ground truth for audio content-based MIR tasks, MIDI files themselves provide a useful mechanism of obtaining synthetic data, as demonstrated in \cref{ch:dtw} and utilized for onset detection in \cite{bello2005tutorial}.
+In addition, there are ways in which non-matched, non-aligned transcriptions can be used to benefit content-based MIR tasks.
+For example, in automatic transcription systems it is common to smooth predictions with a ``musical language model'' which can predict the probability of a given candidate transcription \cite{poliner2007discriminative,sigtia2015end}.
+Such language models only require a large amount of transcriptions, not transcriptions matched to corresponding audio recordings.
+Of course, there is no guarantee that all of the MIDI files in LMD-full are actually full transcriptions because MIDI files are also sometimes used to store short snippets of music or even example riffs and drum beats for composition.
+
+In contrast, we can say with high confidence that files in LMD-matched are transcriptions of songs.
+This greatly augments the information available for those MSD entries which have been matched to transcriptions.
+For example, in the past large-scale musicological studies have been undertaken using estimated pitch features \cite{serra2012measuring,bertin2010clustering}.
+These results are potentially confounded by the fact that these features only represent a noisy and potentially error-prone approximation of the actual transcription.
+We expect that similar corpus studies utilizing the matched transcriptions will produce more reliable results.
+The transcriptions can also provide a stronger signal for query-by-humming retrieval systems.
+On the other hand, by being matched to the MSD, the MIDI files themselves are augmented with a great deal of additional metadata, including the song's release year, lyrics, user listening preferences \cite{jansson2015this}, and human-annotated tags and genre labels \cite{schreiber2015improving}.
+
+Finally, we hope that LMD-aligned becomes a source for annotations for training audio content-based music information retrieval systems.
+However, the results of \cref{sec:reliability} suggest that their use may come with a few caveats.
+We believe that developing better methods to leverage all of the information present in them is a tantalizing avenue for obtaining reliable ground truth data for music information retrieval.
+For example, while C major key annotations cannot be trusted, developing a highly reliable C major vs. non-C major classification algorithm for symbolic data (which would ostensibly be much more tractable than creating a perfect general-purpose audio content-based key estimation algorithm) would enable the reliable usage of all key change messages in MIDI files.
+Further work into robust audio-to-MIDI alignment is also warranted in order to leverage timing-critical information, as is the neglected problem of alignment confidence score reporting.
+Novel questions such as determining whether all instruments have been transcribed in a given MIDI file would also facilitate their use as ground truth transcriptions.
+Fortunately, all of these tasks are made easier by the fact that MIDI files are specified in a format from which it is straightforward to extract pitch information.
+We hope that the release of the Lakh MIDI Dataset prompts further research into these problems, so that all of the information sources in MIDI files may be fully utilized.
+
+Beyond these potential uses for our new dataset, we also are interested in extending the techniques and applications we proposed in this thesis.
+We are most interested in fusing the different approaches we explored.
+For example, we believe a representation learning approach like the one used in \cref{ch:dhs} could make DTW more effective in the final audio-to-MIDI alignment step.
+This is prompted by our observation in \cref{sec:discussion} that the best representation for alignment is not necessarily the best for confidence reporting.
+The success of representation learning in \cref{ch:dhs} in creating a more efficient and similarity-preserving representation for DTW suggests this approach may also be beneficial in the final high-precision alignment.
+
+An issue with the training process utilized in \cref{ch:dhs} is that it requires training data in the form of pre-aligned sequences.
+More broadly, this method of training does not optimize DTW performance directly, but instead optimizes the representation without considering the effect on the DTW alignment or distance.
+A more principled approach, then, would be to learn both the representation and the alignment procedure together as part of a larger system.
+Recently, a variety of approaches have been proposed to learn alignment as part of either the model's loss function (e.g.\ the Connectionist Temporal Classification loss \cite{graves2006connectionist}) or model architecture (e.g.\ attention models \cite{bahdanau2014neural} or pointer networks \cite{vinyals2015pointer}).
+We are interested in applying these methods to jointly learning a representation and a procedure for alignment.
+
+In this thesis we developed a cascade of methods of varying precision and efficiency for large-scale sequence similarity searches.
+Each step was developed independently, which may be suboptimal.
+A better approach may be to simultaneously learn more and more efficient representations by repeatedly downsampling to coarser timescales, as is done in FastDTW \cite{salvador2007toward}.
+However, rather than downsampling by simply computing the average of non-overlapping groups of subsequent feature elements as in \cite{salvador2007toward}, we could utilize the same learning procedure of \cref{ch:dhs} to produce efficient data-driven approximations at each timescale.
+We expect that this hierarchical approach would allow for even more efficient pruning.
+
+Finally, we are interested in testing these techniques in domains outside of music.
+We suspect they will be beneficial in large-scale sequence comparison problems where sequences are oversampled, consist of high-dimensional feature vectors, and/or have elements which are not directly comparable by Euclidean distance.
+We hope the results and methods proposed in this thesis prompt novel research into learning-based methods for efficiently and effectively comparing sequences.
