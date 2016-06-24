@@ -67,12 +67,10 @@ We then construct $\mathcal{N}$, a set of ``dissimilar'' pairs, by repeatedly ra
 
 Given this training data, our goal is to map sequences of feature vectors to sequences of binary vectors in a Hamming space where groups of sequentially co-occurring vectors in $\mathcal{P}$ have a small distance and groups in $\mathcal{N}$ have a large distance.
 Motivated by the multimodal hashing technique of \cite{masci2014multimodal}, we use the following objective function to measure the quality of the mapping:
-
 \begin{equation}
 \mathcal{L} = \frac{1}{|\mathcal{P}|} \sum_{(x, y) \in \mathcal{P}} \| f(x) - g(y) \|_2^2  + \frac{\alpha}{|\mathcal{N}|} \sum_{(a, b) \in \mathcal{N}} \max(0, m - \|f(a) - g(b) \|_2)^2
 \label{eq:hashing_objective}
 \end{equation}
-
 where $f$ and $g$ are learned nonlinear functions, $\alpha$ is a parameter to control the importance of separating dissimilar items, and $m$ is a target separation of dissimilar pairs.
 The first term in the loss function encourages the embedded distance between similar pairs to be small and the second term encourages dissimilar pairs to have a distance of at least $m$.
 More specifically, if $x, y \in \mathbb{R}^{G \times D}$ where $G$ is the number of subsequent feature vectors which are grouped together (and therefore the downsampling ratio) and $D$ is the feature dimensionality, then $f(x), g(y) \in \mathbb{H}^E$ where $\mathbb{H}^E$ is the Hamming space of dimensionality $E$.

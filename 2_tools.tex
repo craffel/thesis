@@ -21,12 +21,14 @@ All of the problems in this thesis fall into the category of supervised learning
 \subsection{Supervised Learning}
 
 In the supervised setting, our machine learning algorithm produces a function $f$ (called a {\em model}) which, given input $x$ and the function's parameters $\theta$, produces an output $\hat{y}$:
-
 \begin{equation}
 \hat{y} = f(x, \theta)
 \end{equation}
-
-Supervised learning requires a training set $\mathcal{S}$ of input-target pairs $(x_1, y_1), (x_2, y_2), \ldots (x_{|\mathcal{S}|}, y_{|\mathcal{S}|})$, where $x_n \in \mathcal{X}$ (the input space) and $y_n \in \mathcal{Y}$ (the target space).
+Supervised learning requires a training set $\mathcal{S}$ of input-target pairs
+\begin{equation}
+        (x_1, y_1), (x_2, y_2), \ldots, (x_{|\mathcal{S}|}, y_{|\mathcal{S}|})
+\end{equation}
+where $x_n \in \mathcal{X}$ (the input space) and $y_n \in \mathcal{Y}$ (the target space).
 We assume that these pairs are drawn from an unknown joint probability distribution $p(x, y)$, of which the only information we explicitly know is the training set $\mathcal{S}$.
 The goal of a supervised learning algorithm is to approximate the probability distribution $p(x, y)$ (or just salient characteristics of it) with $f$ by adjusting the parameters $\theta$ based solely on $\mathcal{S}$.
 
@@ -40,7 +42,6 @@ Ideally, minimizing this loss over the training set by adjusting $\theta$ will w
 The choice of a loss function will depend on the characteristics of the problem, in particular the target space $\mathcal{Y}$.
 For example, in {\em classification} problems, the targets $y$ may take one of $K$ discrete values.
 A natural loss function in this case is the zero-one loss
-
 \begin{equation}
 \mathcal{L}(y, \hat{y}) = \begin{cases}
 1,& \hat{y} = y\\
@@ -48,21 +49,16 @@ A natural loss function in this case is the zero-one loss
 \end{cases}
 \label{eq:zero_one}
 \end{equation}
-
 In {\em regression} problems, the targets are continuously valued, and a common loss function is the squared error
-
 \begin{equation}
 \mathcal{L}(y, \hat{y}) = (y - \hat{y})^2
 \end{equation}
-
 Note that in both cases when $y = \hat{y}$, $\mathcal{L} = 0$; this is a common property of loss functions.
 
 In general, a suitable goal for training an unsupervised learning algorithm is to adjust $\theta$ to minimize the average loss over the training set:
-
 \begin{equation}
 \frac{1}{|\mathcal{S}|} \sum_{(x, y) \in \mathcal{S}} \mathcal{L}(y, f(x, \theta))
 \end{equation}
-
 Minimizing this average loss is equivalent to minimizing the empirical risk of $f$.
 A common paradigm is to compute the derivative of the loss function $\mathcal{L}$ with respect to the model parameters $\theta$ and use this derivative information to incrementally change $\theta$ to make $\mathcal{L}$ smaller.
 In this case, it is beneficial to have a loss function which is continuous and smooth, which precludes the use of loss functions like the zero-one loss (\cref{eq:zero_one}).
@@ -218,7 +214,6 @@ a_{m - 1}[j] & k = i
 \end{cases}
 \label{eq:z_m_wrt_W_m}
 \end{align}
-
 Combining \cref{eq:z_m_wrt_W_m} with \cref{eq:L_wrt_W_m} causes the summation to collapse, giving
 \begin{equation}
 \frac{\partial \mathcal{L}}{\partial W_m[i, j]} = \frac{\partial \mathcal{L}}{\partial z_m[i]} a_{m - 1}[j]
@@ -233,9 +228,7 @@ Similarly for the bias variables $b_m$, we have
 \frac{\partial \mathcal{L}}{\partial b_m[i]} = \sum_{k = 1}^{N_m} \frac{\partial \mathcal{L}}{\partial z_m[k]} \frac{\partial z_m[k]}{\partial b_m[i]}
 \label{eq:L_wrt_b_m}
 \end{equation}
-
 As above, it follows that $\partial z_m[k]/\partial b_m[i]$ will evaluate to zero when $k \ne i$ because $z_m[k]$ does not interact with any element in $b_m$ except $b_m[k]$.  When $k = i$, we have
-
 \begin{align}
 \frac{\partial z_m[i]}{\partial b_m[i]} &= \frac{\partial}{\partial b_m[i]}\left(\sum_{l = 1}^{N_m} W_m[il] a_{m - 1}[l] + b_m[i]\right)\\
                                         &= 1\\
@@ -245,12 +238,10 @@ As above, it follows that $\partial z_m[k]/\partial b_m[i]$ will evaluate to zer
 \end{cases}
 \label{eq:z_m_wrt_b_m}
 \end{align}
-
 Combining \cref{eq:z_m_wrt_b_m} and \cref{eq:L_wrt_b_m} again causes the summation to collapse to give
 \begin{equation}
 \frac{\partial \mathcal{L}}{\partial b_m[i]} = \frac{\partial \mathcal{L}}{\partial z_m[i]}
 \end{equation}
-
 or in vector form
 \begin{equation}
 \frac{\partial \mathcal{L}}{\partial b_m} = \frac{\partial \mathcal{L}}{\partial z_m}
@@ -258,21 +249,16 @@ or in vector form
 
 Now, we must compute $\partial \mathcal{L}/\partial z_m[k]$.
 For the final layer ($m = L$), this term is straightforward to compute using the chain rule:
-
 \begin{equation}
         \frac{\partial \mathcal{L}}{\partial z_L[k]} = \frac{\partial \mathcal{L}}{\partial a_L[k]} \frac{\partial a_L[k]}{\partial z_L[k]}
 \end{equation}
-
 or, in vector form
-
 \begin{equation}
         \frac{\partial \mathcal{L}}{\partial z_L} = \frac{\partial \mathcal{L}}{\partial a_L} \frac{\partial a_L}{\partial z_L}
 \end{equation}
-
 The first term $\partial \mathcal{L}/\partial a_L$ is just the derivative of the loss function with respect to its argument, whose form depends on the loss function chosen.
 Similarly, $\partial a_m/\partial z_m$ (for any layer $m$ including $L$) is the derivative of layer $m$'s nonlinearity with respect to its argument and will depend on the choice of nonlinearity.
 For other layers, we again invoke the chain rule:
-
 \begin{align}
         \frac{\partial \mathcal{L}}{\partial z_m[k]} &= \frac{\partial \mathcal{L}}{\partial a_m[k]} \frac{\partial a_m[k]}{\partial z_m[k]}\\
                                                      &= \left(\sum_{l = 1}^{N_{m + 1}}\frac{\partial \mathcal{L}}{\partial z_{m + 1}[l]}\frac{\partial z_{m + 1}[l]}{\partial a_m[k]}\right)\frac{\partial a_m[k]}{\partial z_m[k]}\\
@@ -280,7 +266,6 @@ For other layers, we again invoke the chain rule:
                                                      &= \left(\sum_{l = 1}^{N_{m + 1}}\frac{\partial \mathcal{L}}{\partial z_{m + 1}[l]} W_{m + 1}[l, k]\right) \frac{\partial a_m[k]}{\partial z_m[k]}\\
                                                      &= \left(\sum_{l = 1}^{N_{m + 1}}W_{m + 1}^\top[k, l] \frac{\partial \mathcal{L}}{\partial z_{m + 1}[l]}\right) \frac{\partial a_m[k]}{\partial z_m[k]}\\
 \end{align}
-
 where the last simplification was made because by convention $\partial \mathcal{L}/\partial z_{m + 1}$ is a column vector, allowing us to write the following vector form:
 \begin{align}
         \frac{\partial \mathcal{L}}{\partial z_m} = \left(W_{m + 1}^\top \frac{\partial \mathcal{L}}{\partial z_{m + 1}}\right) \circ \frac{\partial a_m}{\partial z_m}
@@ -585,12 +570,10 @@ Nevertheless, SGD can be effective when $\eta$ is chosen correctly; a common heu
 In SGD, the gradient $\nabla \mathcal{L}(\theta_t)$ often changes rapidly at each iteration due to the fact that the loss is being computed over different data.
 It can therefore be beneficial to smooth the updates at each iteration.
 This can be achieved by re-using the gradient value from the previous iteration, scaled by a ``momentum'' hyperparameter $\mu$, as follows \cite{polyak1964some}:
-
 \begin{align}
 v_{t + 1} &= \mu v_t - \eta \nabla \mathcal{L}(\theta_t) \\
 \theta_{t + 1} &= \theta_t + v_{t+1}
 \end{align}
-
 In addition, it has been argued that including the previous gradient step has the effect of approximating some second-order information about the gradient because directions with low curvature will tend to persist across iterations and accumulate, which can mitigate conditioning issues \cite{sutskever2013importance}.
 In practice, $\mu$ is often set close to $1$; this will cause the gradient updates to change slowly from iteration to iteration.
 While early theory and intuition suggested that some of the benefits of momentum are lost in the stochastic setting \cite{lecun2012efficient}, it can be particularly beneficial in the early stages of learning before the loss function is close to any minima.
@@ -599,12 +582,10 @@ While early theory and intuition suggested that some of the benefits of momentum
 \label{sec:nesterov}
 
 In Nesterov's Accelerated Gradient (NAG) \cite{nesterov1983method}, the gradient of the loss at each step is computed at $\theta_t + \mu v_t$ instead of $\theta_t$.  The update rules are then as follows:
-
 \begin{align}
 v_{t + 1} &= \mu v_t - \eta \nabla\mathcal{L}(\theta_t + \mu v_t) \\
 \theta_{t + 1} &= \theta_t + v_{t+1}
 \end{align}
-
 In momentum, the parameter update could be written $\theta_{t + 1} = \theta_t + \mu v_t - \eta \nabla \mathcal{L}(\theta_t)$, so NAG effectively computes the gradient at the new parameter location but without considering the gradient term (i.e.\ using the first two terms of this update only).
 In practice, this causes NAG to behave more stably than regular momentum in many situations, and so it is often chosen over classical momentum.
 A more thorough analysis can be found in \cite{sutskever2013importance}.
@@ -630,12 +611,10 @@ The only difference is that the $g_t$ term is computed as an exponentially decay
 This makes $g_t$ an estimate of the second moment of $\nabla \mathcal{L}$ and prevents the learning rate from effectively shrinking over time.
 The name ``RMSProp'' comes from the fact that the update step is normalized by a decaying approximate root-mean-squared (RMS) of recent gradients.
 The update is as follows:
-
 \begin{align}
 g_{t + 1} &= \gamma g_t + (1 - \gamma) \nabla \mathcal{L}(\theta_t)^2 \\
 \theta_{t + 1} &= \theta_t - \frac{\eta\nabla \mathcal{L}(\theta_t)}{\sqrt{g_{t + 1}} + \epsilon}
 \end{align}
-
 In the original lecture slides where it was proposed, $\gamma$ is set to $.9$, but it is most commonly treated as a variable hyperparameter.
 In \cite{dauphin2015rmsprop}, it is shown that the $\sqrt{g_{t + 1}}$ term approximates (in expectation) the diagonal of the absolute value of the Hessian matrix (assuming the update steps are $\mathcal{N}(0, 1)$ distributed).
 It is also argued that the absolute value of the Hessian is better to use for non-convex problems which may have many saddle points.
@@ -657,7 +636,6 @@ Adam \cite{kingma2015adam} is somewhat similar to Adagrad and RMSProp in that it
 It differs mainly in two ways: First, the separate moving average coefficients $\gamma_1$ and $\gamma_2$ are used for first and second moments respectively (\cref{eq:adam_m} and \cref{eq:adam_g}).
 Second, because the first and second moment estimates are initialized to zero, some bias-correction is used to counteract the resulting bias towards zero (\cref{eq:adam_mhat} and \cref{eq:adam_ghat}).
 Given hyperparameters $\gamma_1$, $\gamma_2$, $\lambda$, and $\eta$, and setting $m_0 = 0$ and $g_0 = 0$, the update rule is as follows:
-
 \begin{align}
 m_{t + 1} &= \gamma_1 m_t + (1 - \gamma_1) \nabla \mathcal{L}(\theta_t) \\
 \label{eq:adam_m}
@@ -669,7 +647,6 @@ g_{t + 1} &= \gamma_2 g_t + (1 - \gamma_2) \nabla \mathcal{L}(\theta_t)^2 \\
 \label{eq:adam_ghat}
 \theta_{t + 1} &= \theta_t - \frac{\eta \hat{m}_{t + 1}}{\sqrt{\hat{g}_{t + 1}} + \epsilon}
 \end{align}
-
 The use of the estimated first and second moments ensure that, in most cases, the step size is $\approx \pm \eta$ and that in magnitude it is less than $\eta$.
 However, as $\theta_t$ approaches a true minimum, the uncertainty of the gradient will increase and the step size will decrease.
 It is also invariant to the scale of the gradients.
@@ -766,7 +743,6 @@ where
         \end{bmatrix} \\
         \sigma_T^2(\theta_n) &= k(\theta_n, \theta_n) - K_{n \times T} K_{T \times T}^{-1} K_{n \times T}^\top
 \end{align}
-
 Note that the covariance matrix of the joint marginal likelihood of $y_n$ and $y_T$ will have 1 all along its diagonal because any point is perfectly correlated with itself.
 This is an invalid assumption in the presence of noise, so a common modification to include a term $\sigma_{noise}^2$ for the variance of the noise in the covariance, which yields the predictive distribution
 \begin{align}
