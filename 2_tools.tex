@@ -55,7 +55,7 @@ In {\em regression} problems, the targets are continuously valued, and a common 
 \end{equation}
 Note that in both cases when $y = \hat{y}$, $\mathcal{L} = 0$; this is a common property of loss functions.
 
-In general, a suitable goal for training an unsupervised learning algorithm is to adjust $\theta$ to minimize the average loss over the training set:
+In general, a suitable goal for training a supervised learning algorithm is to adjust $\theta$ to minimize the average loss over the training set:
 \begin{equation}
 \frac{1}{|\mathcal{S}|} \sum_{(x, y) \in \mathcal{S}} \mathcal{L}(y, f(x, \theta))
 \end{equation}
