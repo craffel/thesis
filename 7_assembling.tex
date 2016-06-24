@@ -212,3 +212,13 @@ This had less of an effect on the {\em F-measure} and {\em Any Metric Level Tota
 Second, many MIDI files had tempos which were at a different metric level than the annotations (e.g.\ double, half, or a third of the tempo).
 This affected the {\em Any Metric Level Total} scores the least because it is invariant to these issues, except for the handful of files which were transcribed at a third of the tempo.
 Finally, we found that the confidence score produced by the alignment system is most reliable at producing a low score in the event of a total failure (indicated by points in the bottom left of the plots in Figure \ref{fig:beat}), but was otherwise insensitive to the more minor issues that can cause beat evaluation metrics to produce low scores.
+
+\subsection{Motivationg Future Work}
+\label{sec:motivating}
+
+These results suggest that the use of MIDI-derived annotations may come with a few caveats.
+We therefore believe that developing better methods to leverage all of the information present in them is a tantalizing avenue for obtaining reliable ground truth data for music information retrieval.
+For example, while C major key annotations cannot be trusted, developing a highly reliable C major vs. non-C major classification algorithm for symbolic data (which would ostensibly be much more tractable than creating a perfect general-purpose audio content-based key estimation algorithm) would enable the reliable usage of all key change messages in MIDI files.
+Further work into robust audio-to-MIDI alignment is also warranted in order to leverage timing-critical information, as is the neglected problem of alignment confidence score reporting.
+Novel questions such as determining whether all instruments have been transcribed in a given MIDI file would also facilitate their use as ground truth transcriptions.
+Fortunately, all of these tasks are made easier by the fact that it is straightforward to extract musical information from MIDI files.

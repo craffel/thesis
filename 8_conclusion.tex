@@ -40,7 +40,7 @@ Our specific contributions are as follows:
 
 \end{description}
 
-\section{Motivating Future Work}
+\section{Next Steps}
 \label{sec:ideas}
 
 The main product of this thesis is the Lakh MIDI Dataset, described in \cref{sec:lmd}.
@@ -62,13 +62,8 @@ The transcriptions can also provide a stronger signal for query-by-humming retri
 On the other hand, by being matched to the MSD, the MIDI files themselves are augmented with a great deal of additional metadata, including the song's release year, lyrics, user listening preferences \cite{jansson2015this}, and human-annotated tags and genre labels \cite{schreiber2015improving}.
 
 Finally, we hope that LMD-aligned becomes a source for annotations for training audio content-based music information retrieval systems.
-However, the results of \cref{sec:reliability} suggest that their use may come with a few caveats.
-We believe that developing better methods to leverage all of the information present in them is a tantalizing avenue for obtaining reliable ground truth data for music information retrieval.
-For example, while C major key annotations cannot be trusted, developing a highly reliable C major vs. non-C major classification algorithm for symbolic data (which would ostensibly be much more tractable than creating a perfect general-purpose audio content-based key estimation algorithm) would enable the reliable usage of all key change messages in MIDI files.
-Further work into robust audio-to-MIDI alignment is also warranted in order to leverage timing-critical information, as is the neglected problem of alignment confidence score reporting.
-Novel questions such as determining whether all instruments have been transcribed in a given MIDI file would also facilitate their use as ground truth transcriptions.
-Fortunately, all of these tasks are made easier by the fact that MIDI files are specified in a format from which it is straightforward to extract pitch information.
-We hope that the release of the Lakh MIDI Dataset prompts further research into these problems, so that all of the information sources in MIDI files may be fully utilized.
+However, as we discussed in \cref{sec:motivating}, some novel problems must be tackled before annotations derived from these aligned MIDI files can be fully leveraged.
+We hope that the release of the Lakh MIDI Dataset prompts further research into these problems, so that all of the information sources in MIDI files may be wholly utilized.
 
 Beyond these potential uses for our new dataset, we also are interested in extending the techniques and applications we proposed in this thesis.
 We are most interested in fusing the different approaches we explored.
