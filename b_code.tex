@@ -31,7 +31,7 @@ Experiments included are:
 \item[\texttt{match.py}] Matches one or more MIDI files to the Million Song Dataset quickly and accurately using the cascade of methods proposed in this thesis, as described in \cref{ch:assembling}.
 \end{description}
 
-Also included are \texttt{experiment\char`_utils.py}, \texttt{feature\char`_extraction.py}, and \texttt{whoosh\char`_search.py} which contain shared helper functions for the experiments, extracting features, and text-based matching respectively.
+Also included are \texttt{experiment\char`_utils.py}, \texttt{feature\char`_extraction.py}, and \texttt{whoosh\-\char`_search.py} which contain shared helper functions for the experiments, extracting features, and text-based matching respectively.
 
 \subsection{\texttt{dhs}}
 
@@ -64,7 +64,7 @@ This includes the following scripts, in order of their intended usage:
 \item[\texttt{align\char`_real\char`_world.py}] Aligns a collection of real-world data using the ``gold standard'' system of \cref{sec:goldstandard} for the qualitative evaluation in \cref{sec:qualitative}.
 \end{description}
 
-It also includes the collections of utility functions \texttt{corrupt\char`_midi.py}, \texttt{align\char`_dataset.py}, and \texttt{db\char`_utils.py} respectively for applying synthetic corruptions to MIDI files, aligning a collection of MIDI files given DTW system parameters, and for storing and loading results.
+It also includes the collections of utility functions \texttt{corrupt\char`_midi.py}, \texttt{align\-\char`_dataset.py}, and \texttt{db\char`_utils.py} respectively for applying synthetic corruptions to MIDI files, aligning a collection of MIDI files given DTW system parameters, and for storing and loading results.
 
 \section{\prettymidi{}}
 \label{sec:pretty_midi}
@@ -107,7 +107,7 @@ Some of the implemented functions include:
   \item[\texttt{get\char`_chroma}] Computes chroma features (also known as pitch class profile)~\cite{fujishima1999realtime} of the MIDI data based on the piano roll representation.
 \end{description}
 
-In \prettymidi{}, MIDI data can be synthesized as audio using either the \texttt{synthesize} or \texttt{fluidsynth} methods.
+In \prettymidi{}, MIDI data can be synthesized as audio using either the \texttt{syn\-the\-size} or \texttt{fluidsynth} methods.
 \texttt{synthesize} uses a periodic function (e.g. sin) to synthesize the each note, while \texttt{fluidsynth} utilizes the \texttt{fluidsynth} program\footnote{\url{http://www.fluidsynth.org}} which performs General MIDI synthesis using a SoundFont file.
 Both methods return arrays of audio samples at some specified sampling rate.
 
