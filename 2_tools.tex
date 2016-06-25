@@ -1105,13 +1105,18 @@ where $\phi$ is a tuneable parameter controlling how much to discourage non-diag
 
 Once an optimal alignment path is found, a rough similarity measure can be obtained as the sum of the pairwise distances between aligned sequence elements from $X$ and $Y$.
 In addition, to achieve alignment one sequence can be adjusted (via resampling or otherwise) so that so that $t_X[p[i]] = t_Y[q[i]], \forall i \in \{1, \ldots, L\}$, where $t_X \in \mathbb{R}^M, t_Y \in \mathbb{R}^N$ are the times corresponding to the feature vectors in $X$ and $Y$ respectively.
-An example visualization of DTW on two one-dimensional sequences can be seen in \cref{fig:example_dtw}.
+An example visualization of DTW on two one-dimensional sequences can be seen in \cref{fig:example_dtw_sequences,fig:example_dtw_matrix}.
 
 \begin{figure}
   \centering
   \includegraphics[width=\textwidth]{figures/2-example_dtw_sequences.pdf}
+  \caption[DTW alignment of two one-dimensional sequences]{Example DTW alignment between two one-dimensional sequences.  The determined correspondences between elements of the two sequences is shown as dashed lines.}
+  \label{fig:example_dtw_sequences}
+\end{figure}
 
+\begin{figure}
+  \centering
   \includegraphics[width=.66\textwidth]{figures/2-example_dtw_matrix.pdf}
-  \caption[DTW alignment of two signals]{Example DTW alignment between two one-dimensional sequences.  The top figure shows the determined correspondences between elements of the two sequences as dashed lines.  The lower figure shows the pairwise distance matrix $C$ and the lowest-cost path through it, which defines the optimal alignment.  The x- and y-axes of the distance matrix correspond to sequence indices in the green and blue sequences respectively.}
-  \label{fig:example_dtw}
+  \caption[Distance matrix with lowest-cost path]{The pairwise distance matrix $C$ and the lowest-cost path through it for the sequences shown in \cref{fig:example_dtw_sequences}, which defines the optimal DTW alignment.  The x- and y-axes of the distance matrix correspond to sequence indices in the green and blue sequences in \cref{fig:example_dtw_sequences} respectively.}
+  \label{fig:example_dtw_matrix}
 \end{figure}
