@@ -45,6 +45,8 @@
 \usepackage{fancyhdr} % Nicer headers and footers (see customization below)
 %\usepackage{fncychap} % Prevent resetting page numbers in the middle (?)
 \usepackage{tocloft}
+\usepackage{tocbibind} % Add list of tables and list of figures to toc
+\usepackage[titletoc]{appendix} % Spell out the word Appendix in toc
 \usepackage{caption}
 \usepackage{booktabs}
 \usepackage{supertabular} % for multi-page tables, list of abbrevs
@@ -302,6 +304,7 @@
 \newcommand{\thesislistofabbrevs}{
     \chapter*{List of Abbreviations}
     \thispagestyle{bottom} % force this page otherwise it uses plain
+    \addcontentsline{toc}{chapter}{List of Abbreviations}
     \input{0_abbrevs.tex}
     \myclearpage
 }

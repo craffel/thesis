@@ -39,15 +39,17 @@
 
 
 \iftwoside % Normal ordering
-    \appendix
+    \begin{appendices}
     \input{a_works.tex}
     \input{b_code.tex}
+    \end{appendices}
     \thesisbibliography
 \else      % GSAS: Appendix after bibliography
     \thesisbibliography
-    \appendix
+    \begin{appendices}
     \input{a_works.tex}
     \input{b_code.tex}
+    \end{appendices}
 \fi
 
 \end{document}
